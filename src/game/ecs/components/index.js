@@ -26,6 +26,7 @@ import { OpenedSprite } from './OpenedSprite';
 import { TryOpen } from './TryOpen';
 import { TryCollect } from './TryCollect';
 import { TryCollectLoot } from './TryCollectLoot';
+import { TryAttackWall } from './TryAttackWall';
 
 export {
   Attack,
@@ -56,4 +57,5 @@ export {
   TryOpen,
   TryCollect,
   TryCollectLoot,
+  TryAttackWall,
 };

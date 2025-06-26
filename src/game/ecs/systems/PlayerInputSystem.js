@@ -15,8 +15,11 @@ import {
   TryOpen,
   TryCollect,
   TryCollectLoot,
+  TryAttackWall,
+  Wall,
   XP
 } from '../components';
+import { dataManager } from '../../DataManager';
 
 export class PlayerInputSystem extends System {
     static queries = {
@@ -52,6 +55,20 @@ export class PlayerInputSystem extends System {
             return;
         }
         
+        // Проверяем разрушенную стену для сбора опыта
+        const wallToCollect = this.queries.actors.results.find(actor => {
+            const pos = actor.getComponent(Position);
+            return pos.x === x && pos.y === y &&
+                actor.hasComponent(Wall) &&
+                actor.hasComponent(Defeated) &&
+                actor.hasComponent(XP) &&
+                !actor.hasComponent(TryCollectLoot);
+        });
+        if (wallToCollect) {
+            wallToCollect.addComponent(TryCollectLoot);
+            return;
+        }
+        
         // Проверяем открытый сундук с опытом для сбора
         const chestToCollect = this.queries.actors.results.find(actor => {
             const pos = actor.getComponent(Position);
@@ -79,6 +96,22 @@ export class PlayerInputSystem extends System {
                 chest.addComponent(TryOpen);
             }
             return;
+        }
+        
+        // Проверяем стену для атаки (только если у игрока есть HP)
+        if (dataManager.player && dataManager.player.hp >= 0) {
+            const wall = this.queries.actors.results.find(actor => {
+                const pos = actor.getComponent(Position);
+                return pos.x === x && pos.y === y &&
+                    actor.hasComponent(Wall) &&
+                    actor.hasComponent(Revealed) &&
+                    !actor.hasComponent(Defeated) &&
+                    !actor.hasComponent(TryAttackWall);
+            });
+            if (wall) {
+                wall.addComponent(TryAttackWall);
+                return;
+            }
         }
         
         const actor = this.queries.actors.results.find(actor => {

@@ -1,37 +1,37 @@
 import { System } from 'ecsy';
-import { TryCollectLoot, Monster, Defeated, XP, Loot, Position, SpriteObjects } from '../components';
+import { TryCollectLoot, Monster, Wall, Defeated, XP, Loot, Position, SpriteObjects } from '../components';
 import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
 
 export class LootSystem extends System {
   static queries = {
-    monstersToCollect: { components: [TryCollectLoot, Monster, Defeated, Position] }
+    entitiesToCollect: { components: [TryCollectLoot, Defeated, Position] }
   };
 
   execute() {
-    this.queries.monstersToCollect.results.forEach(monster => {
-      const position = monster.getComponent(Position);
-      const hasXP = monster.hasComponent(XP);
-      const hasLoot = monster.hasComponent(Loot);
+    this.queries.entitiesToCollect.results.forEach(entity => {
+      const position = entity.getComponent(Position);
+      const hasXP = entity.hasComponent(XP);
+      const hasLoot = entity.hasComponent(Loot);
 
       // Выдаем опыт, если есть
       if (hasXP) {
-        const xp = monster.getComponent(XP);
+        const xp = entity.getComponent(XP);
         if (dataManager.player) {
           dataManager.player.grantXP(xp.value);
         }
       }
 
-      // Очищаем спрайты монстра
-      if (monster.hasComponent(SpriteObjects)) {
-        const spriteObjects = monster.getComponent(SpriteObjects);
+      // Очищаем спрайты сущности
+      if (entity.hasComponent(SpriteObjects)) {
+        const spriteObjects = entity.getComponent(SpriteObjects);
         spriteObjects.destroyAll();
       }
 
       // Если есть лут, создаем сущность из него
       if (hasLoot) {
-        const loot = monster.getComponent(Loot);
+        const loot = entity.getComponent(Loot);
         const lootType = loot.type;
         
         // Создаем сущность из actor-definitions.json
@@ -52,8 +52,8 @@ export class LootSystem extends System {
         }
       }
 
-      // Удаляем монстра из мира
-      monster.remove();
+      // Удаляем сущность из мира
+      entity.remove();
     });
   }
 } 

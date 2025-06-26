@@ -66,8 +66,10 @@ export class RenderSystem extends System {
     if (entity.hasComponent(Revealed)) {
       const monsterDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
       const chestOpenedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Chest, Opened);
+      const itemOpenedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Item, Opened);
+      const wallDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Wall, Defeated);
       const spriteComp = findEntityAt(this.queries.actors.results, position.x, position.y, Sprite);
-      if (monsterDefeatedComp || chestOpenedComp) {
+      if (monsterDefeatedComp || chestOpenedComp || wallDefeatedComp) {
         frame = tile.baseType + 5;
       } else if (!spriteComp) {
         frame = tile.baseType + 10;
@@ -252,6 +254,13 @@ export class RenderSystem extends System {
     const tileX = x * this.tileSize;
     const tileY = y * this.tileSize;
     let frame = sprite.frame;
+    
+    // Если стена разрушена, используем DefeatedSprite
+    if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
+      const defeatedSprite = entity.getComponent(DefeatedSprite);
+      frame = defeatedSprite.frame;
+    }
+    
     if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
         tileX,
@@ -265,8 +274,9 @@ export class RenderSystem extends System {
       spriteObjects.spriteObj.setFrame(frame);
       spriteObjects.spriteObj.setPosition(tileX, tileY);
     }
-    // HP стены
-    if (entity.hasComponent(Health)) {
+    
+    // HP стены (только если не разрушена)
+    if (entity.hasComponent(Health) && !entity.hasComponent(Defeated)) {
       const health = entity.getComponent(Health);
       const hpText = `${health.current}/${health.max}`;
       if (!spriteObjects.hpText) {
@@ -286,6 +296,44 @@ export class RenderSystem extends System {
     } else if (spriteObjects.hpText) {
       spriteObjects.hpText.destroy();
       spriteObjects.hpText = null;
+    }
+    
+    // Отображаем опыт у разрушенных стен
+    if (entity.hasComponent(Defeated) && entity.hasComponent(XP)) {
+      const xp = entity.getComponent(XP);
+      const xpValue = xp ? xp.value : 0;
+      if (!spriteObjects.xpText) {
+        const xpText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2 + 9,
+          tileY + this.tileSize - 5,
+          'ingame',
+          String(xpValue),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402);
+        this.container.add(xpText);
+        spriteObjects.xpText = xpText;
+      } else {
+        spriteObjects.xpText.setText(String(xpValue));
+        spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
+      }
+      
+      // Отображаем иконку монетки
+      if (!spriteObjects.coinIcon) {
+        const coin = this.scene.add.image(
+          tileX + this.tileSize / 2 - 7,
+          tileY + this.tileSize + 10,
+          'icons',
+          10
+        ).setOrigin(0.5, 1);
+        this.container.add(coin);
+        spriteObjects.coinIcon = coin;
+      } else {
+        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
+      }
+    } else {
+      // Убираем отображение опыта, если стена не разрушена или не содержит XP
+      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 

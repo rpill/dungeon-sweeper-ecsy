@@ -11,6 +11,7 @@ import { ItemActivationSystem } from '../ecs/systems/ItemActivationSystem';
 import { ChestSystem } from '../ecs/systems/ChestSystem';
 import { CollectSystem } from '../ecs/systems/CollectSystem';
 import { LootSystem } from '../ecs/systems/LootSystem';
+import { WallCombatSystem } from '../ecs/systems/WallCombatSystem';
 
 export class Game extends Phaser.Scene {
     constructor() {
@@ -77,6 +78,7 @@ export class Game extends Phaser.Scene {
         this.game.ecs.world.registerSystem(ChestSystem);
         this.game.ecs.world.registerSystem(CollectSystem);
         this.game.ecs.world.registerSystem(LootSystem);
+        this.game.ecs.world.registerSystem(WallCombatSystem);
 
         // console.log(this.game.ecs.world.entityManager._entities);
         // const tiles = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Tile));
