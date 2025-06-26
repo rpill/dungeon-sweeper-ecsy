@@ -1,5 +1,22 @@
 import { System } from 'ecsy';
-import { Position, Sprite, Tile, Revealed, Defeated, Chest, Monster, Item, Attack, DefeatedSprite, XP, Wall, Health, SpriteObjects } from '../components';
+import {
+  Position,
+  Sprite,
+  Tile,
+  Revealed,
+  Defeated,
+  Chest,
+  Monster,
+  Item,
+  Attack,
+  DefeatedSprite,
+  XP,
+  Wall,
+  Health,
+  SpriteObjects,
+  Opened,
+  OpenedSprite
+} from '../components';
 import { findEntityAt } from '../helpers';
 
 export class RenderSystem extends System {
@@ -48,8 +65,9 @@ export class RenderSystem extends System {
     
     if (entity.hasComponent(Revealed)) {
       const monsterDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
+      const chestOpenedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Chest, Opened);
       const spriteComp = findEntityAt(this.queries.actors.results, position.x, position.y, Sprite);
-      if (monsterDefeatedComp) {
+      if (monsterDefeatedComp || chestOpenedComp) {
         frame = tile.baseType + 5;
       } else if (!spriteComp) {
         frame = tile.baseType + 10;
@@ -191,7 +209,7 @@ export class RenderSystem extends System {
   }
 
   renderItem(entity) {
-    if (!entity.hasComponent(Revealed)) return;
+    if (!entity.hasComponent(Revealed) && !entity.hasComponent(Opened)) return;
     
     // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
@@ -290,9 +308,9 @@ export class RenderSystem extends System {
     const centerX = tileX + this.tileSize / 2;
     const centerY = tileY + this.tileSize / 2;
     let frame = sprite.frame;
-    if (entity.hasComponent(DefeatedSprite) && entity.hasComponent(Defeated)) {
-      const defeatedSprite = entity.getComponent(DefeatedSprite);
-      frame = defeatedSprite.frame;
+    if (entity.hasComponent(OpenedSprite) && entity.hasComponent(Opened)) {
+      const openedSprite = entity.getComponent(OpenedSprite);
+      frame = openedSprite.frame;
     }
     if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
@@ -306,6 +324,44 @@ export class RenderSystem extends System {
     } else {
       spriteObjects.spriteObj.setFrame(frame);
       spriteObjects.spriteObj.setPosition(centerX, centerY);
+    }
+    
+    // Отображаем опыт у открытых сундуков с XP
+    if (entity.hasComponent(Opened) && entity.hasComponent(XP)) {
+      const xp = entity.getComponent(XP);
+      const xpValue = xp ? xp.value : 0;
+      if (!spriteObjects.xpText) {
+        const xpText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2 + 9,
+          tileY + this.tileSize - 5,
+          'ingame',
+          String(xpValue),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402);
+        this.container.add(xpText);
+        spriteObjects.xpText = xpText;
+      } else {
+        spriteObjects.xpText.setText(String(xpValue));
+        spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
+      }
+      
+      // Отображаем иконку монетки
+      if (!spriteObjects.coinIcon) {
+        const coin = this.scene.add.image(
+          tileX + this.tileSize / 2 - 7,
+          tileY + this.tileSize + 10,
+          'icons',
+          10
+        ).setOrigin(0.5, 1);
+        this.container.add(coin);
+        spriteObjects.coinIcon = coin;
+      } else {
+        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
+      }
+    } else {
+      // Убираем отображение опыта, если сундук не открыт или не содержит XP
+      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 

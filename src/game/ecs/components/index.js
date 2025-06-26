@@ -21,6 +21,11 @@ import { Spell } from './Spell';
 import { Type } from './Type';
 import { Heal } from './Heal';
 import { SpriteObjects } from './SpriteObjects';
+import { Opened } from './Opened';
+import { OpenedSprite } from './OpenedSprite';
+import { TryOpen } from './TryOpen';
+import { TryCollect } from './TryCollect';
+import { TryCollectLoot } from './TryCollectLoot';
 
 export {
   Attack,
@@ -46,4 +51,9 @@ export {
   Type,
   Heal,
   SpriteObjects,
+  Opened,
+  OpenedSprite,
+  TryOpen,
+  TryCollect,
+  TryCollectLoot,
 };

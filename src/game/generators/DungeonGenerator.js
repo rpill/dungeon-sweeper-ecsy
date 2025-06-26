@@ -45,8 +45,7 @@ export class DungeonGenerator {
         this.add(ACTOR_TYPES.GAZER, 2);
         this.add(ACTOR_TYPES.MINE, 9);
         this.add(ACTOR_TYPES.MEDKIT, 5);
-        this.add(ACTOR_TYPES.CHEST, 5);
-        this.add(ACTOR_TYPES.CHEST, 2);
+        this.addChests(7);
         this.add(ACTOR_TYPES.ORB, 1, { revealed: true });
         this.add(ACTOR_TYPES.DRAGON_EGG, 1);
         this.add(ACTOR_TYPES.RAT, 13);
@@ -110,5 +109,52 @@ export class DungeonGenerator {
         }
         if (emptyPositions.length === 0) return null;
         return emptyPositions[Math.floor(Math.random() * emptyPositions.length)];
+    }
+
+    addChests(count) {
+        const medkitChests = 2; // 2 сундука с медкитом
+        const xpChests = count - medkitChests; // остальные с опытом
+        
+        // Создаем сундуки с медкитом
+        for (let i = 0; i < medkitChests; i++) {
+            const position = this.findEmptyPosition();
+            if (!position) break;
+            const entity = this.world.createEntity();
+            entity.addComponent(Components.Position, { x: position.x, y: position.y });
+            
+            // Добавляем базовые компоненты сундука
+            entity.addComponent(Components.Sprite, { spriteSheet: 'icons', frame: 14 });
+            entity.addComponent(Components.Chest);
+            entity.addComponent(Components.OpenedSprite, { frame: 15 });
+            entity.addComponent(Components.Type, { value: 'CHEST' });
+            
+            // Добавляем медкит как лут
+            entity.addComponent(Components.Loot, { type: 'MEDKIT' });
+            
+            if (dataManager.debug) {
+                entity.addComponent(Components.Revealed);
+            }
+        }
+        
+        // Создаем сундуки с опытом
+        for (let i = 0; i < xpChests; i++) {
+            const position = this.findEmptyPosition();
+            if (!position) break;
+            const entity = this.world.createEntity();
+            entity.addComponent(Components.Position, { x: position.x, y: position.y });
+            
+            // Добавляем базовые компоненты сундука
+            entity.addComponent(Components.Sprite, { spriteSheet: 'icons', frame: 14 });
+            entity.addComponent(Components.Chest);
+            entity.addComponent(Components.OpenedSprite, { frame: 15 });
+            entity.addComponent(Components.Type, { value: 'CHEST' });
+            
+            // Добавляем опыт
+            entity.addComponent(Components.XP, { value: 3 });
+            
+            if (dataManager.debug) {
+                entity.addComponent(Components.Revealed);
+            }
+        }
     }
 }

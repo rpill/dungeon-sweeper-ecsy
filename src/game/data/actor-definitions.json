@@ -208,7 +208,7 @@
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 14 } },
       { "component": "Chest" },
       { "component": "XP", "data": { "value": 3 } },
-      { "component": "DefeatedSprite", "data": { "frame": 15 } },
+      { "component": "OpenedSprite", "data": { "frame": 15 } },
       { "component": "Type", "data": { "value": "CHEST" } }
     ],
     "ORB": [
