@@ -1,5 +1,6 @@
 import { System } from 'ecsy';
 import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack } from '../components';
+import { findEntityAt } from '../helpers';
 
 export class ItemActivationSystem extends System {
   static queries = {
@@ -51,6 +52,64 @@ export class ItemActivationSystem extends System {
               monster.removeComponent(Attack);
             }
           });
+        }
+        if (spell.type === 'make_orb_effect') {
+          const radius = spell.radius || 1.5;
+          // 1. Собираем все нераскрытые клетки
+          const unrevealedTiles = this.queries.tiles.results.filter(tile => !tile.hasComponent(Revealed));
+          // 2. Перемешиваем
+          Phaser.Utils.Array.Shuffle(unrevealedTiles);
+          let pick = null;
+          // 3. Ищем клетку рядом с миной
+          for (const candidate of unrevealedTiles) {
+            const pos = candidate.getComponent(Position);
+            let foundMineNearby = false;
+            for (let dx = -1; dx <= 1; dx++) {
+              for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const mx = pos.x + dx;
+                const my = pos.y + dy;
+                const actor = findEntityAt(this.queries.actors.results, mx, my, Monster);
+                if (actor && actor.name === 'MINE' && !actor.hasComponent(Revealed)) {
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  if (dist < radius) {
+                    foundMineNearby = true;
+                    break;
+                  }
+                }
+              }
+            }
+            if (foundMineNearby) {
+              pick = candidate;
+              break;
+            }
+          }
+          // 4. Если не нашли — берём любую нераскрытую
+          if (!pick && unrevealedTiles.length > 0) {
+            pick = unrevealedTiles[0];
+          }
+          // 5. Открываем клетки вокруг выбранной
+          if (pick) {
+            const pos = pick.getComponent(Position);
+            for (let dx = -1; dx <= 1; dx++) {
+              for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const tx = pos.x + dx;
+                const ty = pos.y + dy;
+                const tile = findEntityAt(this.queries.tiles.results, tx, ty, Tile);
+                if (tile && !tile.hasComponent(Revealed)) {
+                  tile.addComponent(Revealed);
+                }
+                // Открываем акторов в этой клетке
+                this.queries.actors.results.forEach(actor => {
+                  const actorPos = actor.getComponent(Position);
+                  if (actorPos.x === tx && actorPos.y === ty && !actor.hasComponent(Revealed)) {
+                    actor.addComponent(Revealed);
+                  }
+                });
+              }
+            }
+          }
         }
       }
       // Удаляем все визуальные объекты, связанные с предметом
