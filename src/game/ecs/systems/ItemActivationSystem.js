@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects } from '../components';
+import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
 
@@ -7,7 +7,8 @@ export class ItemActivationSystem extends System {
   static queries = {
     usedItems: { components: [UseItem, Position] },
     tiles: { components: [Tile, Position] },
-    actors: { components: [Position] }
+    actors: { components: [Position] },
+    monsters: { components: [Monster, Type] }
   };
 
   execute() {
@@ -45,7 +46,8 @@ export class ItemActivationSystem extends System {
         const spell = item.getComponent(Spell);
         if (spell.type === 'reveal_enemies' && Array.isArray(spell.targets)) {
           this.queries.monsters.results.forEach(monster => {
-            if (spell.targets.includes(monster.name) && !monster.hasComponent(Revealed)) {
+            const monsterType = monster.getComponent(Type);
+            if (spell.targets.includes(monsterType.value) && !monster.hasComponent(Revealed)) {
               monster.addComponent(Revealed);
             }
           });
@@ -53,7 +55,8 @@ export class ItemActivationSystem extends System {
         if (spell.type === 'disarm_enemies' && Array.isArray(spell.targets)) {
           // Здесь можно реализовать дизарм мин (например, убрать компонент Attack у мин)
           this.queries.monsters.results.forEach(monster => {
-            if (spell.targets.includes(monster.name) && monster.hasComponent(Attack)) {
+            const monsterType = monster.getComponent(Type);
+            if (spell.targets.includes(monsterType.value) && monster.hasComponent(Attack)) {
               monster.removeComponent(Attack);
             }
           });
