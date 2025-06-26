@@ -42,30 +42,18 @@ export class PlayerInputSystem extends System {
             return pos.x === x && pos.y === y;
         });
         
-        // Проверяем убитого монстра для сбора лута
-        const monsterToCollect = this.queries.actors.results.find(actor => {
+        // Проверяем закрытый сундук для открытия
+        const chest = this.queries.actors.results.find(actor => {
             const pos = actor.getComponent(Position);
             return pos.x === x && pos.y === y &&
-                actor.hasComponent(Monster) &&
-                actor.hasComponent(Defeated) &&
-                !actor.hasComponent(TryCollectLoot);
+                actor.hasComponent(Chest) &&
+                actor.hasComponent(Revealed) &&
+                !actor.hasComponent(Opened);
         });
-        if (monsterToCollect) {
-            monsterToCollect.addComponent(TryCollectLoot);
-            return;
-        }
-        
-        // Проверяем разрушенную стену для сбора опыта
-        const wallToCollect = this.queries.actors.results.find(actor => {
-            const pos = actor.getComponent(Position);
-            return pos.x === x && pos.y === y &&
-                actor.hasComponent(Wall) &&
-                actor.hasComponent(Defeated) &&
-                actor.hasComponent(XP) &&
-                !actor.hasComponent(TryCollectLoot);
-        });
-        if (wallToCollect) {
-            wallToCollect.addComponent(TryCollectLoot);
+        if (chest) {
+            if (!chest.hasComponent(TryOpen)) {
+                chest.addComponent(TryOpen);
+            }
             return;
         }
         
@@ -80,21 +68,6 @@ export class PlayerInputSystem extends System {
         });
         if (chestToCollect) {
             chestToCollect.addComponent(TryCollect);
-            return;
-        }
-        
-        // Проверяем закрытый сундук для открытия
-        const chest = this.queries.actors.results.find(actor => {
-            const pos = actor.getComponent(Position);
-            return pos.x === x && pos.y === y &&
-                actor.hasComponent(Chest) &&
-                actor.hasComponent(Revealed) &&
-                !actor.hasComponent(Opened);
-        });
-        if (chest) {
-            if (!chest.hasComponent(TryOpen)) {
-                chest.addComponent(TryOpen);
-            }
             return;
         }
         
@@ -114,6 +87,7 @@ export class PlayerInputSystem extends System {
             }
         }
         
+        // Проверяем живого монстра для атаки
         const actor = this.queries.actors.results.find(actor => {
             const pos = actor.getComponent(Position);
             return pos.x === x && pos.y === y &&
@@ -127,9 +101,36 @@ export class PlayerInputSystem extends System {
             }
             return;
         }
-        if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
-            tileEntity.addComponent(TryReveal);
+        
+        // Проверяем убитого монстра для сбора лута (только если клетка уже открыта)
+        const monsterToCollect = this.queries.actors.results.find(actor => {
+            const pos = actor.getComponent(Position);
+            return pos.x === x && pos.y === y &&
+                actor.hasComponent(Monster) &&
+                actor.hasComponent(Defeated) &&
+                actor.hasComponent(Revealed) &&
+                !actor.hasComponent(TryCollectLoot);
+        });
+        if (monsterToCollect) {
+            monsterToCollect.addComponent(TryCollectLoot);
+            return;
         }
+        
+        // Проверяем разрушенную стену для сбора опыта (только если клетка уже открыта)
+        const wallToCollect = this.queries.actors.results.find(actor => {
+            const pos = actor.getComponent(Position);
+            return pos.x === x && pos.y === y &&
+                actor.hasComponent(Wall) &&
+                actor.hasComponent(Defeated) &&
+                actor.hasComponent(XP) &&
+                actor.hasComponent(Revealed) &&
+                !actor.hasComponent(TryCollectLoot);
+        });
+        if (wallToCollect) {
+            wallToCollect.addComponent(TryCollectLoot);
+            return;
+        }
+        
         // Активация предмета (например, орба или медкита) по клику
         const item = this.queries.actors.results.find(actor => {
             const pos = actor.getComponent(Position);
@@ -141,6 +142,11 @@ export class PlayerInputSystem extends System {
         if (item) {
             item.addComponent(UseItem);
             return;
+        }
+        
+        // Открываем клетку, если ничего другого не найдено
+        if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
+            tileEntity.addComponent(TryReveal);
         }
     }
 

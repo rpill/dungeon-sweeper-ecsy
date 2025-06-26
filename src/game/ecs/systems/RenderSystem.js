@@ -15,7 +15,9 @@ import {
   Health,
   SpriteObjects,
   Opened,
-  OpenedSprite
+  OpenedSprite,
+  TryCollectLoot,
+  TryCollect
 } from '../components';
 import { findEntityAt } from '../helpers';
 
@@ -64,14 +66,28 @@ export class RenderSystem extends System {
     const spriteObjects = entity.getComponent(SpriteObjects);
     
     if (entity.hasComponent(Revealed)) {
-      const monsterDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
-      const chestOpenedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Chest, Opened);
-      const itemOpenedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Item, Opened);
-      const wallDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Wall, Defeated);
-      const spriteComp = findEntityAt(this.queries.actors.results, position.x, position.y, Sprite);
-      if (monsterDefeatedComp || chestOpenedComp || wallDefeatedComp) {
+      // Проверяем наличие убитых монстров, сундуков и стен
+      const monsterDefeatedEntity = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
+      const chestOpenedEntity = findEntityAt(this.queries.actors.results, position.x, position.y, Chest, Opened);
+      const wallDefeatedEntity = findEntityAt(this.queries.actors.results, position.x, position.y, Wall, Defeated);
+      
+      // Проверяем наличие любых активных сущностей (монстры, предметы, стены, сундуки)
+      const anyActiveEntity = this.queries.actors.results.find(actor => {
+        const actorPos = actor.getComponent(Position);
+        return actorPos.x === position.x && actorPos.y === position.y &&
+               !actor.hasComponent(TryCollectLoot) && !actor.hasComponent(TryCollect) &&
+               !actor.hasComponent(Defeated);
+      });
+      
+      // Проверяем, что найденные сущности действительно существуют и не помечены для удаления
+      const hasDefeatedMonster = monsterDefeatedEntity && !monsterDefeatedEntity.hasComponent(TryCollectLoot);
+      const hasOpenedChest = chestOpenedEntity && !chestOpenedEntity.hasComponent(TryCollect);
+      const hasDefeatedWall = wallDefeatedEntity && !wallDefeatedEntity.hasComponent(TryCollectLoot);
+      const hasActiveEntity = anyActiveEntity !== undefined;
+      
+      if (hasDefeatedMonster || hasOpenedChest || hasDefeatedWall) {
         frame = tile.baseType + 5;
-      } else if (!spriteComp) {
+      } else if (!hasActiveEntity) {
         frame = tile.baseType + 10;
 				let totalDmg = 0;
         for (let dx = -1; dx <= 1; dx++) {
@@ -80,7 +96,7 @@ export class RenderSystem extends System {
             const mx = position.x + dx;
             const my = position.y + dy;
             const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);
-            if (monster && !monster.hasComponent(Defeated)) {
+            if (monster && !monster.hasComponent(Defeated) && !monster.hasComponent(TryCollectLoot)) {
               totalDmg += monster.getComponent(Attack).value;
             }
           }

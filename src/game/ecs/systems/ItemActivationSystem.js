@@ -49,15 +49,23 @@ export class ItemActivationSystem extends System {
             const monsterType = monster.getComponent(Type);
             if (spell.targets.includes(monsterType.value) && !monster.hasComponent(Revealed)) {
               monster.addComponent(Revealed);
+              
+              // Открываем тайл под монстром
+              const monsterPos = monster.getComponent(Position);
+              const tile = findEntityAt(this.queries.tiles.results, monsterPos.x, monsterPos.y, Tile);
+              if (tile && !tile.hasComponent(Revealed)) {
+                tile.addComponent(Revealed);
+              }
             }
           });
         }
         if (spell.type === 'disarm_enemies' && Array.isArray(spell.targets)) {
-          // Здесь можно реализовать дизарм мин (например, убрать компонент Attack у мин)
+          // Убиваем всех монстров указанного типа (добавляем Defeated)
           this.queries.monsters.results.forEach(monster => {
             const monsterType = monster.getComponent(Type);
-            if (spell.targets.includes(monsterType.value) && monster.hasComponent(Attack)) {
+            if (spell.targets.includes(monsterType.value) && !monster.hasComponent(Defeated)) {
               monster.removeComponent(Attack);
+              monster.addComponent(Defeated);
             }
           });
         }
@@ -77,13 +85,15 @@ export class ItemActivationSystem extends System {
                 if (dx === 0 && dy === 0) continue;
                 const mx = pos.x + dx;
                 const my = pos.y + dy;
-                const actor = findEntityAt(this.queries.actors.results, mx, my, Monster);
-                if (actor && actor.name === 'MINE' && !actor.hasComponent(Revealed)) {
-                  console.log(1)
-                  const dist = Math.sqrt(dx * dx + dy * dy);
-                  if (dist < radius) {
-                    foundMineNearby = true;
-                    break;
+                const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Type);
+                if (monster) {
+                  const monsterType = monster.getComponent(Type);
+                  if (monsterType.value === 'MINE' && !monster.hasComponent(Revealed)) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < radius) {
+                      foundMineNearby = true;
+                      break;
+                    }
                   }
                 }
               }
