@@ -21,6 +21,13 @@ export class Game extends Phaser.Scene {
             console.log('Restarting game...');
             this.restartGame();
         });
+
+        this.input.keyboard.on('keydown-L', () => {
+            const xp = dataManager.player.nextLevelXP();
+            dataManager.player.grantXP(xp);
+            dataManager.player.heal();
+            dataManager.player.levelUp();
+        });
         
         this.scene.launch(SCENE_KEYS.UI);
     }
@@ -63,7 +70,15 @@ export class Game extends Phaser.Scene {
         this.game.ecs.world.registerSystem(CombatSystem);
         this.game.ecs.world.registerSystem(RevealSystem);
 
-        console.log(dataManager);
+        // console.log(this.game.ecs.world.entityManager._entities);
+        // const tiles = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Tile));
+        // console.log('Клеток:', tiles.length);
+
+        // const monsters = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Monster));
+        // console.log('Монстров:', monsters.length);
+
+        // const chests = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Chest));
+        // console.log('Сундуков:', chests.length);
     }
 
     restartGame() {

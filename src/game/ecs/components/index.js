@@ -10,7 +10,11 @@ import { Revealed } from './Revealed';
 import { Sprite } from './Sprite';
 import { Tile } from './Tile';
 import { TryReveal } from './TryReveal';
+import { TryAttack } from './TryAttack';
 import { XP } from './XP';
+import { Chest } from './Chest';
+import { DefeatedSprite } from './DefeatedSprite';
+import { Wall } from './Wall';
 
 export {
   Attack,
@@ -25,5 +29,9 @@ export {
   Sprite,
   Tile,
   TryReveal,
+  TryAttack,
   XP,
+  Chest,
+  DefeatedSprite,
+  Wall,
 };

@@ -1,37 +1,39 @@
 import { System } from 'ecsy';
-import { Revealed, Monster, Attack, Defeated } from '../components';
+import { Revealed, Monster, Attack, Defeated, TryAttack } from '../components';
 import { sceneEvents } from '../../events/EventsCenter';
 import { StatusEvents } from '../../events/EventNames';
 import { dataManager } from '../../DataManager';
 
 export class CombatSystem extends System {
   static queries = {
-    newMonsters: {
-      components: [Revealed, Monster, Attack],
-      listen: {
-        added: true
-      }
+    tryAttack: {
+      components: [TryAttack, Monster, Revealed, Attack],
     }
   };
 
   execute(delta, time) {
-    this.queries.newMonsters.added.forEach(entity => {
-      if (entity.hasComponent(Defeated)) return;
-
+    // Бой по TryAttack (и при открытии, и по клику)
+    this.queries.tryAttack.results.forEach(entity => {
+      if (entity.hasComponent(Defeated)) {
+        entity.removeComponent(TryAttack);
+        return;
+      }
       const attack = entity.getComponent(Attack);
       if (attack.value > 0) {
         dataManager.player.takeDamage(attack.value);
       }
-      entity.addComponent(Defeated);
-
-      if (dataManager.player.hp <= 0) {
+      if (dataManager.player.hp < 0) {
         const prevStatus = dataManager.status;
         dataManager.setStatus(StatusEvents.LOSE);
         sceneEvents.emit(StatusEvents.CHANGED, {
             previous: prevStatus,
             current: dataManager.status
         });
+        entity.removeComponent(TryAttack);
+        return;
       }
+      entity.addComponent(Defeated);
+      entity.removeComponent(TryAttack);
     });
   }
 }

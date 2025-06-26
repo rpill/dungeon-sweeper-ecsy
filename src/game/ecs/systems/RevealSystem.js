@@ -1,20 +1,30 @@
 import { System } from 'ecsy';
-import { TryReveal, Revealed, Monster } from '../components';
+import { TryReveal, Revealed, Position, Sprite, Tile, Monster, Defeated, TryAttack } from '../components';
 
 export class RevealSystem extends System {
   static queries = {
-    entitiesToReveal: {
-      components: [TryReveal]
-    }
+    tilesToReveal: { components: [TryReveal, Tile, Position] },
+    actors: { components: [Sprite, Position] }
   };
 
-  execute(delta, time) {
-    this.queries.entitiesToReveal.results.forEach(entity => {
-      if (!entity.hasComponent(Revealed)) {
-        entity.addComponent(Revealed);
+  execute() {
+    this.queries.tilesToReveal.results.forEach(tileEntity => {
+      if (!tileEntity.hasComponent(Revealed)) {
+        tileEntity.addComponent(Revealed);
       }
-      
-      entity.removeComponent(TryReveal);
+      // Открываем актора в этой клетке
+      const tilePos = tileEntity.getComponent(Position);
+      this.queries.actors.results.forEach(actor => {
+        const actorPos = actor.getComponent(Position);
+        if (actorPos.x === tilePos.x && actorPos.y === tilePos.y && !actor.hasComponent(Revealed)) {
+          actor.addComponent(Revealed);
+          // Если это монстр и он не убит — инициируем бой через TryAttack
+          if (actor.hasComponent(Monster) && !actor.hasComponent(Defeated) && !actor.hasComponent(TryAttack)) {
+            actor.addComponent(TryAttack);
+          }
+        }
+      });
+      tileEntity.removeComponent(TryReveal);
     });
   }
 }

@@ -1,9 +1,10 @@
 import { System } from 'ecsy';
-import { TryReveal, Position, Tile } from '../components';
+import { TryReveal, Position, Tile, Sprite, Monster, Revealed, Defeated, TryAttack } from '../components';
 
 export class PlayerInputSystem extends System {
     static queries = {
-        tiles: { components: [Tile, Position] }
+        tiles: { components: [Tile, Position] },
+        actors: { components: [Position, Sprite] },
     };
 
     init(attributes) {
@@ -20,6 +21,19 @@ export class PlayerInputSystem extends System {
             const pos = tile.getComponent(Position);
             return pos.x === x && pos.y === y;
         });
+        const actor = this.queries.actors.results.find(actor => {
+            const pos = actor.getComponent(Position);
+            return pos.x === x && pos.y === y &&
+                actor.hasComponent(Monster) &&
+                actor.hasComponent(Revealed) &&
+                !actor.hasComponent(Defeated);
+        });
+        if (actor) {
+            if (!actor.hasComponent(TryAttack)) {
+                actor.addComponent(TryAttack);
+            }
+            return;
+        }
         if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
             tileEntity.addComponent(TryReveal);
         }

@@ -166,7 +166,7 @@
     "DRAGON_EGG": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 130 } },
-      { "component": "Destructible" },
+      { "component": "Monster" },
       { "component": "Attack", "data": { "value": 0 } },
       { "component": "XP", "data": { "value": 3 } },
       { "component": "DefeatedSprite", "data": { "frame": 131 } }

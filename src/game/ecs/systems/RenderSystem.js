@@ -1,5 +1,6 @@
 import { System } from 'ecsy';
-import { Position, Sprite, Tile, Revealed, Defeated } from '../components';
+import { Position, Sprite, Tile, Revealed, Defeated, Chest, Monster, Item, Attack, DefeatedSprite, XP, Wall, Health } from '../components';
+import { findEntityAt } from '../helpers';
 
 export class RenderSystem extends System {
   init(attributes) {
@@ -9,52 +10,237 @@ export class RenderSystem extends System {
   }
 
   static queries = {
-    tiles: {
-        components: [Tile, Position]
-    },
-    sprites: {
-        components: [Sprite, Position],
-        listen: { added: true, removed: true }
-    },
-    revealedTiles: { components: [Tile, Revealed] },
-    defeatedActors: { components: [Sprite, Defeated] }
+    tiles: { components: [Tile, Position] },
+    actors: { components: [Position, Sprite] },
   };
 
   execute(delta, time) {
-    // Рендерим все плитки
     this.queries.tiles.results.forEach(entity => this.renderTile(entity));
-    // Рендерим новые спрайты акторов
-    this.queries.sprites.added.forEach(entity => this.renderSprite(entity));
-    // Можно добавить обновление/скрытие по revealed/defeated
+		
+    this.queries.actors.results.forEach(entity => {
+      if (entity.hasComponent(Monster)) {
+        this.renderMonster(entity);
+      }
+			if (entity.hasComponent(Item)) {
+        this.renderItem(entity);
+      }
+      if (entity.hasComponent(Wall)) {
+        this.renderWall(entity);
+      }
+      if (entity.hasComponent(Chest)) {
+        this.renderChest(entity);
+      }
+    });
   }
-    
+
   renderTile(entity) {
     const tile = entity.getComponent(Tile);
     const position = entity.getComponent(Position);
-    const tileSprite = this.scene.add.image(
-      position.x * this.tileSize,
-      position.y * this.tileSize,
-      'tiles',
-      tile.baseType
-    ).setOrigin(0);
-    tileSprite.setInteractive();
-    this.container.add(tileSprite);
-    entity.tileSprite = tileSprite;
+    const tileX = position.x * this.tileSize;
+    const tileY = position.y * this.tileSize;
+    let frame = tile.baseType;
+    if (entity.hasComponent(Revealed)) {
+      const monsterDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
+      const spriteComp = findEntityAt(this.queries.actors.results, position.x, position.y, Sprite);
+      if (monsterDefeatedComp) {
+        frame = tile.baseType + 5;
+      } else if (!spriteComp) {
+        frame = tile.baseType + 10;
+      }
+    }
+    if (!entity.tileSprite) {
+      const tileSprite = this.scene.add.image(
+        tileX,
+        tileY,
+        'tiles',
+        frame
+      ).setOrigin(0);
+      tileSprite.setInteractive();
+      this.container.add(tileSprite);
+      entity.tileSprite = tileSprite;
+    } else {
+      entity.tileSprite.setFrame(frame);
+    }
   }
 
-  renderSprite(entity) {
+  renderMonster(entity) {
     if (!entity.hasComponent(Revealed)) return;
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    if (!sprite || !position) return;
-    const spriteObj = this.scene.add.image(
-      position.x * this.tileSize,
-      position.y * this.tileSize,
-      sprite.spriteSheet,
-      sprite.frame
-    );
-    this.container.add(spriteObj);
-    entity.spriteObj = spriteObj;
+    const tileX = position.x * this.tileSize;
+    const tileY = position.y * this.tileSize;
+    let offsetY = -8;
+    let frame = sprite.frame;
+    if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
+      const defeatedSprite = entity.getComponent(DefeatedSprite);
+      frame = defeatedSprite.frame;
+    }
+    if (!entity.spriteObj) {
+      const spriteObj = this.scene.add.image(
+        tileX,
+        tileY + offsetY,
+        sprite.spriteSheet,
+        frame
+      ).setOrigin(0);
+      this.container.add(spriteObj);
+      entity.spriteObj = spriteObj;
+    } else {
+      entity.spriteObj.setFrame(frame);
+      entity.spriteObj.setPosition(tileX, tileY + offsetY);
+    }
+    // Урон
+    if (!entity.hasComponent(Defeated) && entity.hasComponent(Attack)) {
+      if (!entity.dmgText) {
+        const attack = entity.getComponent(Attack);
+        const dmgText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize - 4,
+          'ingame',
+          String(attack.value),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402);
+        this.container.add(dmgText);
+        entity.dmgText = dmgText;
+      } else {
+        entity.dmgText.setText(String(entity.getComponent(Attack).value));
+        entity.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
+      }
+    } else if (entity.dmgText) {
+      entity.dmgText.destroy();
+      entity.dmgText = null;
+    }
+    // Монетка и XP
+    if (entity.hasComponent(Defeated)) {
+      if (!entity.coinIcon) {
+        const coin = this.scene.add.image(
+          tileX + this.tileSize / 2 - 7,
+          tileY + this.tileSize + 10,
+          'icons',
+          10
+        ).setOrigin(0.5, 1);
+        this.container.add(coin);
+        entity.coinIcon = coin;
+      } else {
+        entity.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
+      }
+      const xp = entity.getComponent(XP);
+      const xpValue = xp ? xp.value : 0;
+      if (!entity.xpText) {
+        const xpText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2 + 9,
+          tileY + this.tileSize - 5,
+          'ingame',
+          String(xpValue),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402);
+        this.container.add(xpText);
+        entity.xpText = xpText;
+      } else {
+        entity.xpText.setText(String(xpValue));
+        entity.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
+      }
+    } else {
+      if (entity.coinIcon) { entity.coinIcon.destroy(); entity.coinIcon = null; }
+      if (entity.xpText) { entity.xpText.destroy(); entity.xpText = null; }
+    }
+  }
+
+  renderItem(entity) {
+    if (!entity.hasComponent(Revealed)) return;
+    const sprite = entity.getComponent(Sprite);
+    const position = entity.getComponent(Position);
+    const tileX = position.x * this.tileSize;
+    const tileY = position.y * this.tileSize;
+    if (!entity.spriteObj) {
+      const spriteObj = this.scene.add.image(
+        tileX,
+        tileY,
+        sprite.spriteSheet,
+        sprite.frame
+      ).setOrigin(0);
+      this.container.add(spriteObj);
+      entity.spriteObj = spriteObj;
+    } else {
+      entity.spriteObj.setFrame(sprite.frame);
+      entity.spriteObj.setPosition(tileX, tileY);
+    }
+  }
+
+  renderWall(entity) {
+    if (!entity.hasComponent(Revealed)) return;
+    const sprite = entity.getComponent(Sprite);
+    const position = entity.getComponent(Position);
+    const x = position.x;
+    const y = position.y;
+    const tileX = x * this.tileSize;
+    const tileY = y * this.tileSize;
+    let frame = sprite.frame;
+    if (!entity.spriteObj) {
+      const spriteObj = this.scene.add.image(
+        tileX,
+        tileY,
+        sprite.spriteSheet,
+        frame
+      ).setOrigin(0);
+      this.container.add(spriteObj);
+      entity.spriteObj = spriteObj;
+    } else {
+      entity.spriteObj.setFrame(frame);
+      entity.spriteObj.setPosition(tileX, tileY);
+    }
+    // HP стены
+    if (entity.hasComponent(Health)) {
+      const health = entity.getComponent(Health);
+      const hpText = `${health.current}/${health.max}`;
+      if (!entity.hpText) {
+        const text = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize - 4,
+          'ingame',
+          hpText,
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402);
+        this.container.add(text);
+        entity.hpText = text;
+      } else {
+        entity.hpText.setText(hpText);
+        entity.hpText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
+      }
+    } else if (entity.hpText) {
+      entity.hpText.destroy();
+      entity.hpText = null;
+    }
+  }
+
+  renderChest(entity) {
+    if (!entity.hasComponent(Revealed)) return;
+    const sprite = entity.getComponent(Sprite);
+    const position = entity.getComponent(Position);
+    const x = position.x;
+    const y = position.y;
+    const tileX = x * this.tileSize;
+    const tileY = y * this.tileSize;
+    // Центрируем сундук
+    const centerX = tileX + this.tileSize / 2;
+    const centerY = tileY + this.tileSize / 2;
+    let frame = sprite.frame;
+    if (entity.hasComponent(DefeatedSprite) && entity.hasComponent(Defeated)) {
+      const defeatedSprite = entity.getComponent(DefeatedSprite);
+      frame = defeatedSprite.frame;
+    }
+    if (!entity.spriteObj) {
+      const spriteObj = this.scene.add.image(
+        centerX,
+        centerY,
+        sprite.spriteSheet,
+        frame
+      ).setOrigin(0.5);
+      this.container.add(spriteObj);
+      entity.spriteObj = spriteObj;
+    } else {
+      entity.spriteObj.setFrame(frame);
+      entity.spriteObj.setPosition(centerX, centerY);
+    }
   }
 
   updateSprite(entity) {
