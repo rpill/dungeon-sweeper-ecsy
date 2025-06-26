@@ -1,6 +1,7 @@
 import { System } from 'ecsy';
-import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack } from '../components';
+import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects } from '../components';
 import { findEntityAt } from '../helpers';
+import { dataManager } from '../../DataManager';
 
 export class ItemActivationSystem extends System {
   static queries = {
@@ -11,6 +12,10 @@ export class ItemActivationSystem extends System {
 
   execute() {
     this.queries.usedItems.results.forEach(item => {
+      // HEAL: лечение игрока
+      if (item.hasComponent(Heal)) {
+        dataManager.player.heal();
+      }
       // ORB: массовый ревил
       if (item.hasComponent(Orb)) {
         const orbPos = item.getComponent(Position);
@@ -71,6 +76,7 @@ export class ItemActivationSystem extends System {
                 const my = pos.y + dy;
                 const actor = findEntityAt(this.queries.actors.results, mx, my, Monster);
                 if (actor && actor.name === 'MINE' && !actor.hasComponent(Revealed)) {
+                  console.log(1)
                   const dist = Math.sqrt(dx * dx + dy * dy);
                   if (dist < radius) {
                     foundMineNearby = true;
@@ -113,11 +119,10 @@ export class ItemActivationSystem extends System {
         }
       }
       // Удаляем все визуальные объекты, связанные с предметом
-      if (item.spriteObj) { item.spriteObj.destroy(); item.spriteObj = null; }
-      if (item.dmgText) { item.dmgText.destroy(); item.dmgText = null; }
-      if (item.coinIcon) { item.coinIcon.destroy(); item.coinIcon = null; }
-      if (item.xpText) { item.xpText.destroy(); item.xpText = null; }
-      if (item.hpText) { item.hpText.destroy(); item.hpText = null; }
+      if (item.hasComponent(SpriteObjects)) {
+        const spriteObjects = item.getComponent(SpriteObjects);
+        spriteObjects.destroyAll();
+      }
       item.removeComponent(UseItem);
       item.remove(); // удаляем предмет из ECS-мирa после использования
     });

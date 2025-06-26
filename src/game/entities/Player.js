@@ -54,9 +54,16 @@ export class Player {
         sceneEvents.emit(PlayerEvents.XP_CHANGED, { current: this.xp });
     }
 
-    heal() {
+    heal(amount = null) {
         const prevHP = this.hp;
-        this.hp = this.maxHP;
+        
+        if (amount === null) {
+            // Полное восстановление HP
+            this.hp = this.maxHP;
+        } else {
+            // Частичное восстановление HP
+            this.hp = Math.min(this.maxHP, this.hp + amount);
+        }
 
         sceneEvents.emit(PlayerEvents.HP_CHANGED, { 
             previous: prevHP, 

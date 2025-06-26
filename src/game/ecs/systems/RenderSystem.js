@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { Position, Sprite, Tile, Revealed, Defeated, Chest, Monster, Item, Attack, DefeatedSprite, XP, Wall, Health } from '../components';
+import { Position, Sprite, Tile, Revealed, Defeated, Chest, Monster, Item, Attack, DefeatedSprite, XP, Wall, Health, SpriteObjects } from '../components';
 import { findEntityAt } from '../helpers';
 
 export class RenderSystem extends System {
@@ -39,6 +39,13 @@ export class RenderSystem extends System {
     const tileX = position.x * this.tileSize;
     const tileY = position.y * this.tileSize;
     let frame = tile.baseType;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
     if (entity.hasComponent(Revealed)) {
       const monsterDefeatedComp = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
       const spriteComp = findEntityAt(this.queries.actors.results, position.x, position.y, Sprite);
@@ -59,7 +66,7 @@ export class RenderSystem extends System {
           }
         }
         if (totalDmg > 0) {
-          if (!entity.dmgText) {
+          if (!spriteObjects.dmgText) {
             const dmgText = this.scene.add.bitmapText(
               tileX + this.tileSize / 2,
               tileY + this.tileSize / 2,
@@ -68,18 +75,18 @@ export class RenderSystem extends System {
               10
             ).setOrigin(0.5).setTint(0xffffff);
             this.container.add(dmgText);
-            entity.dmgText = dmgText;
+            spriteObjects.dmgText = dmgText;
           } else {
-            entity.dmgText.setText(String(totalDmg));
-            entity.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
+            spriteObjects.dmgText.setText(String(totalDmg));
+            spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
           }
-        } else if (entity.dmgText) {
-          entity.dmgText.destroy();
-          entity.dmgText = null;
+        } else if (spriteObjects.dmgText) {
+          spriteObjects.dmgText.destroy();
+          spriteObjects.dmgText = null;
         }
       }
     }
-    if (!entity.tileSprite) {
+    if (!spriteObjects.spriteObj) {
       const tileSprite = this.scene.add.image(
         tileX,
         tileY,
@@ -88,14 +95,21 @@ export class RenderSystem extends System {
       ).setOrigin(0);
       tileSprite.setInteractive();
       this.container.add(tileSprite);
-      entity.tileSprite = tileSprite;
+      spriteObjects.spriteObj = tileSprite;
     } else {
-      entity.tileSprite.setFrame(frame);
+      spriteObjects.spriteObj.setFrame(frame);
     }
   }
 
   renderMonster(entity) {
     if (!entity.hasComponent(Revealed)) return;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
     const tileX = position.x * this.tileSize;
@@ -106,7 +120,7 @@ export class RenderSystem extends System {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }
-    if (!entity.spriteObj) {
+    if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY + offsetY,
@@ -114,14 +128,14 @@ export class RenderSystem extends System {
         frame
       ).setOrigin(0);
       this.container.add(spriteObj);
-      entity.spriteObj = spriteObj;
+      spriteObjects.spriteObj = spriteObj;
     } else {
-      entity.spriteObj.setFrame(frame);
-      entity.spriteObj.setPosition(tileX, tileY + offsetY);
+      spriteObjects.spriteObj.setFrame(frame);
+      spriteObjects.spriteObj.setPosition(tileX, tileY + offsetY);
     }
     // Урон
     if (!entity.hasComponent(Defeated) && entity.hasComponent(Attack)) {
-      if (!entity.dmgText) {
+      if (!spriteObjects.dmgText) {
         const attack = entity.getComponent(Attack);
         const dmgText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2,
@@ -131,18 +145,18 @@ export class RenderSystem extends System {
           10
         ).setOrigin(0.5, 1).setTint(0xfab402);
         this.container.add(dmgText);
-        entity.dmgText = dmgText;
+        spriteObjects.dmgText = dmgText;
       } else {
-        entity.dmgText.setText(String(entity.getComponent(Attack).value));
-        entity.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
+        spriteObjects.dmgText.setText(String(entity.getComponent(Attack).value));
+        spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
       }
-    } else if (entity.dmgText) {
-      entity.dmgText.destroy();
-      entity.dmgText = null;
+    } else if (spriteObjects.dmgText) {
+      spriteObjects.dmgText.destroy();
+      spriteObjects.dmgText = null;
     }
     // Монетка и XP
     if (entity.hasComponent(Defeated)) {
-      if (!entity.coinIcon) {
+      if (!spriteObjects.coinIcon) {
         const coin = this.scene.add.image(
           tileX + this.tileSize / 2 - 7,
           tileY + this.tileSize + 10,
@@ -150,13 +164,13 @@ export class RenderSystem extends System {
           10
         ).setOrigin(0.5, 1);
         this.container.add(coin);
-        entity.coinIcon = coin;
+        spriteObjects.coinIcon = coin;
       } else {
-        entity.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
+        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
       }
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
-      if (!entity.xpText) {
+      if (!spriteObjects.xpText) {
         const xpText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2 + 9,
           tileY + this.tileSize - 5,
@@ -165,24 +179,31 @@ export class RenderSystem extends System {
           10
         ).setOrigin(0.5, 1).setTint(0xfab402);
         this.container.add(xpText);
-        entity.xpText = xpText;
+        spriteObjects.xpText = xpText;
       } else {
-        entity.xpText.setText(String(xpValue));
-        entity.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
+        spriteObjects.xpText.setText(String(xpValue));
+        spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
       }
     } else {
-      if (entity.coinIcon) { entity.coinIcon.destroy(); entity.coinIcon = null; }
-      if (entity.xpText) { entity.xpText.destroy(); entity.xpText = null; }
+      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 
   renderItem(entity) {
     if (!entity.hasComponent(Revealed)) return;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
     const tileX = position.x * this.tileSize;
     const tileY = position.y * this.tileSize;
-    if (!entity.spriteObj) {
+    if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY,
@@ -190,15 +211,22 @@ export class RenderSystem extends System {
         sprite.frame
       ).setOrigin(0);
       this.container.add(spriteObj);
-      entity.spriteObj = spriteObj;
+      spriteObjects.spriteObj = spriteObj;
     } else {
-      entity.spriteObj.setFrame(sprite.frame);
-      entity.spriteObj.setPosition(tileX, tileY);
+      spriteObjects.spriteObj.setFrame(sprite.frame);
+      spriteObjects.spriteObj.setPosition(tileX, tileY);
     }
   }
 
   renderWall(entity) {
     if (!entity.hasComponent(Revealed)) return;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
     const x = position.x;
@@ -206,7 +234,7 @@ export class RenderSystem extends System {
     const tileX = x * this.tileSize;
     const tileY = y * this.tileSize;
     let frame = sprite.frame;
-    if (!entity.spriteObj) {
+    if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY,
@@ -214,16 +242,16 @@ export class RenderSystem extends System {
         frame
       ).setOrigin(0);
       this.container.add(spriteObj);
-      entity.spriteObj = spriteObj;
+      spriteObjects.spriteObj = spriteObj;
     } else {
-      entity.spriteObj.setFrame(frame);
-      entity.spriteObj.setPosition(tileX, tileY);
+      spriteObjects.spriteObj.setFrame(frame);
+      spriteObjects.spriteObj.setPosition(tileX, tileY);
     }
     // HP стены
     if (entity.hasComponent(Health)) {
       const health = entity.getComponent(Health);
       const hpText = `${health.current}/${health.max}`;
-      if (!entity.hpText) {
+      if (!spriteObjects.hpText) {
         const text = this.scene.add.bitmapText(
           tileX + this.tileSize / 2,
           tileY + this.tileSize - 4,
@@ -232,19 +260,26 @@ export class RenderSystem extends System {
           10
         ).setOrigin(0.5, 1).setTint(0xfab402);
         this.container.add(text);
-        entity.hpText = text;
+        spriteObjects.hpText = text;
       } else {
-        entity.hpText.setText(hpText);
-        entity.hpText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
+        spriteObjects.hpText.setText(hpText);
+        spriteObjects.hpText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
       }
-    } else if (entity.hpText) {
-      entity.hpText.destroy();
-      entity.hpText = null;
+    } else if (spriteObjects.hpText) {
+      spriteObjects.hpText.destroy();
+      spriteObjects.hpText = null;
     }
   }
 
   renderChest(entity) {
     if (!entity.hasComponent(Revealed)) return;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
     const x = position.x;
@@ -259,7 +294,7 @@ export class RenderSystem extends System {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }
-    if (!entity.spriteObj) {
+    if (!spriteObjects.spriteObj) {
       const spriteObj = this.scene.add.image(
         centerX,
         centerY,
@@ -267,18 +302,26 @@ export class RenderSystem extends System {
         frame
       ).setOrigin(0.5);
       this.container.add(spriteObj);
-      entity.spriteObj = spriteObj;
+      spriteObjects.spriteObj = spriteObj;
     } else {
-      entity.spriteObj.setFrame(frame);
-      entity.spriteObj.setPosition(centerX, centerY);
+      spriteObjects.spriteObj.setFrame(frame);
+      spriteObjects.spriteObj.setPosition(centerX, centerY);
     }
   }
 
   updateSprite(entity) {
-    // Implementation for updating sprites will be added in the next steps
+    // Обновление спрайта (можно использовать для анимаций или изменений)
+    if (entity.hasComponent(SpriteObjects)) {
+      const spriteObjects = entity.getComponent(SpriteObjects);
+      // Здесь можно добавить логику обновления спрайтов
+    }
   }
 
   removeSprite(entity) {
-    // Implementation for removing sprites will be added in the next steps
+    // Удаление всех визуальных объектов сущности
+    if (entity.hasComponent(SpriteObjects)) {
+      const spriteObjects = entity.getComponent(SpriteObjects);
+      spriteObjects.destroyAll();
+    }
   }
 }

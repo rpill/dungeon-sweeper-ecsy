@@ -18,6 +18,9 @@ import { Wall } from './Wall';
 import { Orb } from './Orb';
 import { UseItem } from './UseItem';
 import { Spell } from './Spell';
+import { Type } from './Type';
+import { Heal } from './Heal';
+import { SpriteObjects } from './SpriteObjects';
 
 export {
   Attack,
@@ -40,4 +43,7 @@ export {
   Orb,
   UseItem,
   Spell,
+  Type,
+  Heal,
+  SpriteObjects,
 };

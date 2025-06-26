@@ -4,7 +4,8 @@
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 50 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 1 } },
-      { "component": "XP", "data": { "value": 1 } }
+      { "component": "XP", "data": { "value": 1 } },
+      { "component": "Type", "data": { "value": "RAT" } }
     ],
     "RAT_KING": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -12,7 +13,8 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 5 } },
       { "component": "XP", "data": { "value": 5 } },
-      { "component": "Loot", "data": { "type": "SPELL_REVEAL_RATS" } }
+      { "component": "Loot", "data": { "type": "SPELL_REVEAL_RATS" } },
+      { "component": "Type", "data": { "value": "RAT_KING" } }
     ],
     "MIMIC": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -25,72 +27,83 @@
           "trueSpriteSheet": "monsters", 
           "trueFrame": 127 
         }
-      }
+      },
+      { "component": "Type", "data": { "value": "MIMIC" } }
     ],
     "MEDKIT": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 12 } },
       { "component": "Item" },
-      { "component": "Heal", "data": { "amount": "full" } }
+      { "component": "Heal", "data": { "amount": "full" } },
+      { "component": "Type", "data": { "value": "MEDKIT" } }
     ],
     "SPELL_REVEAL_RATS": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 20 } },
       { "component": "Item" },
-      { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["RAT"] } }
+      { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["RAT"] } },
+      { "component": "Type", "data": { "value": "SPELL" } }
     ],
     "SPELL_REVEAL_SLIMES": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 21 } },
       { "component": "Item" },
-      { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["BIG_SLIME", "SLIME"] } }
+      { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["BIG_SLIME", "SLIME"] } },
+      { "component": "Type", "data": { "value": "SPELL" } }
     ],
     "SPELL_DISARM_MINES": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 23 } },
       { "component": "Item" },
-      { "component": "Spell", "data": { "type": "disarm_enemies", "targets": ["MINE"] } }
+      { "component": "Spell", "data": { "type": "disarm_enemies", "targets": ["MINE"] } },
+      { "component": "Type", "data": { "value": "SPELL" } }
     ],
     "SPELL_MAKE_ORB": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 22 } },
       { "component": "Item" },
-      { "component": "Spell", "data": { "type": "make_orb_effect", "radius": 1.5 } }
+      { "component": "Spell", "data": { "type": "make_orb_effect", "radius": 1.5 } },
+      { "component": "Type", "data": { "value": "SPELL" } }
     ],
     "SLIME": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 117 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 5 } },
-      { "component": "XP", "data": { "value": 5 } }
+      { "component": "XP", "data": { "value": 5 } },
+      { "component": "Type", "data": { "value": "SLIME" } }
     ],
     "BIG_SLIME": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 119 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 8 } },
-      { "component": "XP", "data": { "value": 8 } }
+      { "component": "XP", "data": { "value": 8 } },
+      { "component": "Type", "data": { "value": "BIG_SLIME" } }
     ],
     "BANSHEE": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 140 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 4 } },
-      { "component": "XP", "data": { "value": 4 } }
+      { "component": "XP", "data": { "value": 4 } },
+      { "component": "Type", "data": { "value": "BANSHEE" } }
     ],
     "MINOTAUR": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 56 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 6 } },
-      { "component": "XP", "data": { "value": 6 } }
+      { "component": "XP", "data": { "value": 6 } },
+      { "component": "Type", "data": { "value": "MINOTAUR" } }
     ],
     "SKELETON": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 31 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 3 } },
-      { "component": "XP", "data": { "value": 3 } }
+      { "component": "XP", "data": { "value": 3 } },
+      { "component": "Type", "data": { "value": "SKELETON" } }
     ],
     "GOLEM": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -98,7 +111,8 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 9 } },
       { "component": "XP", "data": { "value": 9 } },
-      { "component": "Loot", "data": { "type": "MEDKIT" } }
+      { "component": "Loot", "data": { "type": "MEDKIT" } },
+      { "component": "Type", "data": { "value": "GOLEM" } }
     ],
     "WIZARD": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -106,7 +120,8 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 1 } },
       { "component": "XP", "data": { "value": 1 } },
-      { "component": "Loot", "data": { "type": "SPELL_REVEAL_SLIMES" } }
+      { "component": "Loot", "data": { "type": "SPELL_REVEAL_SLIMES" } },
+      { "component": "Type", "data": { "value": "WIZARD" } }
     ],
     "GAZER": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -114,28 +129,32 @@
       { "component": "Monster" },
       { "component": "Gazer" },
       { "component": "Attack", "data": { "value": 5 } },
-      { "component": "XP", "data": { "value": 5 } }
+      { "component": "XP", "data": { "value": 5 } },
+      { "component": "Type", "data": { "value": "GAZER" } }
     ],
     "BUTTERFLY": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 121 } },
       { "component": "Monster" },
       { "component": "Butterfly" },
-      { "component": "XP", "data": { "value": 9 } }
+      { "component": "XP", "data": { "value": 9 } },
+      { "component": "Type", "data": { "value": "BUTTERFLY" } }
     ],
     "BAT": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 45 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 2 } },
-      { "component": "XP", "data": { "value": 2 } }
+      { "component": "XP", "data": { "value": 2 } },
+      { "component": "Type", "data": { "value": "BAT" } }
     ],
     "GUARD": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 79 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 7 } },
-      { "component": "XP", "data": { "value": 7 } }
+      { "component": "XP", "data": { "value": 7 } },
+      { "component": "Type", "data": { "value": "GUARD" } }
     ],
     "MINE_KING": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -143,7 +162,8 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 10 } },
       { "component": "XP", "data": { "value": 10 } },
-      { "component": "Loot", "data": { "type": "SPELL_DISARM_MINES" } }
+      { "component": "Loot", "data": { "type": "SPELL_DISARM_MINES" } },
+      { "component": "Type", "data": { "value": "MINE_KING" } }
     ],
     "MINE": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -152,7 +172,8 @@
       { "component": "Attack", "data": { "value": 100 } },
       { "component": "XP", "data": { "value": 3 } },
       { "component": "DefeatedSprite", "data": { "frame": 132 } },
-      { "component": "ExplodesOnDeath" }
+      { "component": "ExplodesOnDeath" },
+      { "component": "Type", "data": { "value": "MINE" } }
     ],
     "DRAGON": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -161,7 +182,8 @@
       { "component": "Attack", "data": { "value": 13 } },
       { "component": "XP", "data": { "value": 13 } },
       { "component": "Loot", "data": { "type": "KEY" } },
-      { "component": "DefeatedSprite", "data": { "frame": 133 } }
+      { "component": "DefeatedSprite", "data": { "frame": 133 } },
+      { "component": "Type", "data": { "value": "DRAGON" } }
     ],
     "DRAGON_EGG": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -169,7 +191,8 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 0 } },
       { "component": "XP", "data": { "value": 3 } },
-      { "component": "DefeatedSprite", "data": { "frame": 131 } }
+      { "component": "DefeatedSprite", "data": { "frame": 131 } },
+      { "component": "Type", "data": { "value": "DRAGON_EGG" } }
     ],
     "WALL": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -177,26 +200,30 @@
       { "component": "Wall" },
       { "component": "Health", "data": { "current": 3, "max": 3 } },
       { "component": "XP", "data": { "value": 3 } },
-      { "component": "DefeatedSprite", "data": { "frame": 15 } }
+      { "component": "DefeatedSprite", "data": { "frame": 15 } },
+      { "component": "Type", "data": { "value": "WALL" } }
     ],
     "CHEST": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 14 } },
       { "component": "Chest" },
       { "component": "XP", "data": { "value": 3 } },
-      { "component": "DefeatedSprite", "data": { "frame": 15 } }
+      { "component": "DefeatedSprite", "data": { "frame": 15 } },
+      { "component": "Type", "data": { "value": "CHEST" } }
     ],
     "ORB": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 13 } },
       { "component": "Item" },
-      { "component": "Orb", "data": { "radius": 2.1 } }
+      { "component": "Orb", "data": { "radius": 2.1 } },
+      { "component": "Type", "data": { "value": "SPELL" } }
     ],
     "KEY": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 3 } },
       { "component": "Animated", "data": { "key": "key_anim" } },
       { "component": "Item" },
-      { "component": "Key" }
+      { "component": "Key" },
+      { "component": "Type", "data": { "value": "KEY" } }
     ]
   }
