@@ -7,6 +7,7 @@ import { PlayerInputSystem } from '../ecs/systems/PlayerInputSystem';
 import { CombatSystem } from '../ecs/systems/CombatSystem';
 import { RevealSystem } from '../ecs/systems/RevealSystem';
 import { World } from 'ecsy';
+import { ItemActivationSystem } from '../ecs/systems/ItemActivationSystem';
 
 export class Game extends Phaser.Scene {
     constructor() {
@@ -69,6 +70,7 @@ export class Game extends Phaser.Scene {
         });
         this.game.ecs.world.registerSystem(CombatSystem);
         this.game.ecs.world.registerSystem(RevealSystem);
+        this.game.ecs.world.registerSystem(ItemActivationSystem);
 
         // console.log(this.game.ecs.world.entityManager._entities);
         // const tiles = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Tile));

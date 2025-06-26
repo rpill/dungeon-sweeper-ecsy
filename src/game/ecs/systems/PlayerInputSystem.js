@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { TryReveal, Position, Tile, Sprite, Monster, Revealed, Defeated, TryAttack } from '../components';
+import { TryReveal, Position, Tile, Sprite, Monster, Revealed, Defeated, TryAttack, Item, UseItem } from '../components';
 
 export class PlayerInputSystem extends System {
     static queries = {
@@ -36,6 +36,18 @@ export class PlayerInputSystem extends System {
         }
         if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
             tileEntity.addComponent(TryReveal);
+        }
+        // Активация предмета (например, орба) по клику
+        const item = this.queries.actors.results.find(actor => {
+            const pos = actor.getComponent(Position);
+            return pos.x === x && pos.y === y &&
+                actor.hasComponent(Item) &&
+                actor.hasComponent(Revealed) &&
+                !actor.hasComponent(UseItem);
+        });
+        if (item) {
+            item.addComponent(UseItem);
+            return;
         }
     }
 

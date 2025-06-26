@@ -15,6 +15,9 @@ import { XP } from './XP';
 import { Chest } from './Chest';
 import { DefeatedSprite } from './DefeatedSprite';
 import { Wall } from './Wall';
+import { Orb } from './Orb';
+import { UseItem } from './UseItem';
+import { Spell } from './Spell';
 
 export {
   Attack,
@@ -34,4 +37,7 @@ export {
   Chest,
   DefeatedSprite,
   Wall,
+  Orb,
+  UseItem,
+  Spell,
 };

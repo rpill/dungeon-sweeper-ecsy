@@ -46,6 +46,37 @@ export class RenderSystem extends System {
         frame = tile.baseType + 5;
       } else if (!spriteComp) {
         frame = tile.baseType + 10;
+				let totalDmg = 0;
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            const mx = position.x + dx;
+            const my = position.y + dy;
+            const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);
+            if (monster && !monster.hasComponent(Defeated)) {
+              totalDmg += monster.getComponent(Attack).value;
+            }
+          }
+        }
+        if (totalDmg > 0) {
+          if (!entity.dmgText) {
+            const dmgText = this.scene.add.bitmapText(
+              tileX + this.tileSize / 2,
+              tileY + this.tileSize / 2,
+              'ingame',
+              String(totalDmg),
+              10
+            ).setOrigin(0.5).setTint(0xffffff);
+            this.container.add(dmgText);
+            entity.dmgText = dmgText;
+          } else {
+            entity.dmgText.setText(String(totalDmg));
+            entity.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
+          }
+        } else if (entity.dmgText) {
+          entity.dmgText.destroy();
+          entity.dmgText = null;
+        }
       }
     }
     if (!entity.tileSprite) {
