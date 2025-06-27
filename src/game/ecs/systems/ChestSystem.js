@@ -1,6 +1,8 @@
 import { System } from 'ecsy';
 import { TryOpen, Chest, Opened, OpenedSprite, XP, Loot, Position, Sprite, Item, Heal, Type, Revealed, SpriteObjects } from '../components';
 import { dataManager } from '../../DataManager';
+import actorDefinitions from '../../data/actor-definitions.json';
+import * as Components from '../components';
 
 export class ChestSystem extends System {
   static queries = {
@@ -21,15 +23,18 @@ export class ChestSystem extends System {
             spriteObjects.destroyAll();
           }
           
-          // Создаем сущность медкита на той же позиции
+          // Создаем сущность медкита на той же позиции через actor-definitions.json
           const medkitEntity = this.world.createEntity();
           medkitEntity.addComponent(Position, { x: position.x, y: position.y });
-          medkitEntity.addComponent(Sprite, { spriteSheet: 'icons', frame: 12 });
-          medkitEntity.addComponent(Item);
-          medkitEntity.addComponent(Heal, { amount: 'full' });
-          medkitEntity.addComponent(Type, { value: 'MEDKIT' });
-          medkitEntity.addComponent(Opened); // Отмечаем как открытый для отображения
-          medkitEntity.addComponent(Revealed); // Отмечаем как открытый для правильного отображения тайла
+          actorDefinitions['MEDKIT'].forEach(compDef => {
+            const ComponentClass = Components[compDef.component];
+            if (ComponentClass && compDef.component !== 'Position') {
+              medkitEntity.addComponent(ComponentClass, compDef.data);
+            }
+          });
+          // Отмечаем как открытый для отображения
+          medkitEntity.addComponent(Opened);
+          medkitEntity.addComponent(Revealed);
           
           // Удаляем сундук
           chest.remove();

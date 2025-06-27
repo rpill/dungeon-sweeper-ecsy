@@ -77,16 +77,14 @@ export class RenderSystem extends System {
         const actorPos = actor.getComponent(Position);
         return actorPos.x === position.x && actorPos.y === position.y &&
                !actor.hasComponent(TryCollectLoot) && !actor.hasComponent(TryCollect) &&
-               !actor.hasComponent(Defeated);
+               !actor.hasComponent(Defeated) &&
+               (actor.hasComponent(Monster) || actor.hasComponent(Item) || actor.hasComponent(Chest) || actor.hasComponent(Wall));
       });
       
       // Проверяем, что найденные сущности действительно существуют и не помечены для удаления
-      const hasDefeatedMonster = monsterDefeatedEntity && !monsterDefeatedEntity.hasComponent(TryCollectLoot);
-      const hasOpenedChest = chestOpenedEntity && !chestOpenedEntity.hasComponent(TryCollect);
-      const hasDefeatedWall = wallDefeatedEntity && !wallDefeatedEntity.hasComponent(TryCollectLoot);
       const hasActiveEntity = anyActiveEntity !== undefined;
       
-      if (hasDefeatedMonster || hasOpenedChest || hasDefeatedWall) {
+      if (monsterDefeatedEntity || chestOpenedEntity || wallDefeatedEntity) {
         frame = tile.baseType + 5;
       } else if (!hasActiveEntity) {
         frame = tile.baseType + 10;
