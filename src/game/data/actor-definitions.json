@@ -22,11 +22,7 @@
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 11 } },
       { "component": "XP", "data": { "value": 11 } },
-      { "component": "Mimic", "data": { 
-          "trueSpriteSheet": "monsters",
-          "trueFrame": 127 
-        }
-      },
+      { "component": "Mimic", "data": {  "frame": 127 } },
       { "component": "DefeatedSprite", "data": { "frame": 138 } },
       { "component": "Type", "data": { "value": "MIMIC" } }
     ],

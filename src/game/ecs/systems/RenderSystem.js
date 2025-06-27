@@ -40,8 +40,11 @@ export class RenderSystem extends System {
     this.queries.tiles.results.forEach(entity => this.renderTile(entity));
 		
     this.queries.actors.results.forEach(entity => {
-      if (entity.hasComponent(Monster)) {
+      if (entity.hasComponent(Monster) && !entity.hasComponent(Mimic)) {
         this.renderMonster(entity);
+      }
+      if (entity.hasComponent(Mimic)) {
+        this.renderMimic(entity);
       }
 			if (entity.hasComponent(Item)) {
         this.renderItem(entity);
@@ -205,6 +208,95 @@ export class RenderSystem extends System {
     }
     // Урон
     if (!entity.hasComponent(Defeated) && entity.hasComponent(Attack)) {
+      if (!spriteObjects.dmgText) {
+        const attack = entity.getComponent(Attack);
+        const dmgText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize - 4,
+          'ingame',
+          String(attack.value),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
+        spriteObjects.dmgText = dmgText;
+      } else {
+        spriteObjects.dmgText.setText(String(entity.getComponent(Attack).value));
+        spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
+      }
+    } else if (spriteObjects.dmgText) {
+      spriteObjects.dmgText.destroy();
+      spriteObjects.dmgText = null;
+    }
+    // Монетка и XP
+    if (entity.hasComponent(Defeated)) {
+      if (!spriteObjects.coinIcon) {
+        const coin = this.scene.add.image(
+          tileX + this.tileSize / 2 - 9,
+          tileY + this.tileSize + 10,
+          'icons',
+          10
+        ).setOrigin(0.5, 1).setDepth(3);
+        spriteObjects.coinIcon = coin;
+      } else {
+        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 9, tileY + this.tileSize + 10);
+      }
+      const xp = entity.getComponent(XP);
+      const xpValue = xp ? xp.value : 0;
+      if (!spriteObjects.xpText) {
+        const xpText = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2 + 9,
+          tileY + this.tileSize - 5,
+          'ingame',
+          String(xpValue),
+          10
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
+        spriteObjects.xpText = xpText;
+      } else {
+        spriteObjects.xpText.setText(String(xpValue));
+        spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
+      }
+    } else {
+      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
+    }
+  }
+
+  renderMimic(entity) {
+    if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
+    
+    // Получаем или создаем SpriteObjects компонент
+    if (!entity.hasComponent(SpriteObjects)) {
+      entity.addComponent(SpriteObjects);
+    }
+    const spriteObjects = entity.getComponent(SpriteObjects);
+    
+    const sprite = entity.getComponent(Sprite);
+    const position = entity.getComponent(Position);
+    const tileX = position.x * this.tileSize;
+    const tileY = position.y * this.tileSize;
+    let offsetY = entity.hasComponent(RevealedAsMonster) ? -8 : 0;
+    let frame = sprite.frame;
+    if (!entity.hasComponent(Defeated) && entity.hasComponent(RevealedAsMonster)) {
+      const mimic = entity.getComponent(Mimic);
+      frame = mimic.frame;
+    }
+    if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
+      const defeatedSprite = entity.getComponent(DefeatedSprite);
+      frame = defeatedSprite.frame;
+    }
+    if (!spriteObjects.spriteObj) {
+      const spriteObj = this.scene.add.image(
+        tileX,
+        tileY + offsetY,
+        sprite.spriteSheet,
+        frame
+      ).setOrigin(0).setDepth(2);
+      spriteObjects.spriteObj = spriteObj;
+    } else {
+      spriteObjects.spriteObj.setFrame(frame);
+      spriteObjects.spriteObj.setPosition(tileX, tileY + offsetY);
+    }
+    // Урон
+    if (!entity.hasComponent(Defeated) && entity.hasComponent(RevealedAsMonster)) {
       if (!spriteObjects.dmgText) {
         const attack = entity.getComponent(Attack);
         const dmgText = this.scene.add.bitmapText(

@@ -34,6 +34,10 @@ export class Game extends Phaser.Scene {
             dataManager.player.levelUp();
         });
         
+        // this.input.keyboard.on('keydown-D', () => {
+        //     dataManager.debug = !dataManager.debug;
+        // });
+        
         this.scene.launch(SCENE_KEYS.UI);
     }
 

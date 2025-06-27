@@ -16,8 +16,10 @@ import {
   TryCollect,
   TryCollectLoot,
   TryAttackWall,
+  Mimic,
   Wall,
-  XP
+  XP,
+  RevealedAsMonster
 } from '../components';
 import { dataManager } from '../../DataManager';
 
@@ -98,6 +100,9 @@ export class PlayerInputSystem extends System {
         if (actor) {
             if (!actor.hasComponent(TryAttack)) {
                 actor.addComponent(TryAttack);
+            }
+            if (actor.hasComponent(Mimic)) {
+                actor.addComponent(RevealedAsMonster);
             }
             return;
         }

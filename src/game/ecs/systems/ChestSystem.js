@@ -48,19 +48,6 @@ export class ChestSystem extends System {
           chest.addComponent(Opened);
         }
       }
-
-      // Особая логика для Mimic: если сундук — Mimic и он не убит, инициируем бой
-      if (chest.hasComponent(Mimic) && !chest.hasComponent(Defeated)) {
-        console.log(1)
-        if (!chest.hasComponent(TryAttack)) {
-          chest.addComponent(TryAttack);
-        }
-        if (!chest.hasComponent(RevealedAsMonster)) {
-          chest.addComponent(RevealedAsMonster);
-        }
-        chest.removeComponent(TryOpen);
-        return;
-      }
     });
   }
 } 
