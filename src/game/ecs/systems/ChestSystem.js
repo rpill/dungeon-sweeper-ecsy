@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { TryOpen, Chest, Opened, OpenedSprite, XP, Loot, Position, Sprite, Item, Heal, Type, Revealed, SpriteObjects } from '../components';
+import { TryOpen, Chest, Opened, OpenedSprite, XP, Loot, Position, Sprite, Item, Heal, Type, Revealed, SpriteObjects, Mimic, Defeated, TryAttack, RevealedAsMonster } from '../components';
 import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
@@ -49,8 +49,18 @@ export class ChestSystem extends System {
         }
       }
 
-      // Удаляем компонент TryOpen
-      chest.removeComponent(TryOpen);
+      // Особая логика для Mimic: если сундук — Mimic и он не убит, инициируем бой
+      if (chest.hasComponent(Mimic) && !chest.hasComponent(Defeated)) {
+        console.log(1)
+        if (!chest.hasComponent(TryAttack)) {
+          chest.addComponent(TryAttack);
+        }
+        if (!chest.hasComponent(RevealedAsMonster)) {
+          chest.addComponent(RevealedAsMonster);
+        }
+        chest.removeComponent(TryOpen);
+        return;
+      }
     });
   }
 } 

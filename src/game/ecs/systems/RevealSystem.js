@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { TryReveal, Revealed, Position, Sprite, Tile, Monster, Defeated, TryAttack } from '../components';
+import { TryReveal, Revealed, Position, Sprite, Tile, Monster, Defeated, TryAttack, Mimic } from '../components';
 
 export class RevealSystem extends System {
   static queries = {
@@ -18,9 +18,11 @@ export class RevealSystem extends System {
         const actorPos = actor.getComponent(Position);
         if (actorPos.x === tilePos.x && actorPos.y === tilePos.y && !actor.hasComponent(Revealed)) {
           actor.addComponent(Revealed);
-          // Если это монстр и он не убит — инициируем бой через TryAttack
+          // Если это монстр и он не убит — инициируем бой через TryAttack, КРОМЕ Mimic
           if (actor.hasComponent(Monster) && !actor.hasComponent(Defeated) && !actor.hasComponent(TryAttack)) {
-            actor.addComponent(TryAttack);
+            if (!actor.hasComponent(Mimic)) {
+              actor.addComponent(TryAttack);
+            }
           }
         }
       });

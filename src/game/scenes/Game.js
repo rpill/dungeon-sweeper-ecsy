@@ -42,6 +42,17 @@ export class Game extends Phaser.Scene {
     }
 
     startNewGame() {
+        // Очистка всех визуальных объектов предыдущей игры
+        if (this.game.ecs && this.game.ecs.world) {
+            const entities = Object.values(this.game.ecs.world.entityManager._entities);
+            entities.forEach(entity => {
+                if (entity.hasComponent(Components.SpriteObjects)) {
+                    const spriteObjects = entity.getComponent(Components.SpriteObjects);
+                    spriteObjects.destroyAll();
+                }
+            });
+        }
+
         dataManager.initialize(this);
         this.game.ecs = {};
         this.game.ecs.world = new World();

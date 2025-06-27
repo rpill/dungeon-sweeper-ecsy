@@ -18,16 +18,16 @@
     ],
     "MIMIC": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
-      { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 14 } },
+      { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 137 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 11 } },
       { "component": "XP", "data": { "value": 11 } },
       { "component": "Mimic", "data": { 
-          "isMimicking": true, 
-          "trueSpriteSheet": "monsters", 
+          "trueSpriteSheet": "monsters",
           "trueFrame": 127 
         }
       },
+      { "component": "DefeatedSprite", "data": { "frame": 138 } },
       { "component": "Type", "data": { "value": "MIMIC" } }
     ],
     "MEDKIT": [

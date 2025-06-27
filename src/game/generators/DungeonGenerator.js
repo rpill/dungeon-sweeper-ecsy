@@ -76,12 +76,8 @@ export class DungeonGenerator {
                 });
             }
             if (opts.name) entity.name = opts.name;
-            // В debug-режиме сразу открываем
-            if (dataManager.debug && entity.hasComponent(Components.Sprite) && !entity.hasComponent(Components.Revealed)) {
-                entity.addComponent(Components.Revealed);
-            }
             if (entity.hasComponent(Components.Sprite) && !entity.hasComponent(Components.Revealed)) {
-                if (dataManager.debug || opts.revealed) {
+                if (opts.revealed) {
                     entity.addComponent(Components.Revealed);
                 }
             }
@@ -130,10 +126,6 @@ export class DungeonGenerator {
             
             // Добавляем медкит как лут
             entity.addComponent(Components.Loot, { type: 'MEDKIT' });
-            
-            if (dataManager.debug) {
-                entity.addComponent(Components.Revealed);
-            }
         }
         
         // Создаем сундуки с опытом
@@ -151,10 +143,6 @@ export class DungeonGenerator {
             
             // Добавляем опыт
             entity.addComponent(Components.XP, { value: 3 });
-            
-            if (dataManager.debug) {
-                entity.addComponent(Components.Revealed);
-            }
         }
     }
 }

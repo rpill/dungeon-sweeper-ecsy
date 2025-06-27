@@ -27,6 +27,7 @@ import { TryOpen } from './TryOpen';
 import { TryCollect } from './TryCollect';
 import { TryCollectLoot } from './TryCollectLoot';
 import { TryAttackWall } from './TryAttackWall';
+import { RevealedAsMonster } from './RevealedAsMonster';
 
 export {
   Attack,
@@ -58,4 +59,5 @@ export {
   TryCollect,
   TryCollectLoot,
   TryAttackWall,
+  RevealedAsMonster
 };

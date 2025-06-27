@@ -12,20 +12,22 @@ import {
   DefeatedSprite,
   XP,
   Wall,
+  Mimic,
   Health,
   SpriteObjects,
   Opened,
   OpenedSprite,
   TryCollectLoot,
   TryCollect,
-  Type
+  Type,
+  RevealedAsMonster
 } from '../components';
 import { findEntityAt } from '../helpers';
+import { dataManager } from '../../DataManager';
 
 export class RenderSystem extends System {
   init(attributes) {
     this.scene = attributes.scene;
-    this.container = attributes.container;
     this.tileSize = attributes.tileSize;
   }
 
@@ -66,7 +68,7 @@ export class RenderSystem extends System {
     }
     const spriteObjects = entity.getComponent(SpriteObjects);
     
-    if (entity.hasComponent(Revealed)) {
+    if (entity.hasComponent(Revealed) || dataManager.debug) {
       // Проверяем наличие убитых монстров, сундуков и стен
       const monsterDefeatedEntity = findEntityAt(this.queries.actors.results, position.x, position.y, Monster, Defeated);
       const chestOpenedEntity = findEntityAt(this.queries.actors.results, position.x, position.y, Chest, Opened);
@@ -114,8 +116,7 @@ export class RenderSystem extends System {
               'ingame',
               '?',
               10
-            ).setOrigin(0.5).setTint(0x88ccd0);
-            this.container.add(dmgText);
+            ).setOrigin(0.5).setTint(0x88ccd0).setDepth(3);
             spriteObjects.dmgText = dmgText;
           } else {
             spriteObjects.dmgText.setText('?');
@@ -143,8 +144,7 @@ export class RenderSystem extends System {
                 'ingame',
                 String(totalDmg),
                 10
-              ).setOrigin(0.5).setTint(0xffffff);
-              this.container.add(dmgText);
+              ).setOrigin(0.5).setTint(0xffffff).setDepth(3);
               spriteObjects.dmgText = dmgText;
             } else {
               spriteObjects.dmgText.setText(String(totalDmg));
@@ -164,9 +164,8 @@ export class RenderSystem extends System {
         tileY,
         'tiles',
         frame
-      ).setOrigin(0);
+      ).setOrigin(0).setDepth(0);
       tileSprite.setInteractive();
-      this.container.add(tileSprite);
       spriteObjects.spriteObj = tileSprite;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -174,7 +173,7 @@ export class RenderSystem extends System {
   }
 
   renderMonster(entity) {
-    if (!entity.hasComponent(Revealed)) return;
+    if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
     
     // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
@@ -198,8 +197,7 @@ export class RenderSystem extends System {
         tileY + offsetY,
         sprite.spriteSheet,
         frame
-      ).setOrigin(0);
-      this.container.add(spriteObj);
+      ).setOrigin(0).setDepth(2);
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -215,8 +213,7 @@ export class RenderSystem extends System {
           'ingame',
           String(attack.value),
           10
-        ).setOrigin(0.5, 1).setTint(0xfab402);
-        this.container.add(dmgText);
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.dmgText = dmgText;
       } else {
         spriteObjects.dmgText.setText(String(entity.getComponent(Attack).value));
@@ -230,15 +227,14 @@ export class RenderSystem extends System {
     if (entity.hasComponent(Defeated)) {
       if (!spriteObjects.coinIcon) {
         const coin = this.scene.add.image(
-          tileX + this.tileSize / 2 - 7,
+          tileX + this.tileSize / 2 - 9,
           tileY + this.tileSize + 10,
           'icons',
           10
-        ).setOrigin(0.5, 1);
-        this.container.add(coin);
+        ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
-        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
+        spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 9, tileY + this.tileSize + 10);
       }
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
@@ -249,8 +245,7 @@ export class RenderSystem extends System {
           'ingame',
           String(xpValue),
           10
-        ).setOrigin(0.5, 1).setTint(0xfab402);
-        this.container.add(xpText);
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
         spriteObjects.xpText.setText(String(xpValue));
@@ -263,7 +258,7 @@ export class RenderSystem extends System {
   }
 
   renderItem(entity) {
-    if (!entity.hasComponent(Revealed) && !entity.hasComponent(Opened)) return;
+    if (!entity.hasComponent(Revealed) && !entity.hasComponent(Opened) && !dataManager.debug) return;
     
     // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
@@ -281,8 +276,7 @@ export class RenderSystem extends System {
         tileY,
         sprite.spriteSheet,
         sprite.frame
-      ).setOrigin(0);
-      this.container.add(spriteObj);
+      ).setOrigin(0).setDepth(2);
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(sprite.frame);
@@ -291,7 +285,7 @@ export class RenderSystem extends System {
   }
 
   renderWall(entity) {
-    if (!entity.hasComponent(Revealed)) return;
+    if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
     
     // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
@@ -319,8 +313,7 @@ export class RenderSystem extends System {
         tileY,
         sprite.spriteSheet,
         frame
-      ).setOrigin(0);
-      this.container.add(spriteObj);
+      ).setOrigin(0).setDepth(2);
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -338,8 +331,7 @@ export class RenderSystem extends System {
           'ingame',
           hpText,
           10
-        ).setOrigin(0.5, 1).setTint(0xfab402);
-        this.container.add(text);
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.hpText = text;
       } else {
         spriteObjects.hpText.setText(hpText);
@@ -361,8 +353,7 @@ export class RenderSystem extends System {
           'ingame',
           String(xpValue),
           10
-        ).setOrigin(0.5, 1).setTint(0xfab402);
-        this.container.add(xpText);
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
         spriteObjects.xpText.setText(String(xpValue));
@@ -376,8 +367,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize + 10,
           'icons',
           10
-        ).setOrigin(0.5, 1);
-        this.container.add(coin);
+        ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
         spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
@@ -390,7 +380,7 @@ export class RenderSystem extends System {
   }
 
   renderChest(entity) {
-    if (!entity.hasComponent(Revealed)) return;
+    if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
     
     // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
@@ -418,8 +408,7 @@ export class RenderSystem extends System {
         centerY,
         sprite.spriteSheet,
         frame
-      ).setOrigin(0.5);
-      this.container.add(spriteObj);
+      ).setOrigin(0.5).setDepth(2);
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -437,8 +426,7 @@ export class RenderSystem extends System {
           'ingame',
           String(xpValue),
           10
-        ).setOrigin(0.5, 1).setTint(0xfab402);
-        this.container.add(xpText);
+        ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
         spriteObjects.xpText.setText(String(xpValue));
@@ -452,8 +440,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize + 10,
           'icons',
           10
-        ).setOrigin(0.5, 1);
-        this.container.add(coin);
+        ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
         spriteObjects.coinIcon.setPosition(tileX + this.tileSize / 2 - 7, tileY + this.tileSize + 10);
