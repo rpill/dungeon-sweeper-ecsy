@@ -9,7 +9,7 @@ class DataManager {
         this.width = 13;
         this.height = 10;
         this.tileSize = 48;
-        this.debug = true;
+        this.debug = false;
         this.reset();
         DataManager.instance = this;
     }

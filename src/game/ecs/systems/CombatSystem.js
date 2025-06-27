@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { Revealed, Monster, Attack, Defeated, TryAttack } from '../components';
+import { Revealed, Monster, Attack, Defeated, TryAttack, Type, MineWasTriggered } from '../components';
 import { sceneEvents } from '../../events/EventsCenter';
 import { StatusEvents } from '../../events/EventNames';
 import { dataManager } from '../../DataManager';
@@ -19,6 +19,12 @@ export class CombatSystem extends System {
         return;
       }
       const attack = entity.getComponent(Attack);
+      // Если это мина, навешиваем MineWasTriggered
+      if (entity.hasComponent(Type) && entity.getComponent(Type).value === 'MINE') {
+        if (!entity.hasComponent(MineWasTriggered)) {
+          entity.addComponent(MineWasTriggered);
+        }
+      }
       if (attack.value > 0) {
         dataManager.player.takeDamage(attack.value);
       }
