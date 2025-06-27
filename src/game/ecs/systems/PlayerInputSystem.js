@@ -18,8 +18,10 @@ import {
   TryAttackWall,
   Mimic,
   Wall,
+  Butterfly,
   XP,
-  RevealedAsMonster
+  RevealedAsMonster,
+  TryJump
 } from '../components';
 import { dataManager } from '../../DataManager';
 
@@ -43,7 +45,6 @@ export class PlayerInputSystem extends System {
       const pos = tile.getComponent(Position);
       return pos.x === x && pos.y === y;
     });
-
     // Проверяем закрытый сундук для открытия
     const chest = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
@@ -94,6 +95,7 @@ export class PlayerInputSystem extends System {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
         actor.hasComponent(Monster) &&
+        !actor.hasComponent(Butterfly) &&
         actor.hasComponent(Revealed) &&
         !actor.hasComponent(Defeated);
     });
@@ -147,6 +149,16 @@ export class PlayerInputSystem extends System {
     if (item) {
       item.addComponent(UseItem);
       return;
+    }
+
+    // Прыжок бабочки только по клику на неё
+    const butterfly = this.queries.actors.results.find(actor => {
+      const pos = actor.getComponent(Position);
+      return pos.x === x && pos.y === y && actor.hasComponent(Butterfly) && !actor.hasComponent(Defeated);
+    });
+
+    if (butterfly && !butterfly.hasComponent(TryJump)) {
+      butterfly.addComponent(TryJump);
     }
 
     // Открываем клетку, если ничего другого не найдено

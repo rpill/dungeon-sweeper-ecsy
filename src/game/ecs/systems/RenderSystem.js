@@ -19,10 +19,10 @@ import {
   OpenedSprite,
   TryCollectLoot,
   TryCollect,
-  TryAttack,
   Type,
   RevealedAsMonster,
-  MineWasTriggered
+  MineWasTriggered,
+  Butterfly
 } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
@@ -88,12 +88,9 @@ export class RenderSystem extends System {
                (actor.hasComponent(Monster) || actor.hasComponent(Item) || actor.hasComponent(Chest) || actor.hasComponent(Wall));
       });
       
-      // Проверяем, что найденные сущности действительно существуют и не помечены для удаления
-      const hasActiveEntity = anyActiveEntity !== undefined;
-      
       if (monsterDefeatedEntity || chestOpenedEntity || wallDefeatedEntity) {
         frame = tile.baseType + 5;
-      } else if (!hasActiveEntity) {
+      } else if (!anyActiveEntity) {
         frame = tile.baseType + 10;
         let totalDmg = 0;
         let gazerNearby = false;
@@ -156,11 +153,18 @@ export class RenderSystem extends System {
               spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
               spriteObjects.dmgText.setTint(0xffffff);
             }
-          } else if (spriteObjects.dmgText) {
-            spriteObjects.dmgText.destroy();
-            spriteObjects.dmgText = null;
+          } else {
+            if (spriteObjects.dmgText) {
+              spriteObjects.dmgText.destroy();
+              spriteObjects.dmgText = null;
+            }
           }
         }
+      }
+      // Если на клетке есть активная сущность (например, бабочка), удаляем dmgText
+      if (anyActiveEntity && spriteObjects.dmgText) {
+        spriteObjects.dmgText.destroy();
+        spriteObjects.dmgText = null;
       }
     }
     if (!spriteObjects.spriteObj) {

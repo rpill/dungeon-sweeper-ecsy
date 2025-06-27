@@ -31,6 +31,7 @@
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 12 } },
       { "component": "Item" },
       { "component": "Heal", "data": { "amount": "full" } },
+      { "component": "Medkit" },
       { "component": "Type", "data": { "value": "MEDKIT" } }
     ],
     "SPELL_REVEAL_RATS": [

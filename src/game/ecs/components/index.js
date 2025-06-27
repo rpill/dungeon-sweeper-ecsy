@@ -29,6 +29,9 @@ import { TryCollectLoot } from './TryCollectLoot';
 import { TryAttackWall } from './TryAttackWall';
 import { RevealedAsMonster } from './RevealedAsMonster';
 import { MineWasTriggered } from './MineWasTriggered';
+import { Butterfly } from './Butterfly';
+import { Medkit } from './Medkit';
+import { TryJump } from './TryJump';
 
 export {
   Attack,
@@ -61,5 +64,8 @@ export {
   TryCollectLoot,
   TryAttackWall,
   RevealedAsMonster,
-  MineWasTriggered
+  MineWasTriggered,
+  Butterfly,
+  Medkit,
+  TryJump
 };

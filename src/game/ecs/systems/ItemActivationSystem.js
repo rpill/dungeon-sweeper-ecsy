@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { UseItem, Orb, Position, Tile, TryReveal, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type } from '../components';
+import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
 

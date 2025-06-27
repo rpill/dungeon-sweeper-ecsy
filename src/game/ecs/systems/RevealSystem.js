@@ -1,5 +1,5 @@
 import { System } from 'ecsy';
-import { TryReveal, Revealed, Position, Sprite, Tile, Monster, Defeated, TryAttack, Mimic } from '../components';
+import { TryReveal, Revealed, Position, Sprite, Tile, Monster, Defeated, TryAttack, Mimic, Butterfly } from '../components';
 
 export class RevealSystem extends System {
   static queries = {
