@@ -17,7 +17,8 @@ import {
   Opened,
   OpenedSprite,
   TryCollectLoot,
-  TryCollect
+  TryCollect,
+  Type
 } from '../components';
 import { findEntityAt } from '../helpers';
 
@@ -89,36 +90,73 @@ export class RenderSystem extends System {
         frame = tile.baseType + 5;
       } else if (!hasActiveEntity) {
         frame = tile.baseType + 10;
-				let totalDmg = 0;
-        for (let dx = -1; dx <= 1; dx++) {
-          for (let dy = -1; dy <= 1; dy++) {
+        let totalDmg = 0;
+        let gazerNearby = false;
+        // Проверяем радиус 2 клетки на наличие GAZER
+        for (let dx = -2; dx <= 2; dx++) {
+          for (let dy = -2; dy <= 2; dy++) {
             if (dx === 0 && dy === 0) continue;
             const mx = position.x + dx;
             const my = position.y + dy;
             const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);
             if (monster && !monster.hasComponent(Defeated) && !monster.hasComponent(TryCollectLoot)) {
-              totalDmg += monster.getComponent(Attack).value;
+              const type = monster.getComponent(Type);
+              if (type && type.value === 'GAZER') {
+                gazerNearby = true;
+              }
             }
           }
         }
-        if (totalDmg > 0) {
+        if (gazerNearby) {
+          // Показываем знак вопроса цветом 0x88ccd0
           if (!spriteObjects.dmgText) {
             const dmgText = this.scene.add.bitmapText(
               tileX + this.tileSize / 2,
               tileY + this.tileSize / 2,
               'ingame',
-              String(totalDmg),
+              '?',
               10
-            ).setOrigin(0.5).setTint(0xffffff);
+            ).setOrigin(0.5).setTint(0x88ccd0);
             this.container.add(dmgText);
             spriteObjects.dmgText = dmgText;
           } else {
-            spriteObjects.dmgText.setText(String(totalDmg));
+            spriteObjects.dmgText.setText('?');
             spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
+            spriteObjects.dmgText.setTint(0x88ccd0);
           }
-        } else if (spriteObjects.dmgText) {
-          spriteObjects.dmgText.destroy();
-          spriteObjects.dmgText = null;
+        } else {
+          // Считаем обычный суммарный урон
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              if (dx === 0 && dy === 0) continue;
+              const mx = position.x + dx;
+              const my = position.y + dy;
+              const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);
+              if (monster && !monster.hasComponent(Defeated) && !monster.hasComponent(TryCollectLoot)) {
+                totalDmg += monster.getComponent(Attack).value;
+              }
+            }
+          }
+          if (totalDmg > 0) {
+            if (!spriteObjects.dmgText) {
+              const dmgText = this.scene.add.bitmapText(
+                tileX + this.tileSize / 2,
+                tileY + this.tileSize / 2,
+                'ingame',
+                String(totalDmg),
+                10
+              ).setOrigin(0.5).setTint(0xffffff);
+              this.container.add(dmgText);
+              spriteObjects.dmgText = dmgText;
+            } else {
+              spriteObjects.dmgText.setText(String(totalDmg));
+              spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize / 2);
+              spriteObjects.dmgText.setTint(0xffffff);
+            }
+          } else if (spriteObjects.dmgText) {
+            spriteObjects.dmgText.destroy();
+            spriteObjects.dmgText = null;
+          }
         }
       }
     }
