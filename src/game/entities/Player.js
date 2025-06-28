@@ -52,6 +52,7 @@ export class Player {
       current: this.hp
     });
     sceneEvents.emit(PlayerEvents.XP_CHANGED, { current: this.xp });
+    sceneEvents.emit(PlayerEvents.LEVEL_UP);
   }
 
   heal(amount = null) {

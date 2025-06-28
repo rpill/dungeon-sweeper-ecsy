@@ -40,6 +40,7 @@ export class Preload extends Phaser.Scene {
     this.load.spritesheet('icons', 'images/icons.png', { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('fx_impact', 'images/uf_FX_impact.png', { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('fx', 'images/uf_FX.png', { frameWidth: 24, frameHeight: 24 });
+    this.load.spritesheet('level_up', 'images/level_up.png', { frameWidth: 64, frameHeight: 60 });
 
     this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
     this.load.bitmapFont('ui', 'fonts/quinque-five.png', 'fonts/quinque-five.xml');
@@ -82,9 +83,16 @@ export class Preload extends Phaser.Scene {
 
     this.anims.create({
       key: 'key_anim',
-      frames: this.anims.generateFrameNumbers('icons', { frames: [3, 7] }), // Указываем конкретные кадры
+      frames: this.anims.generateFrameNumbers('icons', { start: 3, end: 7 }),
       frameRate: 5,
-      repeat: -1 // Бесконечное повторение
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'can_level_up',
+      frames: this.anims.generateFrameNumbers('level_up', { start: 0, end: 6 }),
+      frameRate: 7,
+      repeat: -1
     });
   }
 }

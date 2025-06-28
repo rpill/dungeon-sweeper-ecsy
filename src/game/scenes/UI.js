@@ -20,10 +20,10 @@ export class UI extends Scene {
       .setOrigin(0, 1)
       .setDisplaySize(hudWidth, hudHeight);
 
-    this.add.sprite(48, hudY - hudHeight / 2, 'hero_frame');
+    this.playerFrame = this.add.sprite(48, hudY - hudHeight / 2, 'hero_frame');
     this.playerPortrait = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'hero');
-    this.playerPortrait.setInteractive();
-    this.playerPortrait.on('pointerdown', () => {
+    this.playerFrame.setInteractive();
+    this.playerFrame.on('pointerdown', () => {
       if (dataManager.status !== StatusEvents.PLAYING) return;
       if (this.player.xp >= this.player.nextLevelXP()) {
         this.player.levelUp();
@@ -67,9 +67,20 @@ export class UI extends Scene {
     }
     this.xpText.setText(`${Math.max(0, this.player.xp)}/${this.player.nextLevelXP()}`);
 
-    const menuBtn = this.add.sprite(hudWidth - 20, hudY - hudHeight / 2, 'icons', 30)
+    // Анимация повышения уровня
+    this.levelUpAnimation = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'level_up', 0);
+    this.levelUpAnimation.setVisible(false);
+
+    // Проверяем, может ли игрок повысить уровень
+    if (this.player.xp >= this.player.nextLevelXP()) {
+      this.levelUpAnimation.setVisible(true);
+      this.levelUpAnimation.play('can_level_up');
+    }
+
+    const menuBtn = this.add.bitmapText(hudWidth - 20, hudY - hudHeight / 2, 'ui', 'Меню', 12)
       .setOrigin(1, 0.5)
-      .setInteractive()
+      .setTint(0xffffff)
+      .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
         if (dataManager.status !== StatusEvents.PLAYING) return;
         this.scene.pause(SCENE_KEYS.GAME);
@@ -101,11 +112,17 @@ export class UI extends Scene {
     });
 
     sceneEvents.on(PlayerEvents.CAN_LEVEL_UP, () => {
-
+      this.levelUpAnimation.setVisible(true);
+      this.levelUpAnimation.play('can_level_up');
     });
 
     sceneEvents.on(PlayerEvents.LEVEL_UP, () => {
-      //
+      this.levelUpAnimation.setVisible(false);
+      this.levelUpAnimation.stop();
+      // Дополнительная проверка
+      if (this.levelUpAnimation.anims) {
+        this.levelUpAnimation.anims.stop();
+      }
     });
   }
 } 
