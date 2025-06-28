@@ -1,5 +1,5 @@
 import { sceneEvents } from '../events/EventsCenter';
-import { PlayerEvents } from '../events/EventNames';
+import { PlayerEvents, AudioEvents } from '../events/EventNames';
 
 export class Player {
   constructor() {
@@ -67,6 +67,8 @@ export class Player {
       // Частичное восстановление HP
       this.hp = Math.min(this.maxHP, this.hp + amount);
     }
+
+    sceneEvents.emit(AudioEvents.HEAL);
 
     sceneEvents.emit(PlayerEvents.HP_CHANGED, {
       previous: prevHP,

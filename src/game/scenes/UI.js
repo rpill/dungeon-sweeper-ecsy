@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { sceneEvents } from '../events/EventsCenter';
-import { PlayerEvents, StatusEvents } from '../events/EventNames';
+import { PlayerEvents, StatusEvents, AudioEvents } from '../events/EventNames';
 import { SCENE_KEYS } from './SceneKeys';
 import { dataManager } from '../DataManager';
 
@@ -26,6 +26,8 @@ export class UI extends Scene {
     this.playerFrame.on('pointerdown', () => {
       if (dataManager.status !== StatusEvents.PLAYING) return;
       if (this.player.xp >= this.player.nextLevelXP()) {
+        // Воспроизводим звук повышения уровня
+        sceneEvents.emit(AudioEvents.LEVEL_UP);
         this.player.levelUp();
       }
     });
@@ -92,6 +94,10 @@ export class UI extends Scene {
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
         if (dataManager.status !== StatusEvents.PLAYING) return;
+        
+        // Воспроизводим звук клика
+        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+        
         this.scene.pause(SCENE_KEYS.GAME);
         this.scene.stop(SCENE_KEYS.UI);
         this.scene.start(SCENE_KEYS.MENU);

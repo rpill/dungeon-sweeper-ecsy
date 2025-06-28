@@ -3,7 +3,7 @@ import { TryCollectLoot, Monster, Wall, Defeated, XP, Loot, Position, SpriteObje
 import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
-import { StatusEvents } from '../../events/EventNames';
+import { StatusEvents, AudioEvents } from '../../events/EventNames';
 import { ACTOR_TYPES } from '../../constants/actor';
 import { sceneEvents } from '../../events/EventsCenter';
 
@@ -22,7 +22,21 @@ export class LootSystem extends System {
       if (hasXP) {
         const xp = entity.getComponent(XP);
         if (dataManager.player) {
+          const oldLevel = dataManager.player.level;
           dataManager.player.grantXP(xp.value);
+          const newLevel = dataManager.player.level;
+          
+          // Воспроизводим звук получения опыта
+          if (newLevel > oldLevel) {
+            // Если повысился уровень
+            sceneEvents.emit(AudioEvents.LEVEL_UP);
+          } else if (dataManager.player.xp >= dataManager.player.nextLevelXP()) {
+            // Если достигли максимума опыта
+            sceneEvents.emit(AudioEvents.GRANT_XP_MAX);
+          } else {
+            // Обычное получение опыта
+            sceneEvents.emit(AudioEvents.GRANT_XP);
+          }
         }
       }
 

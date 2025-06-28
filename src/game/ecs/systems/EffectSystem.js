@@ -5,8 +5,14 @@ export class EffectSystem extends System {
   init(attributes) {
     this.scene = attributes.scene;
     this.tileSize = attributes.tileSize;
-    this.animationCounter = 0; // Счетчик для уникальных ключей анимаций
-    this.createdAnimations = new Set(); // Отслеживаем созданные анимации
+    this.animationsCreated = false;
+    this.animationKeys = {
+      hit: 'hit_effect',
+      explosion: 'explosion_effect', 
+      disappear: 'disappear_effect',
+      open: 'open_effect',
+      spell: 'spell_effect'
+    };
   }
 
   static queries = {
@@ -16,6 +22,12 @@ export class EffectSystem extends System {
   };
 
   execute(delta, time) {
+    // Создаем анимации только один раз при первом запуске
+    if (!this.animationsCreated) {
+      this.createStaticAnimations();
+      this.animationsCreated = true;
+    }
+
     this.queries.effects.results.forEach(entity => {
       const effect = entity.getComponent(Effect);
       const animation = entity.getComponent(EffectAnimation);
@@ -37,6 +49,60 @@ export class EffectSystem extends System {
         this.updateEffectAnimation(entity, effect, animation, position, elapsed, effect.duration);
       }
     });
+  }
+
+  createStaticAnimations() {
+    // Создаем статические анимации один раз
+    if (!this.scene.anims.exists(this.animationKeys.hit)) {
+      this.scene.anims.create({
+        key: this.animationKeys.hit,
+        frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 3, end: 5 }),
+        frameRate: 12,
+        repeat: 0,
+        hideOnComplete: true
+      });
+    }
+
+    if (!this.scene.anims.exists(this.animationKeys.explosion)) {
+      this.scene.anims.create({
+        key: this.animationKeys.explosion,
+        frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 20, end: 23 }),
+        frameRate: 15,
+        repeat: 0,
+        hideOnComplete: true
+      });
+    }
+
+    if (!this.scene.anims.exists(this.animationKeys.disappear)) {
+      this.scene.anims.create({
+        key: this.animationKeys.disappear,
+        frames: this.scene.anims.generateFrameNumbers('monsters', { start: 134, end: 136 }),
+        frameRate: 10,
+        repeat: 0,
+        hideOnComplete: true
+      });
+    }
+
+    if (!this.scene.anims.exists(this.animationKeys.open)) {
+      this.scene.anims.create({
+        key: this.animationKeys.open,
+        frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 13, end: 11 }),
+        frameRate: 8,
+        repeat: 0,
+        hideOnComplete: true
+      });
+    }
+
+    if (!this.scene.anims.exists(this.animationKeys.spell)) {
+      this.scene.anims.create({
+        key: this.animationKeys.spell,
+        frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 24, end: 28 }),
+        frameRate: 12,
+        repeat: 0,
+        yoyo: true,
+        hideOnComplete: true
+      });
+    }
   }
 
   createEffectAnimation(entity, effect, animation, position) {
@@ -65,159 +131,48 @@ export class EffectSystem extends System {
   }
 
   createHitEffect(animation, x, y, depth) {
-    // Создаем спрайт удара из fx_impact
     const sprite = this.scene.add.sprite(x, y, 'fx_impact');
     sprite.setOrigin(0.5);
     sprite.setDepth(depth);
     sprite.setScale(0.8);
-
-    // Создаем уникальный ключ анимации
-    const animKey = `hit_effect_${this.animationCounter++}`;
-    
-    // Проверяем, не существует ли уже такая анимация
-    if (this.createdAnimations.has(animKey)) {
-      console.warn(`Animation key already exists: ${animKey}, skipping creation`);
-      return;
-    }
-    
-    // Создаем анимацию удара
-    const anim = this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 3, end: 5 }),
-      frameRate: 12,
-      repeat: 0,
-      hideOnComplete: true
-    });
-
-    this.createdAnimations.add(animKey);
-    sprite.play(animKey);
+    sprite.play(this.animationKeys.hit);
     animation.sprite = sprite;
-    animation.animation = anim;
   }
 
   createExplosionEffect(animation, x, y, depth) {
-    // Создаем спрайт взрыва из fx_impact
     const sprite = this.scene.add.sprite(x, y, 'fx_impact');
     sprite.setOrigin(0.5);
     sprite.setDepth(depth);
     sprite.setScale(1.2);
-
-    // Создаем уникальный ключ анимации
-    const animKey = `explosion_effect_${this.animationCounter++}`;
-    
-    // Проверяем, не существует ли уже такая анимация
-    if (this.createdAnimations.has(animKey)) {
-      console.warn(`Animation key already exists: ${animKey}, skipping creation`);
-      return;
-    }
-    
-    // Создаем анимацию взрыва
-    const anim = this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 20, end: 23 }),
-      frameRate: 15,
-      repeat: 0,
-      hideOnComplete: true
-    });
-
-    this.createdAnimations.add(animKey);
-    sprite.play(animKey);
+    sprite.play(this.animationKeys.explosion);
     animation.sprite = sprite;
-    animation.animation = anim;
   }
 
   createDisappearEffect(animation, x, y, depth) {
-    // Создаем спрайт исчезновения из monsters (бабочка)
     const sprite = this.scene.add.sprite(x, y, 'monsters');
     sprite.setOrigin(0.5);
     sprite.setDepth(depth);
     sprite.setScale(0.6);
-
-    // Создаем уникальный ключ анимации
-    const animKey = `disappear_effect_${this.animationCounter++}`;
-    
-    // Проверяем, не существует ли уже такая анимация
-    if (this.createdAnimations.has(animKey)) {
-      console.warn(`Animation key already exists: ${animKey}, skipping creation`);
-      return;
-    }
-    
-    // Создаем анимацию исчезновения бабочки
-    const anim = this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers('monsters', { start: 134, end: 136 }),
-      frameRate: 10,
-      repeat: 0,
-      hideOnComplete: true
-    });
-
-    this.createdAnimations.add(animKey);
-    sprite.play(animKey);
+    sprite.play(this.animationKeys.disappear);
     animation.sprite = sprite;
-    animation.animation = anim;
   }
 
   createOpenEffect(animation, x, y, depth) {
-    // Создаем спрайт открытия из fx_impact
     const sprite = this.scene.add.sprite(x, y, 'fx_impact');
     sprite.setOrigin(0.5);
     sprite.setDepth(depth);
     sprite.setScale(0.7);
-
-    // Создаем уникальный ключ анимации
-    const animKey = `open_effect_${this.animationCounter++}`;
-    
-    // Проверяем, не существует ли уже такая анимация
-    if (this.createdAnimations.has(animKey)) {
-      console.warn(`Animation key already exists: ${animKey}, skipping creation`);
-      return;
-    }
-    
-    // Создаем анимацию открытия
-    const anim = this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 13, end: 11 }),
-      frameRate: 8,
-      repeat: 0,
-      hideOnComplete: true
-    });
-
-    this.createdAnimations.add(animKey);
-    sprite.play(animKey);
+    sprite.play(this.animationKeys.open);
     animation.sprite = sprite;
-    animation.animation = anim;
   }
 
   createSpellEffect(animation, x, y, depth) {
-    // Создаем спрайт заклинания из fx_impact
     const sprite = this.scene.add.sprite(x, y, 'fx_impact');
     sprite.setOrigin(0.5);
     sprite.setDepth(depth);
     sprite.setScale(1.0);
-
-    // Создаем уникальный ключ анимации
-    const animKey = `spell_effect_${this.animationCounter++}`;
-    
-    // Проверяем, не существует ли уже такая анимация
-    if (this.createdAnimations.has(animKey)) {
-      console.warn(`Animation key already exists: ${animKey}, skipping creation`);
-      return;
-    }
-    
-    // Создаем анимацию заклинания
-    const anim = this.scene.anims.create({
-      key: animKey,
-      frames: this.scene.anims.generateFrameNumbers('fx_impact', { start: 24, end: 28 }),
-      frameRate: 12,
-      repeat: 0,
-      yoyo: true,
-      hideOnComplete: true
-    });
-
-    this.createdAnimations.add(animKey);
-    sprite.play(animKey);
+    sprite.play(this.animationKeys.spell);
     animation.sprite = sprite;
-    animation.animation = anim;
   }
 
   updateEffectAnimation(entity, effect, animation, position, elapsed, duration) {
@@ -245,27 +200,22 @@ export class EffectSystem extends System {
       animation.sprite.destroy();
       animation.sprite = null;
     }
-    if (animation.animation) {
-      this.scene.anims.remove(animation.animation.key);
-      this.createdAnimations.delete(animation.animation.key);
-      animation.animation = null;
-    }
   }
 
   // Метод для полной очистки всех анимаций (вызывается при перезапуске игры)
   cleanupAllAnimations() {
-    this.createdAnimations.forEach(animKey => {
+    // Удаляем статические анимации
+    Object.values(this.animationKeys).forEach(animKey => {
       if (this.scene.anims.exists(animKey)) {
         this.scene.anims.remove(animKey);
       }
     });
-    this.createdAnimations.clear();
-    this.animationCounter = 0;
+    this.animationsCreated = false;
   }
 
-  // Метод для сброса счетчика без удаления анимаций (для новой игры)
+  // Метод для сброса (больше не нужен, но оставляем для совместимости)
   resetCounter() {
-    this.animationCounter = 0;
-    this.createdAnimations.clear();
+    console.log('EffectSystem: сброс системы');
+    this.cleanupAllAnimations();
   }
 } 

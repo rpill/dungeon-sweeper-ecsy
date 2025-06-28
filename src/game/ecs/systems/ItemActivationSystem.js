@@ -2,10 +2,14 @@ import { System } from 'ecsy';
 import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type, Key, Mine } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
-import { StatusEvents, EffectEvents } from '../../events/EventNames';
+import { StatusEvents, EffectEvents, AudioEvents } from '../../events/EventNames';
 import { sceneEvents } from '../../events/EventsCenter';
 
 export class ItemActivationSystem extends System {
+  init(attributes) {
+    this.scene = attributes.scene;
+  }
+
   static queries = {
     usedItems: { components: [UseItem, Position] },
     tiles: { components: [Tile, Position] },
@@ -18,6 +22,8 @@ export class ItemActivationSystem extends System {
       // HEAL: лечение игрока
       if (item.hasComponent(Heal)) {
         dataManager.player.heal();
+        // Воспроизводим звук использования предмета
+        sceneEvents.emit(AudioEvents.USE_ITEM);
       }
       // ORB: массовый ревил
       if (item.hasComponent(Orb)) {
@@ -52,6 +58,8 @@ export class ItemActivationSystem extends System {
             positions: revealedPositions
           });
         }
+        // Воспроизводим звук использования предмета
+        sceneEvents.emit(AudioEvents.USE_ITEM);
       }
       // SPELL: reveal_enemies или disarm_enemies
       if (item.hasComponent(Spell)) {
@@ -98,6 +106,10 @@ export class ItemActivationSystem extends System {
             sceneEvents.emit(EffectEvents.MULTIPLE_EXPLOSION, {
               positions: explodedPositions
             });
+            // Воспроизводим звук взрыва
+            sceneEvents.emit(AudioEvents.EXPLOSION);
+            // Добавляем тряску камеры при дизарме
+            this.scene.cameras.main.shake(800, 0.003);
           }
         }
         if (spell.type === 'make_orb_effect') {
@@ -174,6 +186,8 @@ export class ItemActivationSystem extends System {
             y: itemPos.y
           });
         }
+        // Воспроизводим звук использования предмета
+        sceneEvents.emit(AudioEvents.USE_ITEM);
       }
       // Победа при подборе ключа
       if (item.hasComponent(Key)) {

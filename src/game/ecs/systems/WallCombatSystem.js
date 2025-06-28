@@ -1,6 +1,8 @@
 import { System } from 'ecsy';
 import { TryAttackWall, Wall, Revealed, Health, Defeated, DefeatedSprite, XP, Position, SpriteObjects } from '../components';
 import { dataManager } from '../../DataManager';
+import { AudioEvents } from '../../events/EventNames';
+import { sceneEvents } from '../../events/EventsCenter';
 
 export class WallCombatSystem extends System {
   static queries = {
@@ -13,6 +15,8 @@ export class WallCombatSystem extends System {
       if (dataManager.player && dataManager.player.hp <= 0) {
         // Игрок не может атаковать с 0 HP
         wall.removeComponent(TryAttackWall);
+        // Воспроизводим звук отказа
+        sceneEvents.emit(AudioEvents.DENIED);
         return;
       }
 
@@ -41,6 +45,12 @@ export class WallCombatSystem extends System {
             }
           }
         }
+        
+        // Воспроизводим звук разрушения стены
+        sceneEvents.emit(AudioEvents.ENEMY_DEAD);
+      } else {
+        // Воспроизводим звук промаха при атаке стены
+        sceneEvents.emit(AudioEvents.MISS);
       }
 
       // Удаляем компонент TryAttackWall

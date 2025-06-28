@@ -2,7 +2,7 @@ import { System } from "ecsy";
 import { Butterfly, Defeated, Position, TryJump, Medkit, Monster, Item, Wall, Chest, Revealed, Tile, SpriteObjects } from "../components";
 import { dataManager } from '../../DataManager';
 import { sceneEvents } from '../../events/EventsCenter';
-import { EffectEvents } from '../../events/EventNames';
+import { EffectEvents, AudioEvents } from '../../events/EventNames';
 
 export class ButterflySystem extends System {
   static queries = {
@@ -91,6 +91,9 @@ export class ButterflySystem extends System {
           x: oldX,
           y: oldY
         });
+
+        // Воспроизводим звук исчезновения бабочки
+        sceneEvents.emit(AudioEvents.MISS);
 
       } else {        
         entity.addComponent(Defeated);

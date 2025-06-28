@@ -17,6 +17,7 @@ import { ButterflySystem } from '../ecs/systems/ButterflySystem';
 import { StatusEvents } from '../events/EventNames';
 import { sceneEvents } from '../events/EventsCenter';
 import { EffectManager } from '../EffectManager';
+import { audioManager } from '../AudioManager';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -25,6 +26,15 @@ export class Game extends Phaser.Scene {
 
   create() {
     console.log('Game scene create');
+    
+    // Инициализируем глобальный менеджер звуков
+    audioManager.initialize(this);
+    
+    // Добавляем обработчик первого взаимодействия
+    this.input.on('pointerdown', () => {
+      audioManager.onUserInteraction();
+    });
+    
     this.startNewGame();
 
     this.input.keyboard.on('keydown-L', () => {
@@ -56,12 +66,21 @@ export class Game extends Phaser.Scene {
     // Централизованная обработка завершения игры
     sceneEvents.on(StatusEvents.CHANGED, ({ current }) => {
       if (current === StatusEvents.WIN) {
-        this.scene.start(SCENE_KEYS.GAME_OVER, { win: true, time: dataManager.getElapsedTime(), score: dataManager.player ? dataManager.player.score : 0 });
+        audioManager.playWinMusic();
+        this.scene.start(SCENE_KEYS.GAME_OVER, { 
+          win: true, 
+          time: dataManager.getElapsedTime(), 
+          score: dataManager.player ? dataManager.player.score : 0
+        });
       }
       if (current === StatusEvents.LOSE) {
         this.cameras.main.shake(1000, 0.002);
         this.time.delayedCall(2000, () => {
-          this.scene.start(SCENE_KEYS.GAME_OVER, { win: false, time: dataManager.getElapsedTime(), score: dataManager.player ? dataManager.player.score : 0 });
+          this.scene.start(SCENE_KEYS.GAME_OVER, { 
+            win: false, 
+            time: dataManager.getElapsedTime(), 
+            score: dataManager.player ? dataManager.player.score : 0
+          });
         });
       }
     });
@@ -105,18 +124,15 @@ export class Game extends Phaser.Scene {
     this.game.ecs.world.registerSystem(CombatSystem);
     this.game.ecs.world.registerSystem(RevealSystem);
     
-    // Регистрируем EffectSystem и сохраняем ссылку для очистки
-    const effectSystem = this.game.ecs.world.registerSystem(EffectSystem, {
+    // Регистрируем EffectSystem
+    this.game.ecs.world.registerSystem(EffectSystem, {
       scene: this,
       tileSize: dataManager.tileSize,
     });
     
-    // Сбрасываем счетчик анимаций при новой игре
-    if (effectSystem && effectSystem.resetCounter) {
-      effectSystem.resetCounter();
-    }
-    
-    this.game.ecs.world.registerSystem(ItemActivationSystem);
+    this.game.ecs.world.registerSystem(ItemActivationSystem, {
+      scene: this,
+    });
     this.game.ecs.world.registerSystem(ChestSystem);
     this.game.ecs.world.registerSystem(CollectSystem);
     this.game.ecs.world.registerSystem(LootSystem);
@@ -126,18 +142,26 @@ export class Game extends Phaser.Scene {
     // Инициализируем менеджер эффектов
     this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
 
+    // Переинициализируем AudioManager для новой игры
+    audioManager.reinitialize(this);
+
+    // Музыка будет запущена автоматически через onUserInteraction при первом клике
+
     // console.log(this.game.ecs.world.entityManager._entities);
     // const tiles = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Tile));
     // console.log('Клеток:', tiles.length);
 
     // const monsters = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Monster));
-    // console.log('Монстров:', monsters.length);
+    // console.log('Монстров:', tiles.length);
 
     // const chests = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Chest));
-    // console.log('Сундуков:', chests.length);
+    // console.log('Сундуков:', tiles.length);
   }
 
   restartGame() {
+    // Останавливаем только музыку победы при перезапуске
+    audioManager.stopWinMusic();
+    
     // Полная очистка ECS-мирa предыдущей игры
     if (this.game.ecs && this.game.ecs.world) {
       const world = this.game.ecs.world;
@@ -179,5 +203,11 @@ export class Game extends Phaser.Scene {
     this.startNewGame();
 
     this.scene.launch(SCENE_KEYS.UI);
+  }
+
+  shutdown() {
+    console.log('Game: shutdown вызван');
+    // Очищаем ресурсы при закрытии сцены
+    // Глобальный audioManager не уничтожаем здесь, так как он может использоваться другими сценами
   }
 }

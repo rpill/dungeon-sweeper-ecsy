@@ -25,3 +25,21 @@ export const EffectEvents = {
   MULTIPLE_ORB: 'effect:multiple_orb',
   MULTIPLE_EXPLOSION: 'effect:multiple_explosion',
 }
+
+export const AudioEvents = {
+  PLAYER_CLICK: 'audio:player_click',
+  PLAYER_REVEAL: 'audio:player_reveal',
+  PLAYER_DENIED: 'audio:player_denied',
+  ENEMY_DEAD: 'audio:enemy_dead',
+  PLAYER_DEAD: 'audio:player_dead',
+  EXPLOSION: 'audio:explosion',
+  USE_ITEM: 'audio:use_item',
+  CHEST_OPEN: 'audio:chest_open',
+  HEAL: 'audio:heal',
+  GRANT_XP: 'audio:grant_xp',
+  GRANT_XP_MAX: 'audio:grant_xp_max',
+  LEVEL_UP: 'audio:level_up',
+  MISS: 'audio:miss',
+  SETTINGS_CHANGED: 'audio:settings_changed',
+  STOP_WIN_MUSIC: 'audio:stop_win_music',
+}

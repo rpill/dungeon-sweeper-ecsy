@@ -24,7 +24,8 @@ import {
   TryJump
 } from '../components';
 import { dataManager } from '../../DataManager';
-import { StatusEvents } from '../../events/EventNames';
+import { StatusEvents, AudioEvents } from '../../events/EventNames';
+import { sceneEvents } from '../../events/EventsCenter';
 
 export class PlayerInputSystem extends System {
   static queries = {
@@ -41,6 +42,10 @@ export class PlayerInputSystem extends System {
   onPointerDown(pointer) {
     if (dataManager.status !== StatusEvents.PLAYING) return;
     if (pointer.rightButtonDown()) return;
+    
+    // Воспроизводим звук клика
+    sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+    
     const x = Math.floor(pointer.worldX / this.tileSize);
     const y = Math.floor(pointer.worldY / this.tileSize);
     const tileEntity = this.queries.tiles.results.find(tile => {
@@ -77,7 +82,7 @@ export class PlayerInputSystem extends System {
     }
 
     // Проверяем стену для атаки (только если у игрока есть HP)
-    if (dataManager.player && dataManager.player.hp >= 0) {
+    if (dataManager.player && dataManager.player.hp > 0) {
       const wall = this.queries.actors.results.find(actor => {
         const pos = actor.getComponent(Position);
         return pos.x === x && pos.y === y &&
@@ -88,6 +93,20 @@ export class PlayerInputSystem extends System {
       });
       if (wall) {
         wall.addComponent(TryAttackWall);
+        return;
+      }
+    } else if (dataManager.player && dataManager.player.hp <= 0) {
+      // Проверяем, не пытается ли игрок атаковать стену без HP
+      const wall = this.queries.actors.results.find(actor => {
+        const pos = actor.getComponent(Position);
+        return pos.x === x && pos.y === y &&
+          actor.hasComponent(Wall) &&
+          actor.hasComponent(Revealed) &&
+          !actor.hasComponent(Defeated);
+      });
+      if (wall) {
+        // Воспроизводим звук отказа
+        sceneEvents.emit(AudioEvents.PLAYER_DENIED);
         return;
       }
     }

@@ -1,7 +1,7 @@
 import { System } from 'ecsy';
 import { Revealed, Monster, Attack, Defeated, TryAttack, Mine, MineWasTriggered, Position } from '../components';
 import { sceneEvents } from '../../events/EventsCenter';
-import { StatusEvents, EffectEvents } from '../../events/EventNames';
+import { StatusEvents, EffectEvents, AudioEvents } from '../../events/EventNames';
 import { dataManager } from '../../DataManager';
 
 export class CombatSystem extends System {
@@ -31,6 +31,8 @@ export class CombatSystem extends System {
             x: position.x,
             y: position.y
           });
+          // Воспроизводим звук взрыва
+          sceneEvents.emit(AudioEvents.EXPLOSION);
         }
       } else {
         // Создаем эффект удара по монстру
@@ -38,6 +40,8 @@ export class CombatSystem extends System {
           x: position.x,
           y: position.y
         });
+        // Воспроизводим звук смерти врага
+        sceneEvents.emit(AudioEvents.ENEMY_DEAD);
       }
       
       if (attack.value > 0) {
@@ -46,6 +50,8 @@ export class CombatSystem extends System {
       if (dataManager.player.hp < 0) {
         const prevStatus = dataManager.status;
         dataManager.setStatus(StatusEvents.LOSE);
+        // Воспроизводим звук смерти игрока
+        sceneEvents.emit(AudioEvents.PLAYER_DEAD);
         sceneEvents.emit(StatusEvents.CHANGED, {
             previous: prevStatus,
             current: dataManager.status

@@ -45,6 +45,25 @@ export class Preload extends Phaser.Scene {
     this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
     // this.load.bitmapFont('ingame', 'fonts/just-sans-outline.png', 'fonts/just-sans-outline.xml');
     this.load.bitmapFont('ui', 'fonts/quinque-five.png', 'fonts/quinque-five.xml');
+
+    // Загружаем звуки
+    this.load.audio('click', 'audio/click.wav');
+    this.load.audio('reveal', 'audio/reveal.wav');
+    this.load.audio('denied', 'audio/denied.wav');
+    this.load.audio('enemy_dead', 'audio/enemy_dead.wav');
+    this.load.audio('player_dead', 'audio/player_dead.wav');
+    this.load.audio('explosion', 'audio/explosion.wav');
+    this.load.audio('use_item', 'audio/use_item.wav');
+    this.load.audio('chest_open', 'audio/chest_open.wav');
+    this.load.audio('heal', 'audio/heal.wav');
+    this.load.audio('grant_xp', 'audio/grant_xp.wav');
+    this.load.audio('grant_xp_max', 'audio/grant_xp_max.wav');
+    this.load.audio('level_up', 'audio/level_up.wav');
+    this.load.audio('miss', 'audio/miss.wav');
+    
+    // Загружаем музыку
+    this.load.audio('ambient', 'audio/ambient.wav');
+    this.load.audio('ambient_win', 'audio/aimbent_win.wav');
   }
 
   create() {

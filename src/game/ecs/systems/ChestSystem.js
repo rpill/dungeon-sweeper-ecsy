@@ -4,7 +4,7 @@ import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
 import { sceneEvents } from '../../events/EventsCenter';
-import { EffectEvents } from '../../events/EventNames';
+import { EffectEvents, AudioEvents } from '../../events/EventNames';
 
 export class ChestSystem extends System {
   static queries = {
@@ -24,6 +24,9 @@ export class ChestSystem extends System {
             x: position.x,
             y: position.y
           });
+          
+          // Воспроизводим звук открытия сундука
+          sceneEvents.emit(AudioEvents.CHEST_OPEN);
           
           // Очищаем спрайты сундука перед удалением
           if (chest.hasComponent(SpriteObjects)) {
@@ -58,6 +61,10 @@ export class ChestSystem extends System {
             x: position.x,
             y: position.y
           });
+          
+          // Воспроизводим звук открытия сундука
+          sceneEvents.emit(AudioEvents.CHEST_OPEN);
+          
           chest.addComponent(Opened);
         }
       }

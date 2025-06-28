@@ -1,5 +1,8 @@
 import { Scene } from 'phaser';
 import { SCENE_KEYS } from './SceneKeys';
+import { AudioEvents } from '../events/EventNames';
+import { sceneEvents } from '../events/EventsCenter';
+import { audioManager } from '../AudioManager';
 
 export class GameOver extends Scene {
   constructor() {
@@ -51,6 +54,18 @@ export class GameOver extends Scene {
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
+        console.log('GameOver: нажата кнопка "В меню"');
+        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+        
+        // Принудительно останавливаем музыку победы
+        audioManager.forceStopWinMusic();
+        
+        // Запускаем обычную музыку если она не играет
+        if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
+          console.log('GameOver: запускаю обычную музыку');
+          audioManager.playMusic();
+        }
+        
         this.scene.start(SCENE_KEYS.MENU);
       });
   }
