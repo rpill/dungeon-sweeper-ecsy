@@ -197,7 +197,7 @@ export class RenderSystem extends System {
     const position = entity.getComponent(Position);
     const tileX = position.x * this.tileSize;
     const tileY = position.y * this.tileSize;
-    let offsetY = -8;
+    let offsetY = entity.hasComponent(Butterfly) ? 0 : -8;
     let frame = sprite.frame;
     // Для мины показываем defeated-спрайт только если есть MineWasTriggered
     if (

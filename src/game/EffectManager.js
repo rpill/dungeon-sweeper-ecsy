@@ -69,7 +69,7 @@ export class EffectManager {
 
   createButterflyDisappearEffect(data) {
     const { x, y } = data;
-    this.createEffect('disappear', x, y, 600, 0, -8);
+    this.createEffect('disappear', x, y, 600, 0, 0);
   }
 
   createChestOpenEffect(data) {
