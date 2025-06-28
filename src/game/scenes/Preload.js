@@ -43,6 +43,7 @@ export class Preload extends Phaser.Scene {
     this.load.spritesheet('level_up', 'images/level_up.png', { frameWidth: 64, frameHeight: 60 });
 
     this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
+    // this.load.bitmapFont('ingame', 'fonts/just-sans-outline.png', 'fonts/just-sans-outline.xml');
     this.load.bitmapFont('ui', 'fonts/quinque-five.png', 'fonts/quinque-five.xml');
   }
 

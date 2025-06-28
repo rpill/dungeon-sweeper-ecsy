@@ -35,6 +35,7 @@ export class RenderSystem extends System {
     this.scene = attributes.scene;
     this.tileSize = attributes.tileSize;
     this.animationCounter = 0; // Счетчик для уникальных ключей анимаций
+    this.fontSize = 10;
   }
 
   static queries = {
@@ -120,7 +121,7 @@ export class RenderSystem extends System {
               tileY + this.tileSize / 2,
               'ingame',
               '?',
-              10
+              this.fontSize
             ).setOrigin(0.5).setTint(0x88ccd0).setDepth(3);
             spriteObjects.dmgText = dmgText;
           } else {
@@ -148,7 +149,7 @@ export class RenderSystem extends System {
                 tileY + this.tileSize / 2,
                 'ingame',
                 String(totalDmg),
-                10
+                this.fontSize
               ).setOrigin(0.5).setTint(0xffffff).setDepth(3);
               spriteObjects.dmgText = dmgText;
             } else {
@@ -228,7 +229,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 4,
           'ingame',
           String(attack.value),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.dmgText = dmgText;
       } else {
@@ -246,7 +247,7 @@ export class RenderSystem extends System {
           tileX + this.tileSize / 2 - 9,
           tileY + this.tileSize + 10,
           'icons',
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
@@ -260,7 +261,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 5,
           'ingame',
           String(xpValue),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
@@ -317,7 +318,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 4,
           'ingame',
           String(attack.value),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.dmgText = dmgText;
       } else {
@@ -335,7 +336,7 @@ export class RenderSystem extends System {
           tileX + this.tileSize / 2 - 9,
           tileY + this.tileSize + 10,
           'icons',
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
@@ -349,7 +350,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 5,
           'ingame',
           String(xpValue),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
@@ -462,7 +463,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 4,
           'ingame',
           hpText,
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.hpText = text;
       } else {
@@ -484,7 +485,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 5,
           'ingame',
           String(xpValue),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
@@ -498,7 +499,7 @@ export class RenderSystem extends System {
           tileX + this.tileSize / 2 - 7,
           tileY + this.tileSize + 10,
           'icons',
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
@@ -557,7 +558,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize - 5,
           'ingame',
           String(xpValue),
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setTint(0xfab402).setDepth(3);
         spriteObjects.xpText = xpText;
       } else {
@@ -571,7 +572,7 @@ export class RenderSystem extends System {
           tileX + this.tileSize / 2 - 7,
           tileY + this.tileSize + 10,
           'icons',
-          10
+          this.fontSize
         ).setOrigin(0.5, 1).setDepth(3);
         spriteObjects.coinIcon = coin;
       } else {
