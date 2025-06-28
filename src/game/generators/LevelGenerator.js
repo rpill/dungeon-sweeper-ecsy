@@ -4,6 +4,7 @@ import { dataManager } from '../DataManager';
 import { ACTOR_TYPES } from '../constants/actor';
 import Phaser from 'phaser';
 import { StatusEvents } from '../events/EventNames';
+import { findEntityAt } from '../ecs/helpers';
 
 export class LevelGenerator {
   constructor(world) {
@@ -77,6 +78,12 @@ export class LevelGenerator {
       if (entity.hasComponent(Components.Sprite) && !entity.hasComponent(Components.Revealed)) {
         if (opts.revealed) {
           entity.addComponent(Components.Revealed);
+          
+          // Добавляем компонент Revealed к тайлу на этой позиции
+          const tileEntity = findEntityAt(Object.values(this.world.entityManager._entities), position.x, position.y, Components.Tile);
+          if (tileEntity && !tileEntity.hasComponent(Components.Revealed)) {
+            tileEntity.addComponent(Components.Revealed);
+          }
         }
       }
     }

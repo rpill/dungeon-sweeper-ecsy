@@ -104,6 +104,8 @@ export class UI extends Scene {
       } else if (current < 0) {
         this.playerPortrait.setFrame(2);
         this.playerHP.setFrame(2);
+        this.levelUpAnimation.setVisible(false);
+        this.levelUpAnimation.stop();
       }
     });
 

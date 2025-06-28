@@ -22,7 +22,9 @@ import {
   Type,
   RevealedAsMonster,
   MineWasTriggered,
-  Butterfly
+  Butterfly,
+  Gazer,
+  Dragon
 } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
@@ -102,8 +104,7 @@ export class RenderSystem extends System {
             const my = position.y + dy;
             const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);
             if (monster && !monster.hasComponent(Defeated) && !monster.hasComponent(TryCollectLoot)) {
-              const type = monster.getComponent(Type);
-              if (type && type.value === 'GAZER') {
+              if (monster.hasComponent(Gazer)) {
                 gazerNearby = true;
               }
             }

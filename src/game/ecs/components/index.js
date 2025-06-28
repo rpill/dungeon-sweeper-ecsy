@@ -33,6 +33,8 @@ import { Butterfly } from './Butterfly';
 import { Medkit } from './Medkit';
 import { TryJump } from './TryJump';
 import { Key } from './Key';
+import { Gazer } from './Gazer';
+import { Dragon } from './Dragon';
 
 export {
   Attack,
@@ -69,5 +71,7 @@ export {
   Butterfly,
   Medkit,
   TryJump,
-  Key
+  Key,
+  Gazer,
+  Dragon
 };

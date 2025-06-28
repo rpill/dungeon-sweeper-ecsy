@@ -25,26 +25,25 @@ export class GameOver extends Scene {
     // Фон меню
     this.add.image(centerX, centerY, 'menu_background');
 
+    const bgColor = data.win ? 0x445f41 : 0xa04f4f;
     // Полупрозрачный затемняющий фон
-    const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
+    const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, bgColor, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
 
     let offsetY = -60;
-    if (data && data.win) {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы победили!', 15).setOrigin(0.5).setTint(0xffff00);
+    if (data.win) {
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы победили!', 15).setOrigin(0.5).setTint(0xffffff);
     } else {
       this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы проиграли!', 15).setOrigin(0.5).setTint(0xffffff);
     }
     offsetY += 30;
-    if (data && typeof data.time === 'number') {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Время: ${formatTime(data.time)}`, 12).setOrigin(0.5).setTint(0xffffff);
-      offsetY += 30;
-    }
-    if (data && typeof data.score === 'number') {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Счёт: ${data.score}`, 12).setOrigin(0.5).setTint(0xffffff);
-      offsetY += 70;
-    }
+
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Время: ${formatTime(data.time)}`, 12).setOrigin(0.5).setTint(0xffffff);
+    offsetY += 30;
+
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Счёт: ${data.score}`, 12).setOrigin(0.5).setTint(0xffffff);
+    offsetY += 70;
 
     // Кнопка "В меню"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'В меню', 14)

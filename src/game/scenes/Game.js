@@ -63,7 +63,7 @@ export class Game extends Phaser.Scene {
       }
       if (current === StatusEvents.LOSE) {
         this.cameras.main.shake(1000, 0.002);
-        this.time.delayedCall(1000, () => {
+        this.time.delayedCall(2000, () => {
           this.scene.start(SCENE_KEYS.GAME_OVER, { win: false, time: dataManager.getElapsedTime(), score: dataManager.player ? dataManager.player.score : 0 });
         });
       }
