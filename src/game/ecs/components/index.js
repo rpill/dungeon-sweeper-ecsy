@@ -32,6 +32,7 @@ import { MineWasTriggered } from './MineWasTriggered';
 import { Butterfly } from './Butterfly';
 import { Medkit } from './Medkit';
 import { TryJump } from './TryJump';
+import { Key } from './Key';
 
 export {
   Attack,
@@ -67,5 +68,6 @@ export {
   MineWasTriggered,
   Butterfly,
   Medkit,
-  TryJump
+  TryJump,
+  Key
 };

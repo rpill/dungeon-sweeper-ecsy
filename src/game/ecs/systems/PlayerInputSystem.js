@@ -24,6 +24,7 @@ import {
   TryJump
 } from '../components';
 import { dataManager } from '../../DataManager';
+import { StatusEvents } from '../../events/EventNames';
 
 export class PlayerInputSystem extends System {
   static queries = {
@@ -38,6 +39,7 @@ export class PlayerInputSystem extends System {
   }
 
   onPointerDown(pointer) {
+    if (dataManager.status !== StatusEvents.PLAYING) return;
     if (pointer.rightButtonDown()) return;
     const x = Math.floor(pointer.worldX / this.tileSize);
     const y = Math.floor(pointer.worldY / this.tileSize);

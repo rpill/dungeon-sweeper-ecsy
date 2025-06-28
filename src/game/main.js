@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { SCENE_KEYS } from './scenes/SceneKeys';
+import { Boot } from './scenes/Boot';
 import { Preload } from './scenes/Preload';
 import { Menu } from './scenes/Menu';
 import { Game } from './scenes/Game';
@@ -28,12 +29,13 @@ const config = {
 const StartGame = (parent) => {
     const game = new Phaser.Game({ ...config, parent });
 
+    game.scene.add(SCENE_KEYS.BOOT, Boot);
     game.scene.add(SCENE_KEYS.PRELOAD, Preload);
-    game.scene.add(SCENE_KEYS.MENU, Menu);
     game.scene.add(SCENE_KEYS.GAME, Game);
     game.scene.add(SCENE_KEYS.UI, UI);
+    game.scene.add(SCENE_KEYS.MENU, Menu);
     game.scene.add(SCENE_KEYS.GAME_OVER, GameOver);
-    game.scene.start(SCENE_KEYS.PRELOAD);
+    game.scene.start(SCENE_KEYS.BOOT);
 
     return game;
 }

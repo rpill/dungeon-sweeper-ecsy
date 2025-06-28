@@ -1,8 +1,8 @@
 import { Component, Types } from "ecsy";
 
 export class Position extends Component {
-    static schema = {
-        x: { type: Types.Number, default: 0 },
-        y: { type: Types.Number, default: 0 }
-    };
+  static schema = {
+    x: { type: Types.Number, default: 0 },
+    y: { type: Types.Number, default: 0 }
+  };
 }

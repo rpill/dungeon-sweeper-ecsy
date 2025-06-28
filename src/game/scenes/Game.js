@@ -1,6 +1,6 @@
 import { dataManager } from '../DataManager';
 import { SCENE_KEYS } from './SceneKeys';
-import { DungeonGenerator } from '../generators/DungeonGenerator';
+import { LevelGenerator } from '../generators/LevelGenerator';
 import * as Components from '../ecs/components';
 import { RenderSystem } from '../ecs/systems/RenderSystem';
 import { PlayerInputSystem } from '../ecs/systems/PlayerInputSystem';
@@ -13,6 +13,8 @@ import { CollectSystem } from '../ecs/systems/CollectSystem';
 import { LootSystem } from '../ecs/systems/LootSystem';
 import { WallCombatSystem } from '../ecs/systems/WallCombatSystem';
 import { ButterflySystem } from '../ecs/systems/ButterflySystem';
+import { StatusEvents } from '../events/EventNames';
+import { sceneEvents } from '../events/EventsCenter';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -35,6 +37,13 @@ export class Game extends Phaser.Scene {
       dataManager.player.levelUp();
     });
 
+    this.input.keyboard.on('keydown-ESC', () => {
+      if (dataManager.status !== StatusEvents.PLAYING) return;
+      this.scene.pause(SCENE_KEYS.GAME);
+      this.scene.stop(SCENE_KEYS.UI);
+      this.scene.start(SCENE_KEYS.MENU);
+    });
+
     // this.input.keyboard.on('keydown-D', () => {
     //   dataManager.debug = !dataManager.debug;
     // });
@@ -45,7 +54,20 @@ export class Game extends Phaser.Scene {
       console.log('Текущие позиции бабочек:', butterflies.map(b => b.getComponent(Components.Position)));
     });
 
-    this.scene.launch(SCENE_KEYS.UI);
+    // this.scene.launch(SCENE_KEYS.UI);
+
+    // Централизованная обработка завершения игры
+    sceneEvents.on(StatusEvents.CHANGED, ({ current }) => {
+      if (current === StatusEvents.WIN) {
+        this.scene.start(SCENE_KEYS.GAME_OVER, { win: true, time: dataManager.getElapsedTime(), score: dataManager.player ? dataManager.player.score : 0 });
+      }
+      if (current === StatusEvents.LOSE) {
+        this.cameras.main.shake(1000, 0.002);
+        this.time.delayedCall(1000, () => {
+          this.scene.start(SCENE_KEYS.GAME_OVER, { win: false, time: dataManager.getElapsedTime(), score: dataManager.player ? dataManager.player.score : 0 });
+        });
+      }
+    });
   }
 
   update(time, delta) {
@@ -67,8 +89,8 @@ export class Game extends Phaser.Scene {
       this.game.ecs.componentsRegistered = true;
     }
 
-    const dungeonGenerator = new DungeonGenerator(this.game.ecs.world);
-    dungeonGenerator.generate();
+    const levelGenerator = new LevelGenerator(this.game.ecs.world);
+    levelGenerator.generate();
 
     if (!this.renderContainer) {
       this.renderContainer = this.add.container();

@@ -1,7 +1,9 @@
 import { System } from 'ecsy';
-import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type } from '../components';
+import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type, Key } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
+import { StatusEvents } from '../../events/EventNames';
+import { sceneEvents } from '../../events/EventsCenter';
 
 export class ItemActivationSystem extends System {
   static queries = {
@@ -130,6 +132,14 @@ export class ItemActivationSystem extends System {
             }
           }
         }
+      }
+      // Победа при подборе ключа
+      if (item.hasComponent(Key)) {
+        dataManager.setStatus(StatusEvents.WIN);
+        sceneEvents.emit(StatusEvents.CHANGED, {
+          previous: StatusEvents.PLAYING,
+          current: StatusEvents.WIN
+        });
       }
       // Удаляем все визуальные объекты, связанные с предметом
       if (item.hasComponent(SpriteObjects)) {

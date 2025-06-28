@@ -3,6 +3,9 @@ import { TryCollectLoot, Monster, Wall, Defeated, XP, Loot, Position, SpriteObje
 import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
+import { StatusEvents } from '../../events/EventNames';
+import { ACTOR_TYPES } from '../../constants/actor';
+import { sceneEvents } from '../../events/EventsCenter';
 
 export class LootSystem extends System {
   static queries = {

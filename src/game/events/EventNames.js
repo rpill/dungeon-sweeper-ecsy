@@ -11,6 +11,6 @@ export const StatusEvents = {
   PLAYING: 'game_playing',
   LOSE: 'game_lose',
   WIN: 'game_win',
-  GENERATING_DUNGEON: 'game_generating_dungeon',
+  GENERATING_LEVEL: 'game_generating_level',
   CHANGED: 'game_changed',
 }
