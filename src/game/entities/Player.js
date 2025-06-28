@@ -44,7 +44,9 @@ export class Player {
 
     this.xp -= this.nextLevelXP();
     this.level += 1;
-    this.maxHP = Math.min(19, this.maxHP + 1);
+    if (this.level % 2 !== 0) {
+        this.maxHP = Math.min(19, this.maxHP + 1);
+    }
     this.hp = this.maxHP;
 
     sceneEvents.emit(PlayerEvents.HP_CHANGED, {

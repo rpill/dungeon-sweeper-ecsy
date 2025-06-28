@@ -31,20 +31,29 @@ export class UI extends Scene {
     });
 
     // HP
-    this.playerHP = this.add.sprite(100, hudY - hudHeight / 2 + 1, 'icons', 0);
+    this.playerHP = this.add.sprite(100, hudY - hudHeight / 2 - 21, 'icons', 0);
     this.hpText = this.add.bitmapText(
       114,
-      hudY - hudHeight / 2 - 2,
+      hudY - hudHeight / 2 - 24,
       'ui',
       `${this.player.hp}/${this.player.maxHP}`,
       10
     );
 
+    // Level
+    this.levelText = this.add.bitmapText(
+      93,
+      hudY - hudHeight / 2 + 18,
+      'ui',
+      `Ур. ${this.player.level}`,
+      10
+    );
+
     // XP
-    this.playerXP = this.add.sprite(100, hudY - hudHeight / 2 + 20, 'icons', 10);
+    this.playerXP = this.add.sprite(100, hudY - hudHeight / 2, 'icons', 10);
     this.xpText = this.add.bitmapText(
       114,
-      hudY - hudHeight / 2 + 17,
+      hudY - hudHeight / 2 - 3,
       'ui',
       `${this.player.xp}/${this.player.nextLevelXP()}`,
       10
@@ -125,6 +134,8 @@ export class UI extends Scene {
       if (this.levelUpAnimation.anims) {
         this.levelUpAnimation.anims.stop();
       }
+      // Обновляем текст уровня
+      this.levelText.setText(`Ур. ${this.player.level}`);
     });
   }
 } 
