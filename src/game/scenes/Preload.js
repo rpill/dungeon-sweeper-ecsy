@@ -53,42 +53,6 @@ export class Preload extends Phaser.Scene {
 
   #createAnimations() {
     this.anims.create({
-      key: 'hit',
-      frames: this.anims.generateFrameNumbers('fx_impact', { start: 3, end: 5 }),
-      frameRate: 10,
-      hideOnComplete: true
-    });
-
-    this.anims.create({
-      key: 'butterfly_miss',
-      frames: this.anims.generateFrameNumbers('monsters', { start: 134, end: 136 }),
-      frameRate: 10,
-      hideOnComplete: true
-    });
-
-    this.anims.create({
-      key: 'spell_reveal',
-      frames: this.anims.generateFrameNumbers('fx_impact', { start: 24, end: 28 }),
-      frameRate: 10,
-      repeat: 0,
-      yoyo: true,
-    });
-
-    this.anims.create({
-      key: 'explosion',
-      frames: this.anims.generateFrameNumbers('fx_impact', { start: 20, end: 23 }),
-      frameRate: 10,
-      repeat: 0,
-    });
-
-    this.anims.create({
-      key: 'key_anim',
-      frames: this.anims.generateFrameNumbers('icons', { start: 3, end: 7 }),
-      frameRate: 5,
-      repeat: -1
-    });
-
-    this.anims.create({
       key: 'can_level_up',
       frames: this.anims.generateFrameNumbers('level_up', { start: 0, end: 6 }),
       frameRate: 7,

@@ -1,7 +1,7 @@
 import { System } from 'ecsy';
-import { Revealed, Monster, Attack, Defeated, TryAttack, Type, MineWasTriggered } from '../components';
+import { Revealed, Monster, Attack, Defeated, TryAttack, Mine, MineWasTriggered, Position } from '../components';
 import { sceneEvents } from '../../events/EventsCenter';
-import { StatusEvents } from '../../events/EventNames';
+import { StatusEvents, EffectEvents } from '../../events/EventNames';
 import { dataManager } from '../../DataManager';
 
 export class CombatSystem extends System {
@@ -18,13 +18,28 @@ export class CombatSystem extends System {
         entity.removeComponent(TryAttack);
         return;
       }
+      
       const attack = entity.getComponent(Attack);
-      // Если это мина, навешиваем MineWasTriggered
-      if (entity.hasComponent(Type) && entity.getComponent(Type).value === 'MINE') {
+      const position = entity.getComponent(Position);
+      
+      // Если это мина, навешиваем MineWasTriggered и создаем эффект взрыва
+      if (entity.hasComponent(Mine)) {
         if (!entity.hasComponent(MineWasTriggered)) {
           entity.addComponent(MineWasTriggered);
+          // Создаем эффект взрыва мины
+          sceneEvents.emit(EffectEvents.MINE_EXPLOSION, {
+            x: position.x,
+            y: position.y
+          });
         }
+      } else {
+        // Создаем эффект удара по монстру
+        sceneEvents.emit(EffectEvents.MONSTER_HIT, {
+          x: position.x,
+          y: position.y
+        });
       }
+      
       if (attack.value > 0) {
         dataManager.player.takeDamage(attack.value);
       }

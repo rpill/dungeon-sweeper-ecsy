@@ -19,12 +19,12 @@ import {
   OpenedSprite,
   TryCollectLoot,
   TryCollect,
-  Type,
   RevealedAsMonster,
   MineWasTriggered,
   Butterfly,
   Gazer,
-  Dragon
+  Dragon,
+  Mine
 } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
@@ -197,11 +197,10 @@ export class RenderSystem extends System {
     const tileY = position.y * this.tileSize;
     let offsetY = -8;
     let frame = sprite.frame;
-    const type = entity.getComponent(Type);
     // Для мины показываем defeated-спрайт только если есть MineWasTriggered
     if (
       (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) ||
-      (type && type.value === 'MINE' && entity.hasComponent(MineWasTriggered) && entity.hasComponent(DefeatedSprite))
+      (entity.hasComponent(Mine) && entity.hasComponent(MineWasTriggered) && entity.hasComponent(DefeatedSprite))
     ) {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;

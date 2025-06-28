@@ -2,12 +2,12 @@ import { CombatSystem } from './CombatSystem';
 import { PlayerInputSystem } from './PlayerInputSystem';
 import { RenderSystem } from './RenderSystem';
 import { RevealSystem } from './RevealSystem';
-import { OrbRevealSystem } from './OrbRevealSystem';
+import { EffectSystem } from './EffectSystem';
 
 export {
   CombatSystem,
   PlayerInputSystem,
   RenderSystem,
   RevealSystem,
-  OrbRevealSystem
+  EffectSystem
 };

@@ -3,6 +3,8 @@ import { TryOpen, Chest, Opened, OpenedSprite, XP, Loot, Position, Sprite, Item,
 import { dataManager } from '../../DataManager';
 import actorDefinitions from '../../data/actor-definitions.json';
 import * as Components from '../components';
+import { sceneEvents } from '../../events/EventsCenter';
+import { EffectEvents } from '../../events/EventNames';
 
 export class ChestSystem extends System {
   static queries = {
@@ -17,6 +19,12 @@ export class ChestSystem extends System {
       if (chest.hasComponent(Loot)) {
         const loot = chest.getComponent(Loot);
         if (loot.type === 'MEDKIT') {
+          // Создаем эффект открытия сундука
+          sceneEvents.emit(EffectEvents.CHEST_OPEN, {
+            x: position.x,
+            y: position.y
+          });
+          
           // Очищаем спрайты сундука перед удалением
           if (chest.hasComponent(SpriteObjects)) {
             const spriteObjects = chest.getComponent(SpriteObjects);
@@ -45,6 +53,11 @@ export class ChestSystem extends System {
       // Если в сундуке опыт, просто отмечаем как открытый
       if (chest.hasComponent(XP)) {
         if (!chest.hasComponent(Opened)) {
+          // Создаем эффект открытия сундука
+          sceneEvents.emit(EffectEvents.CHEST_OPEN, {
+            x: position.x,
+            y: position.y
+          });
           chest.addComponent(Opened);
         }
       }

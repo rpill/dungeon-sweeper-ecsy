@@ -169,7 +169,7 @@
       { "component": "Attack", "data": { "value": 100 } },
       { "component": "XP", "data": { "value": 3 } },
       { "component": "DefeatedSprite", "data": { "frame": 132 } },
-      { "component": "ExplodesOnDeath" },
+      { "component": "Mine" },
       { "component": "Type", "data": { "value": "MINE" } }
     ],
     "DRAGON": [

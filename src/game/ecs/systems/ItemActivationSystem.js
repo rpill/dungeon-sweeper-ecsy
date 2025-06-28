@@ -1,8 +1,8 @@
 import { System } from 'ecsy';
-import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type, Key } from '../components';
+import { UseItem, Orb, Position, Tile, Spell, Monster, Defeated, Revealed, Attack, Heal, SpriteObjects, Type, Key, Mine } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
-import { StatusEvents } from '../../events/EventNames';
+import { StatusEvents, EffectEvents } from '../../events/EventNames';
 import { sceneEvents } from '../../events/EventsCenter';
 
 export class ItemActivationSystem extends System {
@@ -23,6 +23,8 @@ export class ItemActivationSystem extends System {
       if (item.hasComponent(Orb)) {
         const orbPos = item.getComponent(Position);
         const radius = item.getComponent(Orb).radius;
+        const revealedPositions = [];
+        
         this.queries.tiles.results.forEach(tile => {
           const pos = tile.getComponent(Position);
           const dx = pos.x - orbPos.x;
@@ -30,6 +32,7 @@ export class ItemActivationSystem extends System {
           if (dx * dx + dy * dy <= radius * radius) {
             if (!tile.hasComponent(Revealed)) {
               tile.addComponent(Revealed);
+              revealedPositions.push({ x: pos.x, y: pos.y });
             }
             const x = pos.x;
             const y = pos.y;
@@ -42,10 +45,20 @@ export class ItemActivationSystem extends System {
             });
           }
         });
+
+        // Создаем эффекты на всех открытых клетках
+        if (revealedPositions.length > 0) {
+          sceneEvents.emit(EffectEvents.MULTIPLE_ORB, {
+            positions: revealedPositions
+          });
+        }
       }
       // SPELL: reveal_enemies или disarm_enemies
       if (item.hasComponent(Spell)) {
         const spell = item.getComponent(Spell);
+        const itemPos = item.getComponent(Position);
+        const revealedPositions = [];
+        
         if (spell.type === 'reveal_enemies' && Array.isArray(spell.targets)) {
           this.queries.monsters.results.forEach(monster => {
             const monsterType = monster.getComponent(Type);
@@ -57,19 +70,35 @@ export class ItemActivationSystem extends System {
               const tile = findEntityAt(this.queries.tiles.results, monsterPos.x, monsterPos.y, Tile);
               if (tile && !tile.hasComponent(Revealed)) {
                 tile.addComponent(Revealed);
+                revealedPositions.push({ x: monsterPos.x, y: monsterPos.y });
               }
             }
           });
         }
         if (spell.type === 'disarm_enemies' && Array.isArray(spell.targets)) {
           // Убиваем всех монстров указанного типа (добавляем Defeated)
+          const explodedPositions = [];
+          
           this.queries.monsters.results.forEach(monster => {
             const monsterType = monster.getComponent(Type);
             if (spell.targets.includes(monsterType.value) && !monster.hasComponent(Defeated)) {
               monster.removeComponent(Attack);
               monster.addComponent(Defeated);
+              
+              // Если монстр был уже открыт, создаем эффект взрыва
+              if (monster.hasComponent(Revealed)) {
+                const monsterPos = monster.getComponent(Position);
+                explodedPositions.push({ x: monsterPos.x, y: monsterPos.y });
+              }
             }
           });
+          
+          // Создаем эффекты взрыва на позициях уже открытых врагов
+          if (explodedPositions.length > 0) {
+            sceneEvents.emit(EffectEvents.MULTIPLE_EXPLOSION, {
+              positions: explodedPositions
+            });
+          }
         }
         if (spell.type === 'make_orb_effect') {
           const radius = spell.radius || 1.5;
@@ -87,10 +116,9 @@ export class ItemActivationSystem extends System {
                 if (dx === 0 && dy === 0) continue;
                 const mx = pos.x + dx;
                 const my = pos.y + dy;
-                const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Type);
+                const monster = findEntityAt(this.queries.actors.results, mx, my, Monster);
                 if (monster) {
-                  const monsterType = monster.getComponent(Type);
-                  if (monsterType.value === 'MINE' && !monster.hasComponent(Revealed)) {
+                  if (monster.hasComponent(Mine) && !monster.hasComponent(Revealed)) {
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < radius) {
                       foundMineNearby = true;
@@ -120,6 +148,7 @@ export class ItemActivationSystem extends System {
                 const tile = findEntityAt(this.queries.tiles.results, tx, ty, Tile);
                 if (tile && !tile.hasComponent(Revealed)) {
                   tile.addComponent(Revealed);
+                  revealedPositions.push({ x: tx, y: ty });
                 }
                 // Открываем акторов в этой клетке
                 this.queries.actors.results.forEach(actor => {
@@ -131,6 +160,19 @@ export class ItemActivationSystem extends System {
               }
             }
           }
+        }
+
+        // Создаем эффекты на всех открытых клетках
+        if (revealedPositions.length > 0) {
+          sceneEvents.emit(EffectEvents.MULTIPLE_SPELL, {
+            positions: revealedPositions
+          });
+        } else {
+          // Если не было открыто новых клеток, создаем эффект в позиции предмета
+          sceneEvents.emit(EffectEvents.SPELL_CAST, {
+            x: itemPos.x,
+            y: itemPos.y
+          });
         }
       }
       // Победа при подборе ключа

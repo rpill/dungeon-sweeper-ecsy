@@ -6,6 +6,7 @@ import { RenderSystem } from '../ecs/systems/RenderSystem';
 import { PlayerInputSystem } from '../ecs/systems/PlayerInputSystem';
 import { CombatSystem } from '../ecs/systems/CombatSystem';
 import { RevealSystem } from '../ecs/systems/RevealSystem';
+import { EffectSystem } from '../ecs/systems/EffectSystem';
 import { World } from 'ecsy';
 import { ItemActivationSystem } from '../ecs/systems/ItemActivationSystem';
 import { ChestSystem } from '../ecs/systems/ChestSystem';
@@ -15,6 +16,7 @@ import { WallCombatSystem } from '../ecs/systems/WallCombatSystem';
 import { ButterflySystem } from '../ecs/systems/ButterflySystem';
 import { StatusEvents } from '../events/EventNames';
 import { sceneEvents } from '../events/EventsCenter';
+import { EffectManager } from '../EffectManager';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -24,11 +26,6 @@ export class Game extends Phaser.Scene {
   create() {
     console.log('Game scene create');
     this.startNewGame();
-
-    this.input.keyboard.on('keydown-R', () => {
-      console.log('Restarting game...');
-      this.restartGame();
-    });
 
     this.input.keyboard.on('keydown-L', () => {
       const xp = dataManager.player.nextLevelXP();
@@ -107,12 +104,27 @@ export class Game extends Phaser.Scene {
     });
     this.game.ecs.world.registerSystem(CombatSystem);
     this.game.ecs.world.registerSystem(RevealSystem);
+    
+    // Регистрируем EffectSystem и сохраняем ссылку для очистки
+    const effectSystem = this.game.ecs.world.registerSystem(EffectSystem, {
+      scene: this,
+      tileSize: dataManager.tileSize,
+    });
+    
+    // Сбрасываем счетчик анимаций при новой игре
+    if (effectSystem && effectSystem.resetCounter) {
+      effectSystem.resetCounter();
+    }
+    
     this.game.ecs.world.registerSystem(ItemActivationSystem);
     this.game.ecs.world.registerSystem(ChestSystem);
     this.game.ecs.world.registerSystem(CollectSystem);
     this.game.ecs.world.registerSystem(LootSystem);
     this.game.ecs.world.registerSystem(WallCombatSystem);
     this.game.ecs.world.registerSystem(ButterflySystem);
+
+    // Инициализируем менеджер эффектов
+    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
 
     // console.log(this.game.ecs.world.entityManager._entities);
     // const tiles = Object.values(this.game.ecs.world.entityManager._entities).filter(e => e.hasComponent(Components.Tile));
@@ -135,6 +147,10 @@ export class Game extends Phaser.Scene {
           if (typeof system.stop === 'function') {
             system.stop();
           }
+          // Очищаем анимации эффектов при перезапуске
+          if (system.cleanupAllAnimations && typeof system.cleanupAllAnimations === 'function') {
+            system.cleanupAllAnimations();
+          }
         });
         world.systemManager._systems = {};
       }
@@ -152,6 +168,12 @@ export class Game extends Phaser.Scene {
       }
       // Удалить ссылку на ECS-мир
       this.game.ecs.world = null;
+    }
+
+    // Уничтожаем менеджер эффектов
+    if (this.effectManager) {
+      this.effectManager.destroy();
+      this.effectManager = null;
     }
     
     this.startNewGame();

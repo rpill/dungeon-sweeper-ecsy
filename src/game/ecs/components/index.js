@@ -4,6 +4,7 @@ import { Health } from './Health';
 import { Item } from './Item';
 import { Loot } from './Loot';
 import { Mimic } from './Mimic';
+import { Mine } from './Mine';
 import { Monster } from './Monster';
 import { Position } from './Position';
 import { Revealed } from './Revealed';
@@ -35,6 +36,9 @@ import { TryJump } from './TryJump';
 import { Key } from './Key';
 import { Gazer } from './Gazer';
 import { Dragon } from './Dragon';
+import { Effect } from './Effect';
+import { EffectAnimation } from './EffectAnimation';
+import { EffectPosition } from './EffectPosition';
 
 export {
   Attack,
@@ -43,6 +47,7 @@ export {
   Item,
   Loot,
   Mimic,
+  Mine,
   Monster,
   Position,
   Revealed,
@@ -73,5 +78,8 @@ export {
   TryJump,
   Key,
   Gazer,
-  Dragon
+  Dragon,
+  Effect,
+  EffectAnimation,
+  EffectPosition
 };

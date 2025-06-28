@@ -1,6 +1,8 @@
 import { System } from "ecsy";
 import { Butterfly, Defeated, Position, TryJump, Medkit, Monster, Item, Wall, Chest, Revealed, Tile, SpriteObjects } from "../components";
 import { dataManager } from '../../DataManager';
+import { sceneEvents } from '../../events/EventsCenter';
+import { EffectEvents } from '../../events/EventNames';
 
 export class ButterflySystem extends System {
   static queries = {
@@ -66,6 +68,10 @@ export class ButterflySystem extends System {
       }
 
       if (bestCandidate) {
+        // Сохраняем старую позицию для эффекта исчезновения
+        const oldX = pos.x;
+        const oldY = pos.y;
+        
         pos.x = bestCandidate.x;
         pos.y = bestCandidate.y;
         if (entity.hasComponent(Revealed)) {
@@ -79,8 +85,14 @@ export class ButterflySystem extends System {
             }
           }
         }
-      } else {
-        // Некуда прыгать — бабочка умирает
+        
+        // Создаем эффект исчезновения на старой позиции (где был игрок)
+        sceneEvents.emit(EffectEvents.BUTTERFLY_DISAPPEAR, {
+          x: oldX,
+          y: oldY
+        });
+
+      } else {        
         entity.addComponent(Defeated);
       }
       entity.removeComponent(TryJump);
