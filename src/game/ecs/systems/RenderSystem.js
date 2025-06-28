@@ -24,7 +24,8 @@ import {
   Butterfly,
   Gazer,
   Dragon,
-  Mine
+  Mine,
+  Key
 } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
@@ -33,6 +34,7 @@ export class RenderSystem extends System {
   init(attributes) {
     this.scene = attributes.scene;
     this.tileSize = attributes.tileSize;
+    this.animationCounter = 0; // Счетчик для уникальных ключей анимаций
   }
 
   static queries = {
@@ -373,17 +375,44 @@ export class RenderSystem extends System {
     const position = entity.getComponent(Position);
     const tileX = position.x * this.tileSize;
     const tileY = position.y * this.tileSize;
-    if (!spriteObjects.spriteObj) {
-      const spriteObj = this.scene.add.image(
-        tileX,
-        tileY,
-        sprite.spriteSheet,
-        sprite.frame
-      ).setOrigin(0).setDepth(2);
-      spriteObjects.spriteObj = spriteObj;
+    
+    // Специальная обработка для ключа - создаем анимацию
+    if (entity.hasComponent(Key)) {
+      if (!spriteObjects.spriteObj) {
+        const spriteObj = this.scene.add.sprite(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize / 2,
+          'icons'
+        ).setOrigin(0.5).setDepth(2);
+        
+        // Создаем анимацию для ключа (фреймы 3-7)
+        const animKey = `key_animation_${this.animationCounter++}`;
+        if (!this.scene.anims.exists(animKey)) {
+          this.scene.anims.create({
+            key: animKey,
+            frames: this.scene.anims.generateFrameNumbers('icons', { start: 3, end: 7 }),
+            frameRate: 6,
+            repeat: -1
+          });
+        }
+        
+        spriteObj.play(animKey);
+        spriteObjects.spriteObj = spriteObj;
+      }
     } else {
-      spriteObjects.spriteObj.setFrame(sprite.frame);
-      spriteObjects.spriteObj.setPosition(tileX, tileY);
+      // Обычная обработка для других предметов
+      if (!spriteObjects.spriteObj) {
+        const spriteObj = this.scene.add.image(
+          tileX,
+          tileY,
+          sprite.spriteSheet,
+          sprite.frame
+        ).setOrigin(0).setDepth(2);
+        spriteObjects.spriteObj = spriteObj;
+      } else {
+        spriteObjects.spriteObj.setFrame(sprite.frame);
+        spriteObjects.spriteObj.setPosition(tileX, tileY);
+      }
     }
   }
 
