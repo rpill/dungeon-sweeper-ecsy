@@ -50,7 +50,7 @@ export class WallCombatSystem extends System {
         sceneEvents.emit(AudioEvents.ENEMY_DEAD);
       } else {
         // Воспроизводим звук промаха при атаке стены
-        sceneEvents.emit(AudioEvents.MISS);
+        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       }
 
       // Удаляем компонент TryAttackWall
