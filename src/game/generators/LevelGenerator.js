@@ -572,20 +572,28 @@ export class LevelGenerator {
     if (!position || type !== ACTOR_TYPES.BANSHEE) return false;
 
     let foundTwin = false;
+    let neighborCount = 0;
 
-    // Проверяем только соседние клетки (включая диагонали)
-    for (let dy = -2; dy <= 2; dy++) {
-      for (let dx = -2; dx <= 2; dx++) {
-        if (dx === 0 && dy === 0) continue;
+    // Получаем сущности из карты (исключаем null)
+    const entitiesWithPosition = Array.from(this.spatialMap.values()).filter(e =>
+      e !== null && e.hasComponent(Components.Type)
+    );
 
-        const otherEntity = this.findEntityAtPosition(position.x + dx, position.y + dy);
-        if (otherEntity && otherEntity.getComponent(Components.Type).value === ACTOR_TYPES.BANSHEE && 
-            otherEntity.name === entity.name) {
+    for (const otherEntity of entitiesWithPosition) {
+      if (otherEntity === entity) continue;
+
+      const otherPos = otherEntity.getComponent(Components.Position);
+      const dist = Phaser.Math.Distance.Between(
+        position.x, position.y,
+        otherPos.x, otherPos.y
+      );
+
+      if (dist <= 1 && otherEntity.getComponent(Components.Type).value === ACTOR_TYPES.BANSHEE) {
+        neighborCount++;
+        if (otherEntity.name === entity.name) {
           foundTwin = true;
-          break;
         }
       }
-      if (foundTwin) break;
     }
 
     return foundTwin;
