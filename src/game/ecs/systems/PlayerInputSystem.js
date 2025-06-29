@@ -43,15 +43,23 @@ export class PlayerInputSystem extends System {
     if (dataManager.status !== StatusEvents.PLAYING) return;
     if (pointer.rightButtonDown()) return;
     
-    // Воспроизводим звук клика
-    sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-    
     const x = Math.floor(pointer.worldX / this.tileSize);
     const y = Math.floor(pointer.worldY / this.tileSize);
     const tileEntity = this.queries.tiles.results.find(tile => {
       const pos = tile.getComponent(Position);
       return pos.x === x && pos.y === y;
     });
+    
+    // Проверяем, есть ли на этой позиции живой монстр
+    const liveMonster = this.queries.actors.results.find(actor => {
+      const pos = actor.getComponent(Position);
+      return pos.x === x && pos.y === y &&
+        actor.hasComponent(Monster) &&
+        !actor.hasComponent(Butterfly) &&
+        actor.hasComponent(Revealed) &&
+        !actor.hasComponent(Defeated);
+    });
+    
     // Проверяем закрытый сундук для открытия
     const chest = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
@@ -185,6 +193,10 @@ export class PlayerInputSystem extends System {
     // Открываем клетку, если ничего другого не найдено
     if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
       tileEntity.addComponent(TryReveal);
+      // Воспроизводим звук клика только если на клетке нет живого монстра
+      if (!liveMonster) {
+        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+      }
     }
   }
 
