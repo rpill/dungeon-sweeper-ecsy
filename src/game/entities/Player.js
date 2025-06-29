@@ -80,6 +80,11 @@ export class Player {
     const prevHP = this.hp;
     this.hp = this.hp - amount;
 
+    // Воспроизводим звук alert, если HP становится ровно 0
+    if (this.hp === 0) {
+      sceneEvents.emit(AudioEvents.ALERT);
+    }
+
     sceneEvents.emit(PlayerEvents.HP_CHANGED, {
       previous: prevHP,
       current: this.hp

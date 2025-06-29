@@ -92,6 +92,7 @@ export class AudioManager {
     sceneEvents.on(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax.bind(this));
     sceneEvents.on(AudioEvents.LEVEL_UP, this.playLevelUp.bind(this));
     sceneEvents.on(AudioEvents.MISS, this.playMiss.bind(this));
+    sceneEvents.on(AudioEvents.ALERT, this.playAlert.bind(this));
     sceneEvents.on(AudioEvents.SETTINGS_CHANGED, this.updateSettings.bind(this));
     sceneEvents.on(AudioEvents.STOP_WIN_MUSIC, () => {
       this.stopWinMusic();
@@ -113,6 +114,7 @@ export class AudioManager {
     this.sounds.set('grant_xp_max', this.scene.sound.add('grant_xp_max'));
     this.sounds.set('level_up', this.scene.sound.add('level_up'));
     this.sounds.set('miss', this.scene.sound.add('miss'));
+    this.sounds.set('alert', this.scene.sound.add('alert'));
 
     // Создаем музыку только если её еще нет
     if (!this.music) {
@@ -220,6 +222,12 @@ export class AudioManager {
   playMiss() {
     if (this.settings.soundEnabled) {
       this.sounds.get('miss').play();
+    }
+  }
+
+  playAlert() {
+    if (this.settings.soundEnabled) {
+      this.sounds.get('alert').play();
     }
   }
 
@@ -427,6 +435,7 @@ export class AudioManager {
     sceneEvents.off(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax.bind(this));
     sceneEvents.off(AudioEvents.LEVEL_UP, this.playLevelUp.bind(this));
     sceneEvents.off(AudioEvents.MISS, this.playMiss.bind(this));
+    sceneEvents.off(AudioEvents.ALERT, this.playAlert.bind(this));
     sceneEvents.off(AudioEvents.SETTINGS_CHANGED, this.updateSettings.bind(this));
     sceneEvents.off(AudioEvents.STOP_WIN_MUSIC, this.stopWinMusic.bind(this));
 

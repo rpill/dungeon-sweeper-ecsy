@@ -41,6 +41,7 @@ export const AudioEvents = {
   GRANT_XP_MAX: 'audio:grant_xp_max',
   LEVEL_UP: 'audio:level_up',
   MISS: 'audio:miss',
+  ALERT: 'audio:alert',
   SETTINGS_CHANGED: 'audio:settings_changed',
   STOP_WIN_MUSIC: 'audio:stop_win_music',
 }

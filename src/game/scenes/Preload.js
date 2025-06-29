@@ -62,6 +62,7 @@ export class Preload extends Phaser.Scene {
     this.load.audio('grant_xp_max', 'audio/grant_xp_max.wav');
     this.load.audio('level_up', 'audio/level_up.wav');
     this.load.audio('miss', 'audio/miss.wav');
+    this.load.audio('alert', 'audio/alert.wav');
     
     // Загружаем музыку
     this.load.audio('ambient', 'audio/ambient.wav');
