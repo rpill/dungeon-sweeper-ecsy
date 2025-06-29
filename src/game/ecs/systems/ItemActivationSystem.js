@@ -38,6 +38,9 @@ export class ItemActivationSystem extends System {
           if (dx * dx + dy * dy <= radius * radius) {
             if (!tile.hasComponent(Revealed)) {
               tile.addComponent(Revealed);
+              // Удаляем метку при ревиле
+              const tileComponent = tile.getMutableComponent(Tile);
+              if (tileComponent.mark) tileComponent.mark = '';
               revealedPositions.push({ x: pos.x, y: pos.y });
             }
             const x = pos.x;
@@ -78,6 +81,9 @@ export class ItemActivationSystem extends System {
               const tile = findEntityAt(this.queries.tiles.results, monsterPos.x, monsterPos.y, Tile);
               if (tile && !tile.hasComponent(Revealed)) {
                 tile.addComponent(Revealed);
+                // Удаляем метку при ревиле
+                const tileComponent = tile.getMutableComponent(Tile);
+                if (tileComponent.mark) tileComponent.mark = '';
                 revealedPositions.push({ x: monsterPos.x, y: monsterPos.y });
               }
             }
@@ -160,6 +166,9 @@ export class ItemActivationSystem extends System {
                 const tile = findEntityAt(this.queries.tiles.results, tx, ty, Tile);
                 if (tile && !tile.hasComponent(Revealed)) {
                   tile.addComponent(Revealed);
+                  // Удаляем метку при ревиле
+                  const tileComponent = tile.getMutableComponent(Tile);
+                  if (tileComponent.mark) tileComponent.mark = '';
                   revealedPositions.push({ x: tx, y: ty });
                 }
                 // Открываем акторов в этой клетке
