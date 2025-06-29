@@ -90,30 +90,27 @@ export class UI extends Scene {
       this.levelUpAnimation.play('can_level_up');
     }
 
-    // Кнопка информации об объектах
-    this.infoButton = this.add.bitmapText(hudWidth - 120, hudY - hudHeight / 2, 'ui', 'Информация', 12)
-      .setOrigin(0.5, 0.5)
-      .setTint(0xffffff)
-      .setInteractive({ useHandCursor: true })
+    // Кнопка информации об объектах (NineSlice)
+    this.infoButtonContainer = this.add.container(hudWidth - 160, hudY - hudHeight / 2);
+    const infoButtonBg = this.add.nineslice(0, 0, 'button', null, 80, 40, 8, 8, 8, 8);
+    const infoButtonText = this.add.bitmapText(0, 0, 'ui', 'Сводка', 10).setOrigin(0.5);
+    this.infoButtonContainer.add([infoButtonBg, infoButtonText]);
+    infoButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
         if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
-        
-        // Воспроизводим звук клика
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        
         this.showObjectInfo();
       });
 
-    const menuBtn = this.add.bitmapText(hudWidth - 20, hudY - hudHeight / 2, 'ui', 'Меню', 12)
-      .setOrigin(1, 0.5)
-      .setTint(0xffffff)
-      .setInteractive({ useHandCursor: true })
+    // Кнопка "Меню" (NineSlice)
+    this.menuButtonContainer = this.add.container(hudWidth - 60, hudY - hudHeight / 2);
+    const menuButtonBg = this.add.nineslice(0, 0, 'button', null, 70, 40, 8, 8, 8, 8);
+    const menuButtonText = this.add.bitmapText(0, 0, 'ui', 'Меню', 10).setOrigin(0.5);
+    this.menuButtonContainer.add([menuButtonBg, menuButtonText]);
+    menuButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
         if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
-        
-        // Воспроизводим звук клика
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        
         this.scene.pause(SCENE_KEYS.GAME);
         this.scene.stop(SCENE_KEYS.UI);
         this.scene.start(SCENE_KEYS.MENU);

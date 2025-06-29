@@ -12,7 +12,6 @@ export class Menu extends Scene {
   create() {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
-    let offsetY = -70;
 
     // Инициализируем AudioManager если он еще не инициализирован
     if (!audioManager.scene) {
@@ -43,14 +42,15 @@ export class Menu extends Scene {
       audioManager.onUserInteraction();
     });
 
+    let offsetY = -150;
     // Заголовок
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 20).setOrigin(0.5).setTint(0xffffff);
-    offsetY += 60;
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff);
+    offsetY += 150;
 
     // Кнопка "Продолжить" только если сцена GAME существует и активна
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
     if (gameScene && gameScene.scene.isPaused()) {
-      const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Продолжить', 15)
+      const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Продолжить', 25)
         .setOrigin(0.5)
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true });
@@ -64,11 +64,11 @@ export class Menu extends Scene {
         this.scene.launch(SCENE_KEYS.UI);
         this.scene.stop();
       });
-      offsetY += 40;
+      offsetY += 60;
     }
 
     // Кнопка "Новая игра"
-    const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Новая игра', 15)
+    const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Новая игра', 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -81,10 +81,10 @@ export class Menu extends Scene {
       
       this.scene.start(SCENE_KEYS.GAME);
     });
-    offsetY += 40;
+    offsetY += 60;
 
     // Кнопка "Правила"
-    const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Правила', 15)
+    const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Правила', 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -94,10 +94,10 @@ export class Menu extends Scene {
       
       this.showRules();
     });
-    offsetY += 40;
+    offsetY += 60;
 
     // Кнопка "Настройки звука"
-    const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки', 15)
+    const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки', 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -130,7 +130,7 @@ export class Menu extends Scene {
     bg.setDepth(0);
 
     // Заголовок
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки звука', 18)
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки звука', 25)
       .setOrigin(0.5)
       .setTint(0xffffff);
     offsetY += 50;
@@ -139,11 +139,11 @@ export class Menu extends Scene {
     const settings = this.loadAudioSettings();
 
     // Настройка музыки
-    const musicText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Музыка', 14)
+    const musicText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Музыка', 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
-    const { frame: musicFrame, icon: musicIcon } = this.createToggleButton(centerX + 50, centerY + offsetY, settings.musicEnabled);
+    const { frame: musicFrame, icon: musicIcon } = this.createToggleButton(centerX + 70, centerY + offsetY, settings.musicEnabled);
     
     // Создаем невидимый прямоугольник для всей строки музыки
     const musicRow = this.add.rectangle(centerX, centerY + offsetY, 300, 40, 0xffffff, 0)
@@ -165,11 +165,11 @@ export class Menu extends Scene {
     offsetY += 40;
 
     // Настройка звуков
-    const soundText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Звуки', 14)
+    const soundText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Звуки', 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
-    const { frame: soundFrame, icon: soundIcon } = this.createToggleButton(centerX + 50, centerY + offsetY, settings.soundEnabled);
+    const { frame: soundFrame, icon: soundIcon } = this.createToggleButton(centerX + 70, centerY + offsetY, settings.soundEnabled);
     
     // Создаем невидимый прямоугольник для всей строки звуков
     const soundRow = this.add.rectangle(centerX, centerY + offsetY, 300, 40, 0xffffff, 0)
@@ -190,7 +190,7 @@ export class Menu extends Scene {
     offsetY += 60;
 
     // Кнопка "Назад"
-    const backBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Назад', 15)
+    const backBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Назад', 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -285,7 +285,7 @@ export class Menu extends Scene {
     });
 
     // Кнопка "Назад"
-    const backBtn = this.add.bitmapText(centerX, centerY + offsetY + 20, 'ui', 'Назад', 15)
+    const backBtn = this.add.bitmapText(centerX, centerY + offsetY + 20, 'ui', 'Назад', 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });

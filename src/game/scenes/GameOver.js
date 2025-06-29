@@ -36,20 +36,20 @@ export class GameOver extends Scene {
 
     let offsetY = -60;
     if (data.win) {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы победили!', 15).setOrigin(0.5).setTint(0xffffff);
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы победили!', 20).setOrigin(0.5).setTint(0xffffff);
     } else {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы проиграли!', 15).setOrigin(0.5).setTint(0xffffff);
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы проиграли!', 20).setOrigin(0.5).setTint(0xffffff);
     }
+    offsetY += 60;
+
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Время: ${formatTime(data.time)}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 30;
 
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Время: ${formatTime(data.time)}`, 12).setOrigin(0.5).setTint(0xffffff);
-    offsetY += 30;
-
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Счёт: ${data.score}`, 12).setOrigin(0.5).setTint(0xffffff);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Счёт: ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 70;
 
     // Кнопка "В меню"
-    const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'В меню', 14)
+    const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'В меню', 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true })
