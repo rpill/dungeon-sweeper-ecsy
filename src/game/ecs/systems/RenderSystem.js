@@ -183,6 +183,35 @@ export class RenderSystem extends System {
     } else {
       spriteObjects.spriteObj.setFrame(frame);
     }
+
+    // --- ОТРИСОВКА МЕТКИ ---
+    // Удаляем старую метку, если есть
+    if (spriteObjects.markObj) {
+      spriteObjects.markObj.destroy();
+      spriteObjects.markObj = null;
+    }
+    if (tile.mark) {
+      if (tile.mark === '*') {
+        // Теперь рисуем иконку по центру тайла
+        const markObj = this.scene.add.image(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize / 2,
+          'icons',
+          30 // или другой фрейм для звёздочки, если есть
+        ).setOrigin(0.5).setDisplaySize(20, 20).setDepth(1000);
+        spriteObjects.markObj = markObj;
+      } else {
+        // Теперь текстовая метка по центру тайла
+        const markObj = this.scene.add.bitmapText(
+          tileX + this.tileSize / 2,
+          tileY + this.tileSize / 2,
+          'ingame',
+          tile.mark,
+          12
+        ).setOrigin(0.5).setTint(0xffff00).setDepth(1000);
+        spriteObjects.markObj = markObj;
+      }
+    }
   }
 
   renderMonster(entity) {

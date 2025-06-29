@@ -15,6 +15,9 @@ export class RevealSystem extends System {
       
       if (!tileEntity.hasComponent(Revealed)) {
         tileEntity.addComponent(Revealed);
+        // Удаляем метку при ревиле
+        const tile = tileEntity.getMutableComponent(Tile);
+        if (tile.mark) tile.mark = '';
       }
       // Открываем актора в этой клетке
       const tilePos = tileEntity.getComponent(Position);
