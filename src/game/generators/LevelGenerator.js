@@ -12,6 +12,7 @@ export class LevelGenerator {
     this.spatialMap = new Map();
     this.width = 0;
     this.height = 0;
+    this.actorsByType = {}; // Кэш акторов по типам
   }
 
   generate() {
@@ -20,6 +21,7 @@ export class LevelGenerator {
     this.width = dataManager.width;
     this.height = dataManager.height;
     this.spatialMap = new Map();
+    this.actorsByType = {}; // Сбрасываем кэш
 
     // Инициализируем spatialMap пустыми значениями
     for (let y = 0; y < this.height; y++) {
@@ -126,6 +128,9 @@ export class LevelGenerator {
       layerEntities.push(entity);
     }
 
+    // Кэшируем позиции акторов по типу
+    this.updateActorsByType();
+    
     let bestHappiness = this.calculateTotalHappiness();
     
     // Создаем временные пустые сущности для обмена
@@ -165,6 +170,9 @@ export class LevelGenerator {
           // Обмениваем позиции
           this.swapEntityPositions(entity, otherEntity);
           
+          // Обновляем кэш для затронутых типов
+          this.updateActorsByType();
+          
           const newHappiness = this.calculateTotalHappiness();
           
           if (newHappiness > bestSwapHappiness) {
@@ -174,10 +182,15 @@ export class LevelGenerator {
           
           // Возвращаем позиции обратно
           this.swapEntityPositions(entity, otherEntity);
+          
+          // Обновляем кэш обратно
+          this.updateActorsByType();
         }
         
         if (bestSwapEntity) {
           this.swapEntityPositions(entity, bestSwapEntity);
+          // Обновляем кэш после финального свапа
+          this.updateActorsByType();
           bestHappiness = bestSwapHappiness;
         }
       }
@@ -605,19 +618,39 @@ export class LevelGenerator {
     if (!position) return 0;
 
     let count = 0;
-    // Получаем сущности из карты (исключаем null)
-    const entitiesWithPosition = Array.from(this.spatialMap.values()).filter(e =>
-      e !== null && e.hasComponent(Components.Type)
-    );
+    // Используем кэш если доступен, иначе получаем из spatialMap
+    const entitiesOfSameType = this.actorsByType && this.actorsByType[type] ? 
+      this.actorsByType[type] : 
+      Array.from(this.spatialMap.values()).filter(e =>
+        e !== null && e.hasComponent(Components.Type) && e.getComponent(Components.Type).value === type
+      );
 
-    for (const otherEntity of entitiesWithPosition) {
+    for (const otherEntity of entitiesOfSameType) {
       if (otherEntity === entity) continue;
-      if (otherEntity.getComponent(Components.Type).value !== type) continue;
 
       const otherPos = otherEntity.getComponent(Components.Position);
       const dist = Phaser.Math.Distance.Between(position.x, position.y, otherPos.x, otherPos.y);
       if (dist < minDistance) count++;
     }
     return count;
+  }
+
+  updateActorsByType() {
+    // Сбрасываем кэш
+    this.actorsByType = {};
+    
+    // Получаем все сущности с позициями из spatialMap (исключаем null)
+    const entitiesWithPosition = Array.from(this.spatialMap.values()).filter(e =>
+      e !== null && e.hasComponent(Components.Type)
+    );
+    
+    // Группируем по типам
+    for (const entity of entitiesWithPosition) {
+      const type = entity.getComponent(Components.Type).value;
+      if (!this.actorsByType[type]) {
+        this.actorsByType[type] = [];
+      }
+      this.actorsByType[type].push(entity);
+    }
   }
 }
