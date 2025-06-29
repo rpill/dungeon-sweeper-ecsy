@@ -17,17 +17,12 @@ export class AudioManager {
     this.setupEventListeners();
     // Создаем звуки
     this.createSounds();
-    // Музыка будет запущена после первого взаимодействия пользователя
-    console.log('AudioManager: инициализирован, ожидаю взаимодействия пользователя');
   }
 
   // Метод для переинициализации с новой сценой
   reinitialize(scene) {
-    console.log('AudioManager: переинициализация с новой сценой');
-    
     // Останавливаем только музыку победы, обычную музыку не трогаем
     if (this.winMusic) {
-      console.log('AudioManager: останавливаю музыку победы при реинициализации');
       this.winMusic.stop();
       this.winMusic.destroy();
       this.winMusic = null;
@@ -46,7 +41,6 @@ export class AudioManager {
     
     // Воспроизводим обычную музыку если она включена и пользователь уже взаимодействовал
     if (this.settings.musicEnabled && this.userInteracted && this.music && !this.music.isPlaying) {
-      console.log('AudioManager: воспроизвожу обычную музыку после реинициализации');
       this.playMusic();
     }
   }
@@ -62,11 +56,9 @@ export class AudioManager {
     try {
       const saved = localStorage.getItem('audioSettings');
       const settings = saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
-      console.log('AudioManager: загружены настройки:', settings);
       return settings;
     } catch (error) {
       console.warn('Не удалось загрузить настройки звука:', error);
-      console.log('AudioManager: используем настройки по умолчанию:', defaultSettings);
       return defaultSettings;
     }
   }
@@ -102,14 +94,11 @@ export class AudioManager {
     sceneEvents.on(AudioEvents.MISS, this.playMiss.bind(this));
     sceneEvents.on(AudioEvents.SETTINGS_CHANGED, this.updateSettings.bind(this));
     sceneEvents.on(AudioEvents.STOP_WIN_MUSIC, () => {
-      console.log('AudioManager: получено событие STOP_WIN_MUSIC');
       this.stopWinMusic();
     });
   }
 
   createSounds() {
-    console.log('AudioManager: создание звуков');
-    
     // Создаем звуковые объекты
     this.sounds.set('click', this.scene.sound.add('click'));
     this.sounds.set('reveal', this.scene.sound.add('reveal'));
@@ -127,14 +116,10 @@ export class AudioManager {
 
     // Создаем музыку только если её еще нет
     if (!this.music) {
-      console.log('AudioManager: создание музыки с настройками:', this.settings);
       this.music = this.scene.sound.add('ambient', {
         loop: true,
         volume: this.settings.musicVolume
       });
-      console.log('AudioManager: музыка создана:', !!this.music, 'громкость:', this.settings.musicVolume);
-    } else {
-      console.log('AudioManager: музыка уже существует, не пересоздаю');
     }
 
     // Устанавливаем громкость для всех звуков
@@ -142,13 +127,6 @@ export class AudioManager {
   }
 
   updateSoundVolumes() {
-    console.log('AudioManager: обновление громкости звуков', {
-      soundEnabled: this.settings.soundEnabled,
-      soundVolume: this.settings.soundVolume,
-      musicEnabled: this.settings.musicEnabled,
-      musicVolume: this.settings.musicVolume
-    });
-    
     this.sounds.forEach(sound => {
       const volume = this.settings.soundEnabled ? this.settings.soundVolume : 0;
       sound.setVolume(volume);
@@ -156,14 +134,12 @@ export class AudioManager {
 
     if (this.music) {
       const musicVolume = this.settings.musicEnabled ? this.settings.musicVolume : 0;
-      console.log('AudioManager: устанавливаю громкость музыки:', musicVolume);
       this.music.setVolume(musicVolume);
     }
     
     // Обновляем громкость музыки победы
     if (this.winMusic) {
       const winMusicVolume = this.settings.musicEnabled ? this.settings.musicVolume : 0;
-      console.log('AudioManager: устанавливаю громкость музыки победы:', winMusicVolume);
       this.winMusic.setVolume(winMusicVolume);
     }
   }
@@ -249,32 +225,19 @@ export class AudioManager {
 
   // Методы для управления музыкой
   playMusic() {
-    console.log('AudioManager: попытка запуска музыки', {
-      musicEnabled: this.settings.musicEnabled,
-      musicExists: !!this.music,
-      isPlaying: this.music ? this.music.isPlaying : 'N/A',
-      volume: this.settings.musicVolume,
-      userInteracted: this.userInteracted,
-      anyMusicPlaying: this.isAnyMusicPlaying()
-    });
     
     // Проверяем, что пользователь уже взаимодействовал с игрой
     if (!this.userInteracted) {
-      console.log('AudioManager: пользователь еще не взаимодействовал, музыка не запущена');
       return;
     }
     
     // Проверяем, что никакая музыка не играет уже
     if (this.isAnyMusicPlaying()) {
-      console.log('AudioManager: музыка уже играет, не запускаем повторно');
       return;
     }
     
     if (this.settings.musicEnabled && this.music) {
-      console.log('AudioManager: запускаю музыку');
       this.music.play();
-    } else {
-      console.log('AudioManager: музыка не запущена - условия не выполнены');
     }
   }
 
@@ -297,13 +260,6 @@ export class AudioManager {
   }
 
   playWinMusic() {
-    console.log('AudioManager: playWinMusic вызван', {
-      musicEnabled: this.settings.musicEnabled,
-      currentMusic: this.music ? this.music.isPlaying : 'N/A',
-      winMusicExists: !!this.winMusic,
-      winMusicIsPlaying: this.winMusic ? this.winMusic.isPlaying : 'N/A'
-    });
-    
     // Останавливаем обычную музыку
     this.stopMusic();
     
@@ -314,11 +270,8 @@ export class AudioManager {
         volume: this.settings.musicVolume
       });
       
-      console.log('AudioManager: музыка победы создана:', !!this.winMusic);
-      
       // Добавляем обработчик завершения музыки победы
       this.winMusic.once('complete', () => {
-        console.log('AudioManager: музыка победы завершена, возвращаемся к обычной музыке');
         if (this.winMusic) {
           this.winMusic.destroy();
           this.winMusic = null;
@@ -328,38 +281,23 @@ export class AudioManager {
       });
       
       this.winMusic.play();
-      console.log('AudioManager: музыка победы запущена');
-    } else {
-      console.log('AudioManager: музыка отключена, музыка победы не запущена');
     }
   }
 
   stopWinMusic() {
-    console.log('AudioManager: попытка остановки музыки победы', {
-      winMusicExists: !!this.winMusic,
-      winMusicIsPlaying: this.winMusic ? this.winMusic.isPlaying : 'N/A'
-    });
-    
     if (this.winMusic) {
-      console.log('AudioManager: останавливаю музыку победы');
       this.winMusic.stop();
       this.winMusic.destroy();
       this.winMusic = null;
-      console.log('AudioManager: музыка победы остановлена и уничтожена');
       
       // Возвращаем обычную музыку только если она не играет и пользователь взаимодействовал
       if (this.music && !this.music.isPlaying && this.userInteracted && this.settings.musicEnabled) {
-        console.log('AudioManager: возвращаю обычную музыку после остановки музыки победы');
         this.playMusic();
       }
-    } else {
-      console.log('AudioManager: музыка победы не найдена для остановки');
     }
   }
 
   forceStopWinMusic() {
-    console.log('AudioManager: принудительная остановка музыки победы');
-    
     if (this.winMusic) {
       // Удаляем обработчик завершения чтобы избежать автоматического возврата к обычной музыке
       this.winMusic.removeAllListeners('complete');
@@ -367,15 +305,12 @@ export class AudioManager {
       this.winMusic.stop();
       this.winMusic.destroy();
       this.winMusic = null;
-      console.log('AudioManager: музыка победы принудительно остановлена');
     }
   }
 
   // Методы для управления настройками
   updateSettings() {
-    console.log('AudioManager: обновление настроек');
     this.settings = this.loadSettings();
-    console.log('AudioManager: новые настройки:', this.settings);
     this.updateSoundVolumes();
     
     if (this.settings.musicEnabled) {
@@ -453,11 +388,8 @@ export class AudioManager {
   }
 
   clearAllMusic() {
-    console.log('AudioManager: полная очистка всей музыки');
-    
     // Останавливаем и уничтожаем обычную музыку
     if (this.music) {
-      console.log('AudioManager: уничтожаю обычную музыку');
       this.music.stop();
       this.music.destroy();
       this.music = null;
@@ -465,7 +397,6 @@ export class AudioManager {
     
     // Останавливаем и уничтожаем музыку победы
     if (this.winMusic) {
-      console.log('AudioManager: уничтожаю музыку победы');
       this.winMusic.stop();
       this.winMusic.destroy();
       this.winMusic = null;
@@ -512,7 +443,6 @@ export class AudioManager {
   // Метод для обработки первого взаимодействия пользователя
   onUserInteraction() {
     if (!this.userInteracted) {
-      console.log('AudioManager: первое взаимодействие пользователя, запускаю музыку');
       this.userInteracted = true;
       
       // Запускаем музыку если она включена в настройках и не играет

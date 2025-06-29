@@ -215,7 +215,6 @@ export class EffectSystem extends System {
 
   // Метод для сброса (больше не нужен, но оставляем для совместимости)
   resetCounter() {
-    console.log('EffectSystem: сброс системы');
     this.cleanupAllAnimations();
   }
 } 

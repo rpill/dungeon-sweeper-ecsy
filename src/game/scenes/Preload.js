@@ -41,6 +41,7 @@ export class Preload extends Phaser.Scene {
     this.load.spritesheet('fx_impact', 'images/uf_FX_impact.png', { frameWidth: 48, frameHeight: 48 });
     this.load.spritesheet('fx', 'images/uf_FX.png', { frameWidth: 24, frameHeight: 24 });
     this.load.spritesheet('level_up', 'images/level_up.png', { frameWidth: 64, frameHeight: 60 });
+    this.load.image('book', 'images/book.png');
 
     this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
     // this.load.bitmapFont('ingame', 'fonts/just-sans-outline.png', 'fonts/just-sans-outline.xml');

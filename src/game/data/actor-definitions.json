@@ -18,11 +18,11 @@
     ],
     "MIMIC": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
-      { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 137 } },
+      { "component": "Sprite", "data": { "spriteSheet": "monsters", "frame": 127 } },
       { "component": "Monster" },
       { "component": "Attack", "data": { "value": 11 } },
       { "component": "XP", "data": { "value": 11 } },
-      { "component": "Mimic", "data": {  "frame": 127 } },
+      { "component": "Mimic", "data": {  "frame": 137 } },
       { "component": "DefeatedSprite", "data": { "frame": 138 } },
       { "component": "Type", "data": { "value": "MIMIC" } }
     ],
@@ -39,28 +39,28 @@
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 20 } },
       { "component": "Item" },
       { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["RAT"] } },
-      { "component": "Type", "data": { "value": "SPELL" } }
+      { "component": "Type", "data": { "value": "SPELL_REVEAL_RATS" } }
     ],
     "SPELL_REVEAL_SLIMES": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 21 } },
       { "component": "Item" },
       { "component": "Spell", "data": { "type": "reveal_enemies", "targets": ["BIG_SLIME", "SLIME"] } },
-      { "component": "Type", "data": { "value": "SPELL" } }
+      { "component": "Type", "data": { "value": "SPELL_REVEAL_SLIMES" } }
     ],
     "SPELL_DISARM_MINES": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 23 } },
       { "component": "Item" },
       { "component": "Spell", "data": { "type": "disarm_enemies", "targets": ["MINE"] } },
-      { "component": "Type", "data": { "value": "SPELL" } }
+      { "component": "Type", "data": { "value": "SPELL_DISARM_MINES" } }
     ],
     "SPELL_MAKE_ORB": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 22 } },
       { "component": "Item" },
       { "component": "Spell", "data": { "type": "make_orb_effect", "radius": 1.5 } },
-      { "component": "Type", "data": { "value": "SPELL" } }
+      { "component": "Type", "data": { "value": "SPELL_MAKE_ORB" } }
     ],
     "SLIME": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },
@@ -214,7 +214,7 @@
       { "component": "Sprite", "data": { "spriteSheet": "icons", "frame": 13 } },
       { "component": "Item" },
       { "component": "Orb", "data": { "radius": 2.1 } },
-      { "component": "Type", "data": { "value": "SPELL" } }
+      { "component": "Type", "data": { "value": "ORB" } }
     ],
     "KEY": [
       { "component": "Position", "data": { "x": 0, "y": 0 } },

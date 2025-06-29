@@ -39,6 +39,7 @@ import { Dragon } from './Dragon';
 import { Effect } from './Effect';
 import { EffectAnimation } from './EffectAnimation';
 import { EffectPosition } from './EffectPosition';
+import { ObjectCounter } from './ObjectCounter';
 
 export {
   Attack,
@@ -81,5 +82,6 @@ export {
   Dragon,
   Effect,
   EffectAnimation,
-  EffectPosition
+  EffectPosition,
+  ObjectCounter
 };

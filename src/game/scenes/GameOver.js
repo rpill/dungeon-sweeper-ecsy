@@ -54,7 +54,6 @@ export class GameOver extends Scene {
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
-        console.log('GameOver: нажата кнопка "В меню"');
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
         
         // Принудительно останавливаем музыку победы
@@ -62,7 +61,6 @@ export class GameOver extends Scene {
         
         // Запускаем обычную музыку если она не играет
         if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
-          console.log('GameOver: запускаю обычную музыку');
           audioManager.playMusic();
         }
         

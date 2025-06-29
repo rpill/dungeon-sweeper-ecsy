@@ -12,6 +12,7 @@ export const StatusEvents = {
   LOSE: 'game:lose',
   WIN: 'game:win',
   GENERATING_LEVEL: 'game:generating_level',
+  INFO_OPEN: 'game:info_open',
   CHANGED: 'game:changed',
 }
 

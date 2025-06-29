@@ -289,7 +289,7 @@ export class RenderSystem extends System {
     const tileY = position.y * this.tileSize;
     let offsetY = entity.hasComponent(RevealedAsMonster) ? -8 : 0;
     let frame = sprite.frame;
-    if (!entity.hasComponent(Defeated) && entity.hasComponent(RevealedAsMonster)) {
+    if (!entity.hasComponent(RevealedAsMonster)) {
       const mimic = entity.getComponent(Mimic);
       frame = mimic.frame;
     }

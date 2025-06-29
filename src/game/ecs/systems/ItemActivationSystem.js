@@ -22,8 +22,8 @@ export class ItemActivationSystem extends System {
       // HEAL: лечение игрока
       if (item.hasComponent(Heal)) {
         dataManager.player.heal();
-        // Воспроизводим звук использования предмета
-        sceneEvents.emit(AudioEvents.USE_ITEM);
+        // Воспроизводим звук лечения вместо использования предмета
+        sceneEvents.emit(AudioEvents.HEAL);
       }
       // ORB: массовый ревил
       if (item.hasComponent(Orb)) {

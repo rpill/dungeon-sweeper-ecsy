@@ -21,19 +21,14 @@ export class Menu extends Scene {
     
     // Проверяем и останавливаем музыку победы если она играет
     if (audioManager.winMusic && audioManager.winMusic.isPlaying) {
-      console.log('Menu: останавливаю музыку победы при инициализации');
       audioManager.forceStopWinMusic();
       
       // Запускаем обычную музыку если она не играет
       if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
-        console.log('Menu: запускаю обычную музыку');
         audioManager.playMusic();
       }
     }
     
-    // Отладочная информация о статусе музыки
-    console.log('Menu: статус музыки:', audioManager.getCurrentMusicStatus());
-
     // Фон меню
     this.add.image(centerX, centerY, 'menu_background');
 
@@ -85,7 +80,6 @@ export class Menu extends Scene {
       audioManager.stopWinMusic();
       
       this.scene.start(SCENE_KEYS.GAME);
-      this.scene.launch(SCENE_KEYS.UI);
     });
     offsetY += 40;
 
@@ -157,8 +151,6 @@ export class Menu extends Scene {
     
     // Обработчик для всей строки
     musicRow.on('pointerdown', () => {
-      console.log('Клик по строке музыки');
-      
       // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       
@@ -185,8 +177,6 @@ export class Menu extends Scene {
     
     // Обработчик для всей строки
     soundRow.on('pointerdown', () => {
-      console.log('Клик по строке звуков');
-      
       // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       
@@ -213,17 +203,13 @@ export class Menu extends Scene {
   }
 
   createToggleButton(x, y, enabled) {
-    console.log('Создание кнопки настройки:', { x, y, enabled });
-    
     // Создаем рамку - белый прямоугольник с обводкой (без интерактивности)
     const frame = this.add.rectangle(x, y, 26, 26, 0xffffff, 0.2)
       .setStrokeStyle(2, 0xffffff);
 
     // Создаем иконку галочки (фрейм 30 из icons) без интерактивности
-    const icon = this.add.image(x - 2, y + 2, 'icons', 30)
+    const icon = this.add.image(x, y, 'icons', 30)
       .setVisible(enabled); // Показываем только если включено
-
-    console.log('Кнопка создана:', { frame: frame.type, icon: icon.type, iconFrame: icon.frame.name });
 
     // Возвращаем объект с обоими элементами
     return { frame, icon };
@@ -240,7 +226,6 @@ export class Menu extends Scene {
     try {
       const saved = localStorage.getItem('audioSettings');
       const settings = saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
-      console.log('Загружены настройки звука:', settings);
       return settings;
     } catch (error) {
       console.warn('Не удалось загрузить настройки звука:', error);
@@ -251,7 +236,6 @@ export class Menu extends Scene {
   saveAudioSettings(settings) {
     try {
       localStorage.setItem('audioSettings', JSON.stringify(settings));
-      console.log('Сохранены настройки звука:', settings);
     } catch (error) {
       console.warn('Не удалось сохранить настройки звука:', error);
     }
