@@ -29,3 +29,5 @@ export const ACTOR_TYPES = {
   KEY: 'KEY',
   DRAGON_EGG: 'DRAGON_EGG',
 };
+
+export const ORB_RADIUS = 2;
