@@ -145,7 +145,7 @@ export class LevelGenerator {
     }
     
     // Оптимизируем размещение
-    for (let k = 0; k < 4; k++) {
+    for (let k = 0; k < 2; k++) {
       Phaser.Utils.Array.Shuffle(layerEntities);
       
       for (let entity of layerEntities) {
@@ -167,7 +167,7 @@ export class LevelGenerator {
           
           const newHappiness = this.calculateTotalHappiness();
           
-          if (newHappiness >= bestSwapHappiness) {
+          if (newHappiness > bestSwapHappiness) {
             bestSwapHappiness = newHappiness;
             bestSwapEntity = otherEntity;
           }
