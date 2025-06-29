@@ -27,6 +27,8 @@ import { dataManager } from '../../DataManager';
 import { StatusEvents, AudioEvents } from '../../events/EventNames';
 import { sceneEvents } from '../../events/EventsCenter';
 
+const TIME_TO_HOVER_MENU = 0.33;
+
 export class PlayerInputSystem extends System {
   static queries = {
     tiles: { components: [Tile, Position] },
@@ -39,7 +41,14 @@ export class PlayerInputSystem extends System {
     this._markMenuJustClosed = false;
     this._markMenuActive = false;
     this._markMenuInternalClick = false;
+    // --- Для удержания ---
+    this._holding = false;
+    this._lastPushedTile = null;
+    this._holdStartTime = null;
     this.scene.input.on('pointerdown', this.onPointerDown, this);
+    this.scene.input.on('pointerup', this.onPointerUp, this);
+    this.scene.input.on('pointerout', this.onPointerUp, this);
+    this.scene.input.on('pointercancel', this.onPointerUp, this);
     // Отключаем стандартное контекстное меню браузера
     this.scene.input.manager.canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
   }
@@ -50,44 +59,74 @@ export class PlayerInputSystem extends System {
       return;
     }
     if (dataManager.status !== StatusEvents.PLAYING) return;
-    // Если меню меток открыто
     if (this._markMenuActive) {
-      // Если клик был по кнопке меню — разрешаем только этот клик
       if (this._markMenuInternalClick) {
         this._markMenuInternalClick = false;
         return;
       }
-      // Если клик правой кнопкой — просто закрыть меню
       if (pointer.rightButtonDown()) {
         this.hideMarkMenu();
         return;
       }
-      // Если клик не по меню — ничего не делать
       return;
     }
-    // Если только что закрыли меню меток — игнорируем этот клик
     if (this._markMenuJustClosed) {
       this._markMenuJustClosed = false;
       return;
     }
-    // Обработка правой кнопки мыши для меню меток
-    if (pointer.rightButtonDown()) {
-      const x = Math.floor(pointer.worldX / this.tileSize);
-      const y = Math.floor(pointer.worldY / this.tileSize);
-      if (this.showMarkMenu) {
-        this.showMarkMenu(x, y, pointer.worldX, pointer.worldY);
-      }
-      return;
-    }
-    
     const x = Math.floor(pointer.worldX / this.tileSize);
     const y = Math.floor(pointer.worldY / this.tileSize);
     const tileEntity = this.queries.tiles.results.find(tile => {
       const pos = tile.getComponent(Position);
       return pos.x === x && pos.y === y;
     });
-    
-    // Проверяем, есть ли на этой позиции живой монстр
+    // --- ПКМ или Shift+ЛКМ всегда вызывает меню маркеров ---
+    const isShiftLeftClick = pointer.button === 0 && pointer.event && pointer.event.shiftKey;
+    if (pointer.rightButtonDown() || isShiftLeftClick) {
+      if (tileEntity && !tileEntity.hasComponent(Revealed)) {
+        this.showMarkMenu(x, y, pointer.worldX, pointer.worldY);
+      }
+      return;
+    }
+    // --- ЛКМ: удержание или обычный клик ---
+    if (tileEntity && !tileEntity.hasComponent(Revealed)) {
+      this._holding = true;
+      this._lastPushedTile = { x, y, pointer };
+      this._holdStartTime = this.scene.time.now / 1000;
+    } else {
+      this._holding = false;
+      this._lastPushedTile = null;
+      this._holdStartTime = null;
+      this._handleTileTap(x, y, pointer);
+    }
+  }
+
+  onPointerUp(pointer) {
+    if (this._holding && this._lastPushedTile) {
+      const now = this.scene.time.now / 1000;
+      if (now - this._holdStartTime < TIME_TO_HOVER_MENU) {
+        // Короткое нажатие — обычный клик
+        this._handleTileTap(this._lastPushedTile.x, this._lastPushedTile.y, this._lastPushedTile.pointer);
+      }
+    }
+    this._holding = false;
+    this._lastPushedTile = null;
+    this._holdStartTime = null;
+  }
+
+  _handleTileTap(x, y, pointer) {
+    // --- Вся логика из onPointerDown для мыши ---
+    // Обработка правой кнопки мыши для меню меток
+    if (pointer && pointer.rightButtonDown && pointer.rightButtonDown()) {
+      if (this.showMarkMenu) {
+        this.showMarkMenu(x, y, pointer.worldX, pointer.worldY);
+      }
+      return;
+    }
+    const tileEntity = this.queries.tiles.results.find(tile => {
+      const pos = tile.getComponent(Position);
+      return pos.x === x && pos.y === y;
+    });
     const liveMonster = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -96,8 +135,6 @@ export class PlayerInputSystem extends System {
         actor.hasComponent(Revealed) &&
         !actor.hasComponent(Defeated);
     });
-    
-    // Проверяем закрытый сундук для открытия
     const chest = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -111,8 +148,6 @@ export class PlayerInputSystem extends System {
       }
       return;
     }
-
-    // Проверяем открытый сундук с опытом для сбора
     const chestToCollect = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -125,8 +160,6 @@ export class PlayerInputSystem extends System {
       chestToCollect.addComponent(TryCollect);
       return;
     }
-
-    // Проверяем стену для атаки (только если у игрока есть HP)
     if (dataManager.player && dataManager.player.hp > 0) {
       const wall = this.queries.actors.results.find(actor => {
         const pos = actor.getComponent(Position);
@@ -141,7 +174,6 @@ export class PlayerInputSystem extends System {
         return;
       }
     } else if (dataManager.player && dataManager.player.hp <= 0) {
-      // Проверяем, не пытается ли игрок атаковать стену без HP
       const wall = this.queries.actors.results.find(actor => {
         const pos = actor.getComponent(Position);
         return pos.x === x && pos.y === y &&
@@ -150,13 +182,10 @@ export class PlayerInputSystem extends System {
           !actor.hasComponent(Defeated);
       });
       if (wall) {
-        // Воспроизводим звук отказа
         sceneEvents.emit(AudioEvents.PLAYER_DENIED);
         return;
       }
     }
-
-    // Проверяем живого монстра для атаки
     const actor = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -174,8 +203,6 @@ export class PlayerInputSystem extends System {
       }
       return;
     }
-
-    // Проверяем убитого монстра для сбора лута (только если клетка уже открыта)
     const monsterToCollect = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -188,8 +215,6 @@ export class PlayerInputSystem extends System {
       monsterToCollect.addComponent(TryCollectLoot);
       return;
     }
-
-    // Проверяем разрушенную стену для сбора опыта (только если клетка уже открыта)
     const wallToCollect = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -203,8 +228,6 @@ export class PlayerInputSystem extends System {
       wallToCollect.addComponent(TryCollectLoot);
       return;
     }
-
-    // Активация предмета (например, орба или медкита) по клику
     const item = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y &&
@@ -216,21 +239,15 @@ export class PlayerInputSystem extends System {
       item.addComponent(UseItem);
       return;
     }
-
-    // Прыжок бабочки только по клику на неё
     const butterfly = this.queries.actors.results.find(actor => {
       const pos = actor.getComponent(Position);
       return pos.x === x && pos.y === y && actor.hasComponent(Butterfly) && !actor.hasComponent(Defeated);
     });
-
     if (butterfly && !butterfly.hasComponent(TryJump)) {
       butterfly.addComponent(TryJump);
     }
-
-    // Открываем клетку, если ничего другого не найдено
     if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
       tileEntity.addComponent(TryReveal);
-      // Воспроизводим звук клика только если на клетке нет живого монстра
       if (!liveMonster) {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       }
@@ -239,9 +256,22 @@ export class PlayerInputSystem extends System {
 
   stop() {
     this.scene.input.off('pointerdown', this.onPointerDown, this);
+    this.scene.input.off('pointerup', this.onPointerUp, this);
+    this.scene.input.off('pointerout', this.onPointerUp, this);
+    this.scene.input.off('pointercancel', this.onPointerUp, this);
   }
 
-  execute() { }
+  execute() {
+    if (this._holding && this._lastPushedTile && this._holdStartTime != null) {
+      const now = this.scene.time.now / 1000;
+      if (now - this._holdStartTime > TIME_TO_HOVER_MENU) {
+        this.showMarkMenu(this._lastPushedTile.x, this._lastPushedTile.y, this._lastPushedTile.pointer.worldX, this._lastPushedTile.pointer.worldY);
+        this._holding = false;
+        this._lastPushedTile = null;
+        this._holdStartTime = null;
+      }
+    }
+  }
 
   // --- МЕНЮ МЕТОК ---
   showMarkMenu(tileX, tileY, worldX, worldY) {
