@@ -1,8 +1,9 @@
 import { Scene } from 'phaser';
 import { SCENE_KEYS } from './SceneKeys';
 import { sceneEvents } from '../events/EventsCenter';
-import { AudioEvents } from '../events/EventNames';
+import { AudioEvents, StatusEvents } from '../events/EventNames';
 import { audioManager } from '../AudioManager';
+import { dataManager } from '../DataManager';
 
 export class Menu extends Scene {
   constructor() {
@@ -57,7 +58,7 @@ export class Menu extends Scene {
       continueBtn.on('pointerdown', () => {
         // Воспроизводим звук клика
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        
+        dataManager.setStatus(StatusEvents.PLAYING);
         // При продолжении игры не очищаем музыку, она должна продолжать играть
         
         this.scene.resume(SCENE_KEYS.GAME);
@@ -107,6 +108,12 @@ export class Menu extends Scene {
       
       this.showAudioSettings();
     });
+
+    // Сигнализируем о готовности меню для LoadingAPI только один раз за сессию
+    if (!window._menuReadyCalled && window.onMenuReady) {
+      window.onMenuReady();
+      window._menuReadyCalled = true;
+    }
   }
 
   showAudioSettings() {

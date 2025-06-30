@@ -201,10 +201,6 @@ export class ItemActivationSystem extends System {
       // Победа при подборе ключа
       if (item.hasComponent(Key)) {
         dataManager.setStatus(StatusEvents.WIN);
-        sceneEvents.emit(StatusEvents.CHANGED, {
-          previous: StatusEvents.PLAYING,
-          current: StatusEvents.WIN
-        });
       }
       // Удаляем все визуальные объекты, связанные с предметом
       if (item.hasComponent(SpriteObjects)) {

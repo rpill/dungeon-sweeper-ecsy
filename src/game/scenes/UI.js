@@ -111,6 +111,7 @@ export class UI extends Scene {
       .on('pointerdown', () => {
         if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+        dataManager.setStatus(StatusEvents.PAUSE);
         this.scene.pause(SCENE_KEYS.GAME);
         this.scene.stop(SCENE_KEYS.UI);
         this.scene.start(SCENE_KEYS.MENU);

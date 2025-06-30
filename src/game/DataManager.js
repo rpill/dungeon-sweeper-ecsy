@@ -1,5 +1,6 @@
 import { StatusEvents } from './events/EventNames';
 import { Player } from './entities/Player';
+import { sceneEvents } from './events/EventsCenter';
 
 class DataManager {
   constructor() {
@@ -19,6 +20,7 @@ class DataManager {
     this.player = null;
     this.startTime = null;
     this.endTime = null;
+    this.gameStartCount = 1;
   }
 
   initialize(scene) {
@@ -27,9 +29,11 @@ class DataManager {
     this.player = new Player();
     this.startTime = null;
     this.endTime = null;
+    this.gameStartCount = (this.gameStartCount || 1) + 1;
   }
 
   setStatus(status) {
+    const previous = this.status;
     this.status = status;
     if (status === StatusEvents.PLAYING) {
       this.startTime = Date.now();
@@ -38,6 +42,7 @@ class DataManager {
     if (status === StatusEvents.WIN || status === StatusEvents.LOSE) {
       this.endTime = Date.now();
     }
+    sceneEvents.emit(StatusEvents.CHANGED, { previous, current: status });
   }
 
   getElapsedTime() {

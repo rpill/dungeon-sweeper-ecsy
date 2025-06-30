@@ -33,6 +33,10 @@ export class Game extends Phaser.Scene {
     this.input.on('pointerdown', () => {
       audioManager.onUserInteraction();
     });
+
+    // Централизованная обработка завершения игры
+    sceneEvents.on(StatusEvents.CHANGED, this.onStatusChanged, this);
+    this.events.on('shutdown', this.onSceneShutdown, this);
     
     this.startNewGame();
 
@@ -42,28 +46,38 @@ export class Game extends Phaser.Scene {
       dataManager.player.heal();
       dataManager.player.levelUp();
     });
+  }
 
-    // Централизованная обработка завершения игры
-    sceneEvents.on(StatusEvents.CHANGED, ({ current }) => {
-      if (current === StatusEvents.WIN) {
-        audioManager.playWinMusic();
+  onStatusChanged({ previous, current }) {
+    if (window.ysdk?.features?.GameplayAPI) {
+      if (current === StatusEvents.PLAYING && previous !== StatusEvents.PLAYING) {
+        window.ysdk.features.GameplayAPI.start();
+      } else if (previous === StatusEvents.PLAYING && current !== StatusEvents.PLAYING) {
+        window.ysdk.features.GameplayAPI.stop();
+      }
+    }
+    if (current === StatusEvents.WIN) {
+      audioManager.playWinMusic();
+      this.scene.start(SCENE_KEYS.GAME_OVER, { 
+        win: true, 
+        time: dataManager.getElapsedTime(), 
+        score: dataManager.player ? dataManager.player.score : 0
+      });
+    }
+    if (current === StatusEvents.LOSE) {
+      this.cameras.main.shake(1000, 0.002);
+      this.time.delayedCall(2000, () => {
         this.scene.start(SCENE_KEYS.GAME_OVER, { 
-          win: true, 
+          win: false, 
           time: dataManager.getElapsedTime(), 
           score: dataManager.player ? dataManager.player.score : 0
         });
-      }
-      if (current === StatusEvents.LOSE) {
-        this.cameras.main.shake(1000, 0.002);
-        this.time.delayedCall(2000, () => {
-          this.scene.start(SCENE_KEYS.GAME_OVER, { 
-            win: false, 
-            time: dataManager.getElapsedTime(), 
-            score: dataManager.player ? dataManager.player.score : 0
-          });
-        });
-      }
-    });
+      });
+    }
+  }
+
+  onSceneShutdown() {
+    sceneEvents.off(StatusEvents.CHANGED, this.onStatusChanged, this);
   }
 
   update(time, delta) {
@@ -130,57 +144,25 @@ export class Game extends Phaser.Scene {
 
     // Запускаем UI сцену
     this.scene.launch(SCENE_KEYS.UI);
-  }
 
-  restartGame() {
-    // Останавливаем только музыку победы при перезапуске
-    audioManager.stopWinMusic();
-    
-    // Полная очистка ECS-мирa предыдущей игры
-    if (this.game.ecs && this.game.ecs.world) {
-      const world = this.game.ecs.world;
-      // Остановить все системы
-      if (world.systemManager && world.systemManager._systems) {
-        Object.values(world.systemManager._systems).forEach(system => {
-          if (typeof system.stop === 'function') {
-            system.stop();
-          }
-          // Очищаем анимации эффектов при перезапуске
-          if (system.cleanupAllAnimations && typeof system.cleanupAllAnimations === 'function') {
-            system.cleanupAllAnimations();
-          }
-        });
-        world.systemManager._systems = {};
+    if (dataManager.gameStartCount % 5 === 0 && window.ysdk?.adv) {
+      if (window.ysdk?.features?.GameplayAPI) {
+        window.ysdk.features.GameplayAPI.stop();
       }
-      // Удалить все сущности
-      if (world.entityManager && world.entityManager._entities) {
-        Object.values(world.entityManager._entities).forEach(entity => {
-          if (entity.hasComponent && entity.hasComponent(Components.SpriteObjects)) {
-            const spriteObjects = entity.getComponent(Components.SpriteObjects);
-            spriteObjects.destroyAll();
+      window.ysdk.adv.showFullscreenAdv({
+        callbacks: {
+          onClose: () => {
+            if (window.ysdk?.features?.GameplayAPI) {
+              window.ysdk.features.GameplayAPI.start();
+            }
+          },
+          onError: () => {
+            if (window.ysdk?.features?.GameplayAPI) {
+              window.ysdk.features.GameplayAPI.start();
+            }
           }
-          if (entity.removeAllComponents) entity.removeAllComponents();
-          if (entity.remove) entity.remove();
-        });
-        world.entityManager._entities = {};
-      }
-      // Удалить ссылку на ECS-мир
-      this.game.ecs.world = null;
+        }
+      });
     }
-
-    // Уничтожаем менеджер эффектов
-    if (this.effectManager) {
-      this.effectManager.destroy();
-      this.effectManager = null;
-    }
-    
-    this.startNewGame();
-
-    this.scene.launch(SCENE_KEYS.UI);
-  }
-
-  shutdown() {
-    // Очищаем ресурсы при закрытии сцены
-    // Глобальный audioManager не уничтожаем здесь, так как он может использоваться другими сценами
   }
 }

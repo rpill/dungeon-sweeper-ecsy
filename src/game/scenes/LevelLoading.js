@@ -22,29 +22,7 @@ export class LevelLoading extends Phaser.Scene {
     this.add.sprite(centerX, centerY - 40, 'monsters', frame).setOrigin(0.5);
 
     this.time.delayedCall(100, async () => {
-      await this.generateLevel();
       this.scene.start(SCENE_KEYS.GAME);
     });
-  }
-
-  async generateLevel() {
-    dataManager.initialize(this);
-    this.game.ecs = {};
-    this.game.ecs.world = new World();
-    window.ecsWorld = this.game.ecs.world;
-    window.Components = Components;
-    if (!this.game.ecs.componentsRegistered) {
-      Object.values(Components).forEach(component => {
-        this.game.ecs.world.registerComponent(component);
-      });
-      this.game.ecs.componentsRegistered = true;
-    }
-    const levelGenerator = new LevelGenerator(this.game.ecs.world);
-    // Если генерация поддерживает асинхронность, используем await
-    if (typeof levelGenerator.generate === 'function') {
-      await levelGenerator.generate();
-    }
-    // Инициализация аудио
-    audioManager.reinitialize(this);
   }
 } 
