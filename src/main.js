@@ -1,4 +1,5 @@
 import StartGame from './game/main';
+import { setLangBySDK } from './game/i18n';
 
 let ysdk = null;
 let adClosed = false;
@@ -15,6 +16,7 @@ function initSDK() {
     window.YaGames.init().then(sdk => {
       ysdk = sdk;
       window.ysdk = sdk;
+      setLangBySDK(sdk);
       // Показываем рекламу
       ysdk.adv.showFullscreenAdv({
         callbacks: {

@@ -4,6 +4,7 @@ import { sceneEvents } from '../events/EventsCenter';
 import { AudioEvents, StatusEvents } from '../events/EventNames';
 import { audioManager } from '../AudioManager';
 import { dataManager } from '../DataManager';
+import { t } from '../i18n';
 
 export class Menu extends Scene {
   constructor() {
@@ -51,7 +52,7 @@ export class Menu extends Scene {
     // Кнопка "Продолжить" только если сцена GAME существует и активна
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
     if (gameScene && gameScene.scene.isPaused()) {
-      const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Продолжить', 25)
+      const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('continue'), 25)
         .setOrigin(0.5)
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true });
@@ -69,7 +70,7 @@ export class Menu extends Scene {
     }
 
     // Кнопка "Новая игра"
-    const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Новая игра', 25)
+    const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('newGame'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -85,7 +86,7 @@ export class Menu extends Scene {
     offsetY += 60;
 
     // Кнопка "Правила"
-    const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Правила', 25)
+    const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('rules'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -98,7 +99,7 @@ export class Menu extends Scene {
     offsetY += 60;
 
     // Кнопка "Настройки звука"
-    const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки', 25)
+    const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('settings'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -137,7 +138,7 @@ export class Menu extends Scene {
     bg.setDepth(0);
 
     // Заголовок
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Настройки звука', 25)
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('soundSettings'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff);
     offsetY += 50;
@@ -146,7 +147,7 @@ export class Menu extends Scene {
     const settings = this.loadAudioSettings();
 
     // Настройка музыки
-    const musicText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Музыка', 20)
+    const musicText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', t('music'), 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
@@ -172,7 +173,7 @@ export class Menu extends Scene {
     offsetY += 40;
 
     // Настройка звуков
-    const soundText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', 'Звуки', 20)
+    const soundText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', t('sound'), 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
@@ -197,7 +198,7 @@ export class Menu extends Scene {
     offsetY += 60;
 
     // Кнопка "Назад"
-    const backBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Назад', 18)
+    const backBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('back'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
@@ -269,15 +270,15 @@ export class Menu extends Scene {
     bg.setDepth(0);
 
     const rules = [
-      'Победи дракона и выберись из замка.',
-      'Безопасно потерять все сердца.',
-      'Враги наносят урон при открытии их клетки.',
-      'Число означает суммарный урон врагов вокруг клетки.',
+      t('rule1'),
+      t('rule2'),
+      t('rule3'),
+      t('rule4'),
       '',
-      'Управление:',
-      'ЛКМ - открыть клетку.',
-      'SHIFT + ЛКМ или ПКМ - поставить метку.',
-      'Коснитесь персонажа, чтобы повысить уровень.',
+      t('controls'),
+      t('lmb'),
+      t('shiftLmbRmb'),
+      t('touchHero'),
     ];
 
     rules.forEach((rule, index) => {
@@ -292,7 +293,7 @@ export class Menu extends Scene {
     });
 
     // Кнопка "Назад"
-    const backBtn = this.add.bitmapText(centerX, centerY + offsetY + 20, 'ui', 'Назад', 18)
+    const backBtn = this.add.bitmapText(centerX, centerY + offsetY + 20, 'ui', t('back'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });

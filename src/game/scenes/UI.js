@@ -5,6 +5,7 @@ import { SCENE_KEYS } from './SceneKeys';
 import { dataManager } from '../DataManager';
 import actorDefinitions from '../data/actor-definitions.json';
 import { audioManager } from '../AudioManager';
+import { t } from '../i18n';
 
 export class UI extends Scene {
   constructor() {
@@ -49,7 +50,7 @@ export class UI extends Scene {
       93,
       hudY - hudHeight / 2 + 18,
       'ui',
-      `Ур. ${this.player.level}`,
+      `${t('level')} ${this.player.level}`,
       10
     );
 
@@ -93,7 +94,7 @@ export class UI extends Scene {
     // Кнопка информации об объектах (NineSlice)
     this.infoButtonContainer = this.add.container(hudWidth - 160, hudY - hudHeight / 2);
     const infoButtonBg = this.add.nineslice(0, 0, 'button', null, 80, 40, 8, 8, 8, 8);
-    const infoButtonText = this.add.bitmapText(0, 0, 'ui', 'Сводка', 10).setOrigin(0.5);
+    const infoButtonText = this.add.bitmapText(0, 0, 'ui', t('summary'), 10).setOrigin(0.5);
     this.infoButtonContainer.add([infoButtonBg, infoButtonText]);
     infoButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
@@ -105,7 +106,7 @@ export class UI extends Scene {
     // Кнопка "Меню" (NineSlice)
     this.menuButtonContainer = this.add.container(hudWidth - 60, hudY - hudHeight / 2);
     const menuButtonBg = this.add.nineslice(0, 0, 'button', null, 70, 40, 8, 8, 8, 8);
-    const menuButtonText = this.add.bitmapText(0, 0, 'ui', 'Меню', 10).setOrigin(0.5);
+    const menuButtonText = this.add.bitmapText(0, 0, 'ui', t('menu'), 10).setOrigin(0.5);
     this.menuButtonContainer.add([menuButtonBg, menuButtonText]);
     menuButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
@@ -158,7 +159,7 @@ export class UI extends Scene {
         this.levelUpAnimation.anims.stop();
       }
       // Обновляем текст уровня
-      this.levelText.setText(`Ур. ${this.player.level}`);
+      this.levelText.setText(`${t('level')} ${this.player.level}`);
     });
   }
 

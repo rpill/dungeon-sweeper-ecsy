@@ -3,7 +3,7 @@ import { SCENE_KEYS } from './SceneKeys';
 import { AudioEvents } from '../events/EventNames';
 import { sceneEvents } from '../events/EventsCenter';
 import { audioManager } from '../AudioManager';
-
+import { t } from '../i18n';
 export class GameOver extends Scene {
   constructor() {
     super({ key: SCENE_KEYS.GAME_OVER });
@@ -36,16 +36,14 @@ export class GameOver extends Scene {
 
     let offsetY = -60;
     if (data.win) {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы победили!', 20).setOrigin(0.5).setTint(0xffffff);
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('win'), 20).setOrigin(0.5).setTint(0xffffff);
     } else {
-      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Вы проиграли!', 20).setOrigin(0.5).setTint(0xffffff);
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('lose'), 20).setOrigin(0.5).setTint(0xffffff);
     }
     offsetY += 60;
-
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Время: ${formatTime(data.time)}`, 18).setOrigin(0.5).setTint(0xffffff);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('time')} ${formatTime(data.time)}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 30;
-
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `Счёт: ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('score')} ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 70;
 
     // Кнопка "В меню"

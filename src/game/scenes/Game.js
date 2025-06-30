@@ -39,13 +39,6 @@ export class Game extends Phaser.Scene {
     this.events.on('shutdown', this.onSceneShutdown, this);
     
     this.startNewGame();
-
-    this.input.keyboard.on('keydown-L', () => {
-      const xp = dataManager.player.nextLevelXP();
-      dataManager.player.grantXP(xp);
-      dataManager.player.heal();
-      dataManager.player.levelUp();
-    });
   }
 
   onStatusChanged({ previous, current }) {
