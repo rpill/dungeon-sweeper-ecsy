@@ -11,14 +11,14 @@ export class EffectManager {
 
   setupEventListeners() {
     // Слушаем события для создания эффектов
-    sceneEvents.on(EffectEvents.MONSTER_HIT, this.createMonsterHitEffect.bind(this));
-    sceneEvents.on(EffectEvents.MINE_EXPLOSION, this.createMineExplosionEffect.bind(this));
-    sceneEvents.on(EffectEvents.BUTTERFLY_DISAPPEAR, this.createButterflyDisappearEffect.bind(this));
-    sceneEvents.on(EffectEvents.CHEST_OPEN, this.createChestOpenEffect.bind(this));
-    sceneEvents.on(EffectEvents.SPELL_CAST, this.createSpellEffect.bind(this));
-    sceneEvents.on(EffectEvents.MULTIPLE_SPELL, this.createMultipleSpellEffects.bind(this));
-    sceneEvents.on(EffectEvents.MULTIPLE_ORB, this.createMultipleOrbEffects.bind(this));
-    sceneEvents.on(EffectEvents.MULTIPLE_EXPLOSION, this.createMultipleExplosionEffects.bind(this));
+    sceneEvents.on(EffectEvents.MONSTER_HIT, this.createMonsterHitEffect, this);
+    sceneEvents.on(EffectEvents.MINE_EXPLOSION, this.createMineExplosionEffect, this);
+    sceneEvents.on(EffectEvents.BUTTERFLY_DISAPPEAR, this.createButterflyDisappearEffect, this);
+    sceneEvents.on(EffectEvents.CHEST_OPEN, this.createChestOpenEffect, this);
+    sceneEvents.on(EffectEvents.SPELL_CAST, this.createSpellEffect, this);
+    sceneEvents.on(EffectEvents.MULTIPLE_SPELL, this.createMultipleSpellEffects, this);
+    sceneEvents.on(EffectEvents.MULTIPLE_ORB, this.createMultipleOrbEffects, this);
+    sceneEvents.on(EffectEvents.MULTIPLE_EXPLOSION, this.createMultipleExplosionEffects, this);
   }
 
   createEffect(type, x, y, duration = 1000, offsetX = 0, offsetY = 0) {
@@ -132,13 +132,13 @@ export class EffectManager {
 
   destroy() {
     // Удаляем слушатели событий
-    sceneEvents.off(EffectEvents.MONSTER_HIT, this.createMonsterHitEffect.bind(this));
-    sceneEvents.off(EffectEvents.MINE_EXPLOSION, this.createMineExplosionEffect.bind(this));
-    sceneEvents.off(EffectEvents.BUTTERFLY_DISAPPEAR, this.createButterflyDisappearEffect.bind(this));
-    sceneEvents.off(EffectEvents.CHEST_OPEN, this.createChestOpenEffect.bind(this));
-    sceneEvents.off(EffectEvents.SPELL_CAST, this.createSpellEffect.bind(this));
-    sceneEvents.off(EffectEvents.MULTIPLE_SPELL, this.createMultipleSpellEffects.bind(this));
-    sceneEvents.off(EffectEvents.MULTIPLE_ORB, this.createMultipleOrbEffects.bind(this));
-    sceneEvents.off(EffectEvents.MULTIPLE_EXPLOSION, this.createMultipleExplosionEffects.bind(this));
+    sceneEvents.off(EffectEvents.MONSTER_HIT, this.createMonsterHitEffect, this);
+    sceneEvents.off(EffectEvents.MINE_EXPLOSION, this.createMineExplosionEffect, this);
+    sceneEvents.off(EffectEvents.BUTTERFLY_DISAPPEAR, this.createButterflyDisappearEffect, this);
+    sceneEvents.off(EffectEvents.CHEST_OPEN, this.createChestOpenEffect, this);
+    sceneEvents.off(EffectEvents.SPELL_CAST, this.createSpellEffect, this);
+    sceneEvents.off(EffectEvents.MULTIPLE_SPELL, this.createMultipleSpellEffects, this);
+    sceneEvents.off(EffectEvents.MULTIPLE_ORB, this.createMultipleOrbEffects, this);
+    sceneEvents.off(EffectEvents.MULTIPLE_EXPLOSION, this.createMultipleExplosionEffects, this);
   }
 } 

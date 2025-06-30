@@ -140,6 +140,9 @@ export class Game extends Phaser.Scene {
     this.game.ecs.world.registerSystem(ObjectCounterSystem);
 
     // Инициализируем менеджер эффектов
+    if (this.effectManager && typeof this.effectManager.destroy === 'function') {
+      this.effectManager.destroy();
+    }
     this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
 
     // Переинициализируем AudioManager для новой игры
