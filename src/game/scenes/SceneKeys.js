@@ -5,4 +5,5 @@ export const SCENE_KEYS = {
   GAME: 'GAME',
   UI: 'UI',
   GAME_OVER: 'GAME_OVER',
+  LEVEL_LOADING: 'LEVEL_LOADING',
 };

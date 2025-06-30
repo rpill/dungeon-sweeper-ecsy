@@ -79,7 +79,7 @@ export class Menu extends Scene {
       // Останавливаем только музыку победы, обычную музыку оставляем
       audioManager.stopWinMusic();
       
-      this.scene.start(SCENE_KEYS.GAME);
+      this.scene.start(SCENE_KEYS.LEVEL_LOADING);
     });
     offsetY += 60;
 

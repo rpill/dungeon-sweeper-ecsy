@@ -6,6 +6,7 @@ import { Menu } from './scenes/Menu';
 import { Game } from './scenes/Game';
 import { UI } from './scenes/UI';
 import { GameOver } from './scenes/GameOver';
+import { LevelLoading } from './scenes/LevelLoading';
 
 const config = {
     type: Phaser.AUTO,
@@ -35,6 +36,7 @@ const StartGame = (parent) => {
     game.scene.add(SCENE_KEYS.UI, UI);
     game.scene.add(SCENE_KEYS.MENU, Menu);
     game.scene.add(SCENE_KEYS.GAME_OVER, GameOver);
+    game.scene.add(SCENE_KEYS.LEVEL_LOADING, LevelLoading);
     game.scene.start(SCENE_KEYS.BOOT);
 
     return game;
