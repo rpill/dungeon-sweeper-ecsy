@@ -44,8 +44,8 @@ export class Preload extends Phaser.Scene {
     this.load.image('book', 'images/book.png');
     this.load.image('button', 'images/button.png');
 
-    this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
-    // this.load.bitmapFont('ingame', 'fonts/just-sans-outline.png', 'fonts/just-sans-outline.xml');
+    // this.load.bitmapFont('ingame', 'fonts/ingame.png', 'fonts/ingame.xml');
+    this.load.bitmapFont('ingame', 'fonts/fantasy.png', 'fonts/fantasy.xml');
     this.load.bitmapFont('ui', 'fonts/quinque-five.png', 'fonts/quinque-five.xml');
 
     // Загружаем звуки

@@ -283,15 +283,11 @@ export class UI extends Scene {
           try {
             // Создаем иконку урона
             const attackIcon = this.add.sprite(0, 0, 'icons', 31);
-            attackIcon.setScale(0.8);
             attackIcon.setPosition(currentX - 10, currentY);
             this.objectInfoContainer.add(attackIcon);
             
             // Создаем текст урона
-            const attackText = this.add.text(0, 0, `${attackValue}`, {
-              fontSize: '14px',
-              fill: '#ffffff'
-            });
+            const attackText = this.add.bitmapText(0, 0, 'ingame', `${attackValue}`, 10);
             attackText.setOrigin(0.5, 0.5);
             attackText.setPosition(currentX + 15, currentY);
             this.objectInfoContainer.add(attackText);
@@ -302,10 +298,7 @@ export class UI extends Scene {
             this.objectInfoContainer.add(sprite);
             
             // Создаем текст количества
-            const countText = this.add.text(0, 0, `x${count}`, {
-              fontSize: '16px',
-              fill: '#ffffff'
-            });
+            const countText = this.add.bitmapText(0, 0, 'ingame', `x${count}`, 10);
             countText.setPosition(currentX + 80, currentY - 5);
             this.objectInfoContainer.add(countText);
           } catch (error) {

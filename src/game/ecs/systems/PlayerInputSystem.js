@@ -312,7 +312,6 @@ export class PlayerInputSystem extends System {
     // Параметры сетки кнопок
     const btnsPerRow = 4;
     const btnSize = 40;
-    const btnMargin = 0;
     const rows = Math.ceil(marks.length / btnsPerRow);
     const cols = btnsPerRow;
     const menuWidth = cols * btnSize;
@@ -346,7 +345,7 @@ export class PlayerInputSystem extends System {
         .setDepth(999)
         .setInteractive({ useHandCursor: true });
       if (mark === 'del') {
-        btn = this.scene.add.image(x, y, 'icons', 30)
+        btn = this.scene.add.image(x, y, 'icons', 32)
           .setOrigin(0, 0)
           .setDisplaySize(btnSize, btnSize)
           .setInteractive({ useHandCursor: true });
@@ -355,7 +354,7 @@ export class PlayerInputSystem extends System {
       } else {
         btn = this.scene.add.bitmapText(x + btnSize/2, y + btnSize/2, 'ingame', mark, 10)
           .setOrigin(0.5)
-          .setTint(0xf5df6a)
+          .setTint(0xffff00)
           .setInteractive({ useHandCursor: true });
         btn.setDepth(1000);
         btn._bg = bg;

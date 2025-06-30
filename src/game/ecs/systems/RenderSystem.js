@@ -198,7 +198,7 @@ export class RenderSystem extends System {
           tileY + this.tileSize / 2,
           'icons',
           30 // или другой фрейм для звёздочки, если есть
-        ).setOrigin(0.5).setDisplaySize(20, 20).setDepth(1000);
+        ).setOrigin(0.5).setDisplaySize(20, 20).setDepth(900);
         spriteObjects.markObj = markObj;
       } else {
         // Теперь текстовая метка по центру тайла
@@ -207,8 +207,8 @@ export class RenderSystem extends System {
           tileY + this.tileSize / 2,
           'ingame',
           tile.mark,
-          12
-        ).setOrigin(0.5).setTint(0xffff00).setDepth(1000);
+          10
+        ).setOrigin(0.5).setTint(0xffff00).setDepth(900);
         spriteObjects.markObj = markObj;
       }
     }
