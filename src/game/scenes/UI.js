@@ -266,8 +266,8 @@ export class UI extends Scene {
       const rowInColumn = index % objectsPerColumn;
       
       // Вычисляем позицию
-      const currentX = -this.rectWidth/2 + 50 + column * columnWidth;
-      const currentY = -this.rectHeight/2 + 50 + rowInColumn * rowHeight;
+      const currentX = -this.rectWidth/2 + 40 + column * columnWidth;
+      const currentY = -this.rectHeight/2 + 40 + rowInColumn * rowHeight;
       
       // Ищем определение спрайта
       let actorComponents = actorDefinitions[type];
