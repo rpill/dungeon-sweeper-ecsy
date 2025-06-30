@@ -73,30 +73,22 @@ export class AudioManager {
 
   setupEventListeners() {
     // Слушаем события для воспроизведения звуков
-    sceneEvents.on(AudioEvents.PLAYER_CLICK, () => {
-      this.onUserInteraction(); // Обрабатываем первое взаимодействие
-      this.playClick();
-    });
-    sceneEvents.on(AudioEvents.PLAYER_REVEAL, () => {
-      this.onUserInteraction(); // Обрабатываем первое взаимодействие
-      this.playReveal();
-    });
-    sceneEvents.on(AudioEvents.PLAYER_DENIED, this.playDenied.bind(this));
-    sceneEvents.on(AudioEvents.ENEMY_DEAD, this.playEnemyDead.bind(this));
-    sceneEvents.on(AudioEvents.PLAYER_DEAD, this.playPlayerDead.bind(this));
-    sceneEvents.on(AudioEvents.EXPLOSION, this.playExplosion.bind(this));
-    sceneEvents.on(AudioEvents.USE_ITEM, this.playUseItem.bind(this));
-    sceneEvents.on(AudioEvents.CHEST_OPEN, this.playChestOpen.bind(this));
-    sceneEvents.on(AudioEvents.HEAL, this.playHeal.bind(this));
-    sceneEvents.on(AudioEvents.GRANT_XP, this.playGrantXp.bind(this));
-    sceneEvents.on(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax.bind(this));
-    sceneEvents.on(AudioEvents.LEVEL_UP, this.playLevelUp.bind(this));
-    sceneEvents.on(AudioEvents.MISS, this.playMiss.bind(this));
-    sceneEvents.on(AudioEvents.ALERT, this.playAlert.bind(this));
-    sceneEvents.on(AudioEvents.SETTINGS_CHANGED, this.updateSettings.bind(this));
-    sceneEvents.on(AudioEvents.STOP_WIN_MUSIC, () => {
-      this.stopWinMusic();
-    });
+    sceneEvents.on(AudioEvents.PLAYER_CLICK, this.onPlayerClick, this);
+    sceneEvents.on(AudioEvents.PLAYER_REVEAL, this.onPlayerReveal, this);
+    sceneEvents.on(AudioEvents.PLAYER_DENIED, this.playDenied, this);
+    sceneEvents.on(AudioEvents.ENEMY_DEAD, this.playEnemyDead, this);
+    sceneEvents.on(AudioEvents.PLAYER_DEAD, this.playPlayerDead, this);
+    sceneEvents.on(AudioEvents.EXPLOSION, this.playExplosion, this);
+    sceneEvents.on(AudioEvents.USE_ITEM, this.playUseItem, this);
+    sceneEvents.on(AudioEvents.CHEST_OPEN, this.playChestOpen, this);
+    sceneEvents.on(AudioEvents.HEAL, this.playHeal, this);
+    sceneEvents.on(AudioEvents.GRANT_XP, this.playGrantXp, this);
+    sceneEvents.on(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax, this);
+    sceneEvents.on(AudioEvents.LEVEL_UP, this.playLevelUp, this);
+    sceneEvents.on(AudioEvents.MISS, this.playMiss, this);
+    sceneEvents.on(AudioEvents.ALERT, this.playAlert, this);
+    sceneEvents.on(AudioEvents.SETTINGS_CHANGED, this.updateSettings, this);
+    sceneEvents.on(AudioEvents.STOP_WIN_MUSIC, this.stopWinMusic, this);
   }
 
   createSounds() {
@@ -415,29 +407,22 @@ export class AudioManager {
   }
 
   destroy() {
-    // Удаляем слушатели событий
-    sceneEvents.off(AudioEvents.PLAYER_CLICK, () => {
-      this.onUserInteraction(); // Обрабатываем первое взаимодействие
-      this.playClick();
-    });
-    sceneEvents.off(AudioEvents.PLAYER_REVEAL, () => {
-      this.onUserInteraction(); // Обрабатываем первое взаимодействие
-      this.playReveal();
-    });
-    sceneEvents.off(AudioEvents.PLAYER_DENIED, this.playDenied.bind(this));
-    sceneEvents.off(AudioEvents.ENEMY_DEAD, this.playEnemyDead.bind(this));
-    sceneEvents.off(AudioEvents.PLAYER_DEAD, this.playPlayerDead.bind(this));
-    sceneEvents.off(AudioEvents.EXPLOSION, this.playExplosion.bind(this));
-    sceneEvents.off(AudioEvents.USE_ITEM, this.playUseItem.bind(this));
-    sceneEvents.off(AudioEvents.CHEST_OPEN, this.playChestOpen.bind(this));
-    sceneEvents.off(AudioEvents.HEAL, this.playHeal.bind(this));
-    sceneEvents.off(AudioEvents.GRANT_XP, this.playGrantXp.bind(this));
-    sceneEvents.off(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax.bind(this));
-    sceneEvents.off(AudioEvents.LEVEL_UP, this.playLevelUp.bind(this));
-    sceneEvents.off(AudioEvents.MISS, this.playMiss.bind(this));
-    sceneEvents.off(AudioEvents.ALERT, this.playAlert.bind(this));
-    sceneEvents.off(AudioEvents.SETTINGS_CHANGED, this.updateSettings.bind(this));
-    sceneEvents.off(AudioEvents.STOP_WIN_MUSIC, this.stopWinMusic.bind(this));
+    sceneEvents.off(AudioEvents.PLAYER_CLICK, this.onPlayerClick, this);
+    sceneEvents.off(AudioEvents.PLAYER_REVEAL, this.onPlayerReveal, this);
+    sceneEvents.off(AudioEvents.PLAYER_DENIED, this.playDenied, this);
+    sceneEvents.off(AudioEvents.ENEMY_DEAD, this.playEnemyDead, this);
+    sceneEvents.off(AudioEvents.PLAYER_DEAD, this.playPlayerDead, this);
+    sceneEvents.off(AudioEvents.EXPLOSION, this.playExplosion, this);
+    sceneEvents.off(AudioEvents.USE_ITEM, this.playUseItem, this);
+    sceneEvents.off(AudioEvents.CHEST_OPEN, this.playChestOpen, this);
+    sceneEvents.off(AudioEvents.HEAL, this.playHeal, this);
+    sceneEvents.off(AudioEvents.GRANT_XP, this.playGrantXp, this);
+    sceneEvents.off(AudioEvents.GRANT_XP_MAX, this.playGrantXpMax, this);
+    sceneEvents.off(AudioEvents.LEVEL_UP, this.playLevelUp, this);
+    sceneEvents.off(AudioEvents.MISS, this.playMiss, this);
+    sceneEvents.off(AudioEvents.ALERT, this.playAlert, this);
+    sceneEvents.off(AudioEvents.SETTINGS_CHANGED, this.updateSettings, this);
+    sceneEvents.off(AudioEvents.STOP_WIN_MUSIC, this.stopWinMusic, this);
 
     // Полностью очищаем всю музыку
     this.clearAllMusic();
@@ -459,6 +444,16 @@ export class AudioManager {
         this.playMusic();
       }
     }
+  }
+
+  onPlayerClick() {
+    this.onUserInteraction();
+    this.playClick();
+  }
+
+  onPlayerReveal() {
+    this.onUserInteraction();
+    this.playReveal();
   }
 }
 

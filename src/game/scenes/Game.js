@@ -85,6 +85,11 @@ export class Game extends Phaser.Scene {
   }
 
   startNewGame() {
+    if (audioManager && typeof audioManager.destroy === 'function') {
+      audioManager.destroy();
+    }
+    audioManager.initialize(this);
+    
     dataManager.initialize(this);
     this.game.ecs = {};
     this.game.ecs.world = new World();
