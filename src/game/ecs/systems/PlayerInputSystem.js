@@ -352,9 +352,13 @@ export class PlayerInputSystem extends System {
         btn.setDepth(1000);
         btn._bg = bg;
       } else {
+        let tint = 0xffff00; // по умолчанию жёлтый
+        if (mark === '?') tint = 0x88ccd0; // синий
+        else if (mark === '!') tint = 0x00ff00; // зелёный
+        else if (mark === '*') tint = 0xff2d2d; // красный
         btn = this.scene.add.bitmapText(x + btnSize/2, y + btnSize/2, 'ingame', mark, 10)
           .setOrigin(0.5)
-          .setTint(0xffff00)
+          .setTint(tint)
           .setInteractive({ useHandCursor: true });
         btn.setDepth(1000);
         btn._bg = bg;

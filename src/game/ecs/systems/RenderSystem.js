@@ -191,26 +191,19 @@ export class RenderSystem extends System {
       spriteObjects.markObj = null;
     }
     if (tile.mark) {
-      if (tile.mark === '*') {
-        // Теперь рисуем иконку по центру тайла
-        const markObj = this.scene.add.image(
-          tileX + this.tileSize / 2,
-          tileY + this.tileSize / 2,
-          'icons',
-          30 // или другой фрейм для звёздочки, если есть
-        ).setOrigin(0.5).setDisplaySize(20, 20).setDepth(900);
-        spriteObjects.markObj = markObj;
-      } else {
-        // Теперь текстовая метка по центру тайла
-        const markObj = this.scene.add.bitmapText(
-          tileX + this.tileSize / 2,
-          tileY + this.tileSize / 2,
-          'ingame',
-          tile.mark,
-          10
-        ).setOrigin(0.5).setTint(0xffff00).setDepth(900);
-        spriteObjects.markObj = markObj;
-      }
+      // Теперь текстовая метка по центру тайла
+      let tint = 0xffff00; // по умолчанию жёлтый
+      if (tile.mark === '?') tint = 0x88ccd0; // синий
+      else if (tile.mark === '!') tint = 0x00ff00; // зелёный
+      else if (tile.mark === '*') tint = 0xff2d2d; // красный
+      const markObj = this.scene.add.bitmapText(
+        tileX + this.tileSize / 2,
+        tileY + this.tileSize / 2,
+        'ingame',
+        tile.mark,
+        10
+      ).setOrigin(0.5).setTint(tint).setDepth(900);
+      spriteObjects.markObj = markObj;
     }
   }
 
