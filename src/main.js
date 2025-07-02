@@ -17,7 +17,6 @@ function initSDK() {
       ysdk = sdk;
       window.ysdk = sdk;
       setLangBySDK(sdk);
-      // Показываем рекламу
       ysdk.adv.showFullscreenAdv({
         callbacks: {
           onClose: () => {
@@ -30,13 +29,10 @@ function initSDK() {
           }
         }
       });
-
-      // Глобальный колбэк для меню
       window.onMenuReady = () => {
         menuLoaded = true;
         tryGameReady();
       };
-
       StartGame('game-container');
     });
   } else {

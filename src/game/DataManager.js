@@ -55,6 +55,30 @@ class DataManager {
     }
     return 0;
   }
+
+  LEADERBOARD_CACHE_KEY = 'leaderboardCache';
+  LEADERBOARD_CACHE_TTL = 60 * 1000; // 1 минута
+
+  setLeaderboardCache(data) {
+    localStorage.setItem(this.LEADERBOARD_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  }
+
+  getLeaderboardCache() {
+    const cacheStr = localStorage.getItem(this.LEADERBOARD_CACHE_KEY);
+    if (cacheStr) {
+      try {
+        const cacheObj = JSON.parse(cacheStr);
+        if (cacheObj.timestamp && (Date.now() - cacheObj.timestamp < this.LEADERBOARD_CACHE_TTL)) {
+          return cacheObj.data;
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  clearLeaderboardCache() {
+    localStorage.removeItem(this.LEADERBOARD_CACHE_KEY);
+  }
 }
 
 export const dataManager = new DataManager(); 

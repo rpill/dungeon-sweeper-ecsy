@@ -4,6 +4,8 @@ import { AudioEvents } from '../events/EventNames';
 import { sceneEvents } from '../events/EventsCenter';
 import { audioManager } from '../AudioManager';
 import { t } from '../i18n';
+import { dataManager } from '../DataManager';
+
 export class GameOver extends Scene {
   constructor() {
     super({ key: SCENE_KEYS.GAME_OVER });
@@ -41,10 +43,38 @@ export class GameOver extends Scene {
       this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('lose'), 20).setOrigin(0.5).setTint(0xffffff);
     }
     offsetY += 60;
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('time')} ${formatTime(data.time)}`, 18).setOrigin(0.5).setTint(0xffffff);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('time')}: ${formatTime(data.time)}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 30;
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('score')} ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('score')}: ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 70;
+
+    // --- Лидерборды ---
+    if (window.ysdk && window.ysdk.getPlayer && window.ysdk.leaderboards) {
+      window.ysdk.getPlayer().then(player => {
+        if (player.isAuthorized && player.isAuthorized()) {
+          // BestTime: только если победа
+          if (data.win) {
+            window.ysdk.leaderboards.setScore('BestTime', data.time * 1000).catch(()=>{}).finally(() => {
+              dataManager.clearLeaderboardCache();
+            });
+          }
+          // TotalScore: плюсуем очки
+          window.ysdk.leaderboards.getPlayerEntry('TotalScore')
+            .then(entry => {
+              const prev = entry && typeof entry.score === 'number' ? entry.score : 0;
+              window.ysdk.leaderboards.setScore('TotalScore', prev + data.score).catch(()=>{}).finally(() => {
+                dataManager.clearLeaderboardCache();
+              });
+            })
+            .catch(() => {
+              window.ysdk.leaderboards.setScore('TotalScore', data.score).catch(()=>{}).finally(() => {
+                dataManager.clearLeaderboardCache();
+              });
+            });
+        }
+      });
+    }
+    // --- конец лидербордов ---
 
     // Кнопка "В меню"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)

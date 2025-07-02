@@ -10,8 +10,8 @@ export const TEXTS = {
     soundSettings: "Настройки звука",
     win: "Вы победили!",
     lose: "Вы проиграли!",
-    time: "Время:",
-    score: "Счёт:",
+    time: "Время",
+    score: "Счёт",
     rule1: "Победи дракона и выберись из замка.",
     rule2: "Безопасно потерять все сердца.",
     rule3: "Враги наносят урон при открытии их клетки.",
@@ -26,6 +26,9 @@ export const TEXTS = {
     generatingLevel: "Генерируем уровень...",
     revive: "Ожить",
     surrender: "Сдаться",
+    leaderboard: "Таблица лидеров",
+    playerName: "Имя",
+    anonymous: "Аноним",
     // ... добавьте остальные строки
   },
   en: {
@@ -39,8 +42,8 @@ export const TEXTS = {
     soundSettings: "Sound Settings",
     win: "You win!",
     lose: "You lose!",
-    time: "Time:",
-    score: "Score:",
+    time: "Time",
+    score: "Score",
     rule1: "Defeat the dragon and escape the castle.",
     rule2: "It's safe to lose all hearts.",
     rule3: "Enemies deal damage when you open their cell.",
@@ -55,6 +58,9 @@ export const TEXTS = {
     generatingLevel: "Generating level...",
     revive: "Revive",
     surrender: "Give up",
+    leaderboard: "Leaderboard",
+    playerName: "Name",
+    anonymous: "Anonymous",
     // ... add other strings
   }
 };

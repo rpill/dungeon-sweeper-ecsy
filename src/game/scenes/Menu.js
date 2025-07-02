@@ -12,6 +12,7 @@ export class Menu extends Scene {
   }
 
   create() {
+    this.leaderboardCache = null;
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
@@ -19,26 +20,19 @@ export class Menu extends Scene {
     if (!audioManager.scene) {
       audioManager.initialize(this);
     }
-    
     // Проверяем и останавливаем музыку победы если она играет
     if (audioManager.winMusic && audioManager.winMusic.isPlaying) {
       audioManager.forceStopWinMusic();
-      
-      // Запускаем обычную музыку если она не играет
       if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
         audioManager.playMusic();
       }
     }
-    
     // Фон меню
     this.add.image(centerX, centerY, 'menu_background');
-
     // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
-    
-    // Добавляем обработчик клика на фон для первого взаимодействия
     bg.setInteractive({ useHandCursor: false });
     bg.on('pointerdown', () => {
       audioManager.onUserInteraction();
@@ -47,7 +41,7 @@ export class Menu extends Scene {
     let offsetY = -150;
     // Заголовок
     this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff);
-    offsetY += 150;
+    offsetY += 130;
 
     // Кнопка "Продолжить" только если сцена GAME существует и активна
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
@@ -57,11 +51,8 @@ export class Menu extends Scene {
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true });
       continueBtn.on('pointerdown', () => {
-        // Воспроизводим звук клика
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
         dataManager.setStatus(StatusEvents.PLAYING);
-        // При продолжении игры не очищаем музыку, она должна продолжать играть
-        
         this.scene.resume(SCENE_KEYS.GAME);
         this.scene.launch(SCENE_KEYS.UI);
         this.scene.stop();
@@ -75,12 +66,8 @@ export class Menu extends Scene {
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
     newGameBtn.on('pointerdown', () => {
-      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-      
-      // Останавливаем только музыку победы, обычную музыку оставляем
       audioManager.stopWinMusic();
-      
       this.scene.start(SCENE_KEYS.LEVEL_LOADING);
     });
     offsetY += 60;
@@ -91,9 +78,7 @@ export class Menu extends Scene {
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
     rulesBtn.on('pointerdown', () => {
-      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-      
       this.showRules();
     });
     offsetY += 60;
@@ -104,11 +89,27 @@ export class Menu extends Scene {
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
     settingsBtn.on('pointerdown', () => {
-      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-      
       this.showAudioSettings();
     });
+    offsetY += 60;
+
+    // Кнопка "Таблица лидеров" только для авторизованных пользователей, всегда последней
+    if (window.ysdk && window.ysdk.getPlayer) {
+      window.ysdk.getPlayer().then(player => {
+        if (!this.scene.isActive() || this.scene.isSleeping()) return;
+        if (player.isAuthorized && player.isAuthorized()) {
+          const leaderboardBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
+            .setOrigin(0.5)
+            .setTint(0xffff00)
+            .setInteractive({ useHandCursor: true });
+          leaderboardBtn.on('pointerdown', () => {
+            sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+            this.showLeaderboard();
+          });
+        }
+      }).catch((err) => { });
+    }
 
     // Сигнализируем о готовности меню для LoadingAPI только один раз за сессию
     if (!window._menuReadyCalled && window.onMenuReady) {
@@ -303,5 +304,119 @@ export class Menu extends Scene {
       
       this.scene.restart();
     });
+  }
+
+  showLeaderboard() {
+    // Проверяем кэш через dataManager
+    const cache = dataManager.getLeaderboardCache();
+    if (cache) {
+      this.renderLeaderboard(cache);
+      return;
+    }
+    if (window.ysdk && window.ysdk.leaderboards) {
+      window.ysdk.leaderboards.getEntries('TotalScore', { quantityTop: 10, includeUser: true }).then(scoreRes => {
+        window.ysdk.getPlayer().then(player => {
+          const userId = player && player.getUniqueID ? player.getUniqueID() : null;
+          const bestTimePromises = scoreRes.entries.map(entry =>
+            window.ysdk.leaderboards.getPlayerEntry('BestTime').then(timeEntry => {
+              if (timeEntry && timeEntry.player && timeEntry.player.uniqueID === entry.player.uniqueID) {
+                return timeEntry;
+              }
+              return null;
+            }).catch(() => null)
+          );
+          Promise.all(bestTimePromises).then(times => {
+            const data = { scoreRes, userId, times };
+            dataManager.setLeaderboardCache(data);
+            this.renderLeaderboard(data);
+          });
+        });
+      });
+    }
+  }
+
+  renderLeaderboard(cache) {
+    const { scoreRes, userId, times } = cache;
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+    const width = this.cameras.main.width;
+    let offsetY = -240;
+    // Фон меню
+    this.add.image(centerX, centerY, 'menu_background');
+    const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
+    bg.setOrigin(0.5);
+    bg.setDepth(0);
+    this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
+      .setOrigin(0.5)
+      .setTint(0xffffff);
+    offsetY += 60;
+    let y = centerY + offsetY;
+    // Заголовки по тем же X, что и строки
+    const xRank = 50;
+    const xName = 100;
+    const xScore = centerX;
+    const xTime = width - 50;
+    this.add.bitmapText(xRank, y, 'ui', '#', 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xName, y, 'ui', t('playerName'), 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xScore, y, 'ui', t('score'), 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xTime, y, 'ui', t('time'), 16).setOrigin(1, 0.5).setTint(0xaaaaaa);
+    y += 30;
+    let userInTop = false;
+    scoreRes.entries.forEach((entry, i) => {
+      const name = entry.player.publicName || t('anonymous');
+      const score = entry.formattedScore || entry.score;
+      const rank = entry.rank;
+      let bestTime = '-';
+      const timeEntry = times[i];
+      if (timeEntry && timeEntry.score) {
+        bestTime = (timeEntry.formattedScore || (Math.floor(timeEntry.score / 1000) + 's'));
+      }
+      const isUser = userId && entry.player.uniqueID === userId;
+      if (isUser) userInTop = true;
+      const tint = isUser ? 0xffff00 : 0xffffff;
+      this.drawLeaderboardRow(centerX, y, rank, name, score, bestTime, tint);
+      y += 30;
+    });
+    if (!userInTop && userId) {
+      window.ysdk.leaderboards.getPlayerEntry('TotalScore').then(userEntry => {
+        window.ysdk.leaderboards.getPlayerEntry('BestTime').then(userTimeEntry => {
+          let bestTime = '-';
+          if (userTimeEntry && userTimeEntry.score) {
+            bestTime = userTimeEntry.formattedScore || (Math.floor(userTimeEntry.score / 1000) + 's');
+          }
+          const userRank = (typeof userEntry.rank === 'number' && userEntry.rank >= 0) ? userEntry.rank + 1 : 1;
+          this.drawLeaderboardRow(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), userEntry.formattedScore || userEntry.score, bestTime, 0xffff00);
+        }).catch(err => {
+          const userRank = (typeof userEntry.rank === 'number' && userEntry.rank >= 0) ? userEntry.rank + 1 : 1;
+          this.drawLeaderboardRow(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), userEntry.formattedScore || userEntry.score, '-', 0xffff00);
+        });
+      }).catch(err => {
+        if (err.code === 'LEADERBOARD_PLAYER_NOT_PRESENT') {
+          this.drawLeaderboardRow(centerX, y, 1, t('anonymous'), 0, '-', 0xffff00);
+        }
+      });
+    }
+    this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
+      .setOrigin(0.5)
+      .setTint(0xffffff)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+        this.scene.restart();
+      });
+  }
+
+  drawLeaderboardRow(xCenter, y, rank, name, score, bestTime, tint = 0xffffff) {
+    const width = this.cameras.main.width;
+    const xRank = 50;
+    const xName = 100;
+    const xScore = xCenter;
+    const xTime = width - 50;
+    const maxNameLen = 16;
+    let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 1) + '…' : name;
+    this.add.bitmapText(xRank, y, 'ui', rank, 15).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xName, y, 'ui', displayName, 15).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xScore, y, 'ui', score, 15).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xTime, y, 'ui', bestTime, 15).setOrigin(1, 0.5).setTint(tint);
   }
 }
