@@ -14,6 +14,7 @@ export const StatusEvents = {
   GENERATING_LEVEL: 'game:generating_level',
   INFO_OPEN: 'game:info_open',
   CHANGED: 'game:changed',
+  AWAITING_REVIVE: 'game:awaiting_revive',
 }
 
 export const EffectEvents = {

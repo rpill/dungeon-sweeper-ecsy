@@ -48,7 +48,11 @@ export class CombatSystem extends System {
         dataManager.player.takeDamage(attack.value);
       }
       if (dataManager.player.hp < 0) {
-        dataManager.setStatus(StatusEvents.LOSE);
+        if (dataManager.reviveUsed) {
+          dataManager.setStatus(StatusEvents.LOSE);
+        } else {
+          dataManager.setStatus(StatusEvents.AWAITING_REVIVE);
+        }
         // Воспроизводим звук смерти игрока
         sceneEvents.emit(AudioEvents.PLAYER_DEAD);
         entity.removeComponent(TryAttack);

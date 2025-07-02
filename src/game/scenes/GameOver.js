@@ -47,7 +47,7 @@ export class GameOver extends Scene {
     offsetY += 70;
 
     // Кнопка "В меню"
-    const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'В меню', 18)
+    const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true })

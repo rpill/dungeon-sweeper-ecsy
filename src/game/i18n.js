@@ -24,6 +24,8 @@ export const TEXTS = {
     menu: "Меню",
     summary: "Сводка",
     generatingLevel: "Генерируем уровень...",
+    revive: "Ожить",
+    surrender: "Сдаться",
     // ... добавьте остальные строки
   },
   en: {
@@ -51,6 +53,8 @@ export const TEXTS = {
     menu: "Menu",
     summary: "Summary",
     generatingLevel: "Generating level...",
+    revive: "Revive",
+    surrender: "Give up",
     // ... add other strings
   }
 };

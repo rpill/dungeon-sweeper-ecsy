@@ -21,6 +21,7 @@ class DataManager {
     this.startTime = null;
     this.endTime = null;
     this.gameStartCount = 1;
+    this.reviveUsed = false;
   }
 
   initialize(scene) {
@@ -30,13 +31,16 @@ class DataManager {
     this.startTime = null;
     this.endTime = null;
     this.gameStartCount = (this.gameStartCount || 1) + 1;
+    this.reviveUsed = false;
   }
 
   setStatus(status) {
     const previous = this.status;
     this.status = status;
     if (status === StatusEvents.PLAYING) {
-      this.startTime = Date.now();
+      if (this.startTime === null) {
+        this.startTime = Date.now();
+      }
       this.endTime = null;
     }
     if (status === StatusEvents.WIN || status === StatusEvents.LOSE) {

@@ -19,6 +19,7 @@ import { sceneEvents } from '../events/EventsCenter';
 import { EffectManager } from '../EffectManager';
 import { audioManager } from '../AudioManager';
 import { ObjectCounterSystem } from '../ecs/systems/ObjectCounterSystem';
+import { t } from '../i18n';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -55,6 +56,12 @@ export class Game extends Phaser.Scene {
         win: true, 
         time: dataManager.getElapsedTime(), 
         score: dataManager.player ? dataManager.player.score : 0
+      });
+    }
+    if (current === StatusEvents.AWAITING_REVIVE) {
+      this.cameras.main.shake(1000, 0.002);
+      this.time.delayedCall(1000, () => {
+        this.showReviveOrSurrenderUI();
       });
     }
     if (current === StatusEvents.LOSE) {
@@ -165,5 +172,77 @@ export class Game extends Phaser.Scene {
         }
       });
     }
+  }
+
+  /**
+   * Показывает UI с кнопками 'Ожить' и 'Сдаться' после смерти
+   */
+  showReviveOrSurrenderUI() {
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY - 40;
+    const width = 300;
+    const height = 180;
+    // Затемняющий фон
+    this.reviveBg = this.add.nineslice(centerX, centerY, 'hud', null, width, height, 8, 8, 8, 8).setDepth(1000);
+    // Кнопка 'Ожить'
+    const btnWidth = 180;
+    const btnHeight = 44;
+    const btnSpacing = 18;
+    const totalHeight = btnHeight * 2 + btnSpacing;
+    const firstBtnY = centerY - totalHeight / 2 + btnHeight / 2;
+    const secondBtnY = firstBtnY + btnHeight + btnSpacing;
+    this.reviveBtn = this.add.container(centerX, firstBtnY).setDepth(1001);
+    const reviveBtnBg = this.add.nineslice(0, 0, 'button-green', null, btnWidth, btnHeight, 8, 8, 8, 8);
+    reviveBtnBg.setInteractive({ useHandCursor: true });
+    const reviveIcon = this.add.image(-btnWidth/2 + 24, 0, 'icons', 33).setScale(0.9);
+    const reviveText = this.add.bitmapText(10, 0, 'ui', t('revive'), 18).setOrigin(0.5).setTint(0xffffff);
+    this.reviveBtn.add([reviveBtnBg, reviveIcon, reviveText]);
+    reviveBtnBg.on('pointerdown', () => {
+      this.handleReviveClick();
+    });
+    // Кнопка 'Сдаться'
+    this.surrenderBtn = this.add.container(centerX, secondBtnY).setDepth(1001);
+    const surrenderBtnBg = this.add.nineslice(0, 0, 'button', null, btnWidth, btnHeight, 8, 8, 8, 8);
+    surrenderBtnBg.setInteractive({ useHandCursor: true });
+    const surrenderText = this.add.bitmapText(0, 0, 'ui', t('surrender'), 18).setOrigin(0.5).setTint(0xffffff);
+    this.surrenderBtn.add([surrenderBtnBg, surrenderText]);
+    surrenderBtnBg.on('pointerdown', () => {
+      dataManager.endTime = Date.now();
+      this.hideReviveOrSurrenderUI();
+      dataManager.setStatus(StatusEvents.LOSE);
+    });
+  }
+
+  hideReviveOrSurrenderUI() {
+    if (this.reviveBg) this.reviveBg.destroy();
+    if (this.reviveTitle) this.reviveTitle.destroy();
+    if (this.reviveBtn) this.reviveBtn.destroy();
+    if (this.surrenderBtn) this.surrenderBtn.destroy();
+  }
+
+  handleReviveClick() {
+    if (!window.ysdk?.adv?.showRewardedVideo) {
+      // Для локальной разработки просто восстанавливаем здоровье
+      dataManager.player.heal();
+      dataManager.setStatus(StatusEvents.PLAYING);
+      this.hideReviveOrSurrenderUI();
+      dataManager.reviveUsed = true;
+      return;
+    }
+    window.ysdk.adv.showRewardedVideo({
+      callbacks: {
+        onOpen: () => {},
+        onRewarded: () => {
+          dataManager.player.heal();
+          dataManager.setStatus(StatusEvents.PLAYING);
+          this.hideReviveOrSurrenderUI();
+          dataManager.reviveUsed = true;
+        },
+        onClose: () => {},
+        onError: () => {
+          // Можно показать ошибку или оставить UI
+        }
+      }
+    });
   }
 }
