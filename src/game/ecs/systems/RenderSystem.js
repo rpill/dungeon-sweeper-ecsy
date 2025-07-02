@@ -223,10 +223,7 @@ export class RenderSystem extends System {
     let offsetY = entity.hasComponent(Butterfly) ? 0 : -8;
     let frame = sprite.frame;
     // Для мины показываем defeated-спрайт только если есть MineWasTriggered
-    if (
-      (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) ||
-      (entity.hasComponent(Mine) && entity.hasComponent(MineWasTriggered) && entity.hasComponent(DefeatedSprite))
-    ) {
+    if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }

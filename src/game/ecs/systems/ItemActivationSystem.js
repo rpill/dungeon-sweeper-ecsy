@@ -112,11 +112,10 @@ export class ItemActivationSystem extends System {
             sceneEvents.emit(EffectEvents.MULTIPLE_EXPLOSION, {
               positions: explodedPositions
             });
-            // Воспроизводим звук взрыва
-            sceneEvents.emit(AudioEvents.EXPLOSION);
-            // Добавляем тряску камеры при дизарме
-            this.scene.cameras.main.shake(800, 0.003);
           }
+          // Всегда трясём камеру и проигрываем звук взрыва при дизарме
+          sceneEvents.emit(AudioEvents.EXPLOSION);
+          this.scene.cameras.main.shake(500, 0.002);
         }
         if (spell.type === 'make_orb_effect') {
           const radius = spell.radius || 1.5;

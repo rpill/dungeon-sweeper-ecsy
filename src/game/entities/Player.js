@@ -33,7 +33,8 @@ export class Player {
   nextLevelXP() {
     //              1  2  3  4  5   6   7   8   9  10  11  12  13  14  15 (level)
     //              5     6     7       8       9      10      11      12 (hp)
-    const table = [0, 4, 5, 7, 9, 9, 10, 12, 12, 12, 15, 18, 21, 21, 25];
+    // const table = [0, 4, 5, 7, 9, 9, 10, 12, 12, 12, 15, 18, 21, 21, 25];
+    const table = [0, 4, 5, 7, 8, 9, 9, 11, 11, 13, 15, 18, 20, 21, 23];
     const index = Math.min(this.level, table.length - 1);
 
     return table[index];
