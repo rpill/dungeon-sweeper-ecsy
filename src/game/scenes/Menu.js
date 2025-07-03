@@ -354,7 +354,7 @@ export class Menu extends Scene {
     // Заголовки по тем же X, что и строки
     const xRank = 50;
     const xName = 100;
-    const xScore = centerX;
+    const xScore = centerX + 30;
     const xTime = width - 50;
     this.add.bitmapText(xRank, y, 'ui', '#', 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
     this.add.bitmapText(xName, y, 'ui', t('playerName'), 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
@@ -410,10 +410,10 @@ export class Menu extends Scene {
     const width = this.cameras.main.width;
     const xRank = 50;
     const xName = 100;
-    const xScore = xCenter;
+    const xScore = xCenter + 30;
     const xTime = width - 50;
-    const maxNameLen = 16;
-    let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 1) + '…' : name;
+    const maxNameLen = 13;
+    let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 3) + '...' : name;
     this.add.bitmapText(xRank, y, 'ui', rank, 15).setOrigin(0, 0.5).setTint(tint);
     this.add.bitmapText(xName, y, 'ui', displayName, 15).setOrigin(0, 0.5).setTint(tint);
     this.add.bitmapText(xScore, y, 'ui', score, 15).setOrigin(0, 0.5).setTint(tint);

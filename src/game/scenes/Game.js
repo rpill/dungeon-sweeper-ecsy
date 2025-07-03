@@ -157,16 +157,23 @@ export class Game extends Phaser.Scene {
       if (window.ysdk?.features?.GameplayAPI) {
         window.ysdk.features.GameplayAPI.stop();
       }
+      audioManager.pauseMusic(); // Ставим музыку на паузу перед рекламой
       window.ysdk.adv.showFullscreenAdv({
         callbacks: {
           onClose: () => {
             if (window.ysdk?.features?.GameplayAPI) {
               window.ysdk.features.GameplayAPI.start();
             }
+            if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
+              audioManager.resumeMusic(); // Возобновляем музыку после рекламы
+            }
           },
           onError: () => {
             if (window.ysdk?.features?.GameplayAPI) {
               window.ysdk.features.GameplayAPI.start();
+            }
+            if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
+              audioManager.resumeMusic(); // Возобновляем музыку после ошибки рекламы
             }
           }
         }
@@ -229,6 +236,7 @@ export class Game extends Phaser.Scene {
       dataManager.reviveUsed = true;
       return;
     }
+    audioManager.pauseMusic();
     window.ysdk.adv.showRewardedVideo({
       callbacks: {
         onOpen: () => {},
@@ -237,10 +245,20 @@ export class Game extends Phaser.Scene {
           dataManager.setStatus(StatusEvents.PLAYING);
           this.hideReviveOrSurrenderUI();
           dataManager.reviveUsed = true;
+          if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
+            audioManager.resumeMusic();
+          }
         },
-        onClose: () => {},
+        onClose: () => {
+          if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
+            audioManager.resumeMusic();
+          }
+        },
         onError: () => {
           // Можно показать ошибку или оставить UI
+          if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
+            audioManager.resumeMusic();
+          }
         }
       }
     });
