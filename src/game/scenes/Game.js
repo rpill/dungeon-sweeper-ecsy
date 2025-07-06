@@ -152,33 +152,6 @@ export class Game extends Phaser.Scene {
 
     // Запускаем UI сцену
     this.scene.launch(SCENE_KEYS.UI);
-
-    if (dataManager.gameStartCount % 5 === 0 && window.ysdk?.adv) {
-      if (window.ysdk?.features?.GameplayAPI) {
-        window.ysdk.features.GameplayAPI.stop();
-      }
-      audioManager.pauseMusic(); // Ставим музыку на паузу перед рекламой
-      window.ysdk.adv.showFullscreenAdv({
-        callbacks: {
-          onClose: () => {
-            if (window.ysdk?.features?.GameplayAPI) {
-              window.ysdk.features.GameplayAPI.start();
-            }
-            if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
-              audioManager.resumeMusic(); // Возобновляем музыку после рекламы
-            }
-          },
-          onError: () => {
-            if (window.ysdk?.features?.GameplayAPI) {
-              window.ysdk.features.GameplayAPI.start();
-            }
-            if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
-              audioManager.resumeMusic(); // Возобновляем музыку после ошибки рекламы
-            }
-          }
-        }
-      });
-    }
   }
 
   /**
@@ -230,7 +203,7 @@ export class Game extends Phaser.Scene {
   handleReviveClick() {
     if (!window.ysdk?.adv?.showRewardedVideo) {
       // Для локальной разработки просто восстанавливаем здоровье
-      dataManager.player.heal();
+      dataManager.player.revive();
       dataManager.setStatus(StatusEvents.PLAYING);
       this.hideReviveOrSurrenderUI();
       dataManager.reviveUsed = true;
@@ -241,7 +214,7 @@ export class Game extends Phaser.Scene {
       callbacks: {
         onOpen: () => {},
         onRewarded: () => {
-          dataManager.player.heal();
+          dataManager.player.revive();
           dataManager.setStatus(StatusEvents.PLAYING);
           this.hideReviveOrSurrenderUI();
           dataManager.reviveUsed = true;

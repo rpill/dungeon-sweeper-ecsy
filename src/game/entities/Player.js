@@ -93,4 +93,13 @@ export class Player {
 
     return this.hp < 0;
   }
+
+  revive() {
+    const prevHP = this.hp;
+    this.hp = this.maxHP;
+    sceneEvents.emit(PlayerEvents.HP_CHANGED, {
+      previous: prevHP,
+      current: this.hp
+    });
+  }
 }
