@@ -269,13 +269,11 @@ export class PlayerInputSystem extends System {
   saveAfterAction() {
     // Сохраняем игру после любого действия игрока
     if (dataManager.status === StatusEvents.PLAYING) {
-      console.log('PlayerInputSystem: saveAfterAction - сохраняем игру');
+
       // Используем setTimeout чтобы дать время системам обработать действие
       setTimeout(() => {
         gameSaveManager.saveGameState();
       }, 100);
-    } else {
-      console.log('PlayerInputSystem: saveAfterAction - статус не PLAYING:', dataManager.status);
     }
   }
 

@@ -1,5 +1,6 @@
 import { dataManager } from './DataManager';
 import { StatusEvents } from './events/EventNames';
+import CryptoJS from 'crypto-js';
 
 class GameSaveManager {
   constructor() {
@@ -7,23 +8,69 @@ class GameSaveManager {
       return GameSaveManager.instance;
     }
     this.SAVE_KEY = 'dungeon_sweeper_save';
+    this.ENCRYPTION_KEY = 'dungeon_sweeper_secret_key_2024';
     GameSaveManager.instance = this;
+  }
+
+  /**
+   * Шифрует данные с помощью AES
+   */
+  encryptData(data) {
+    try {
+      const jsonString = JSON.stringify(data);
+      const encrypted = CryptoJS.AES.encrypt(jsonString, this.ENCRYPTION_KEY).toString();
+      return encrypted;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Дешифрует данные
+   */
+  decryptData(encryptedData) {
+    try {
+      const decrypted = CryptoJS.AES.decrypt(encryptedData, this.ENCRYPTION_KEY);
+      const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
+      return JSON.parse(jsonString);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Создаёт хеш для проверки целостности
+   */
+  createHash(data) {
+    return CryptoJS.SHA256(data).toString();
+  }
+
+  /**
+   * Простое сжатие JSON строки
+   */
+  compressData(data) {
+    return JSON.stringify(data).replace(/\s+/g, '');
+  }
+
+  /**
+   * Простое восстановление JSON строки
+   */
+  decompressData(compressedData) {
+    return JSON.parse(compressedData);
   }
 
   /**
    * Сохраняет текущее состояние игры
    */
   saveGameState() {
-    if (!dataManager.scene || !dataManager.scene.game.ecs) {
-      console.log('GameSaveManager: saveGameState - нет scene или ecs');
-      return false;
-    }
+          if (!dataManager.scene || !dataManager.scene.game.ecs) {
+        return false;
+      }
 
-    const world = dataManager.scene.game.ecs.world;
-    if (!world) {
-      console.log('GameSaveManager: saveGameState - нет world');
-      return false;
-    }
+      const world = dataManager.scene.game.ecs.world;
+      if (!world) {
+        return false;
+      }
 
     try {
       const gameState = {
@@ -34,11 +81,25 @@ class GameSaveManager {
         status: dataManager.status
       };
 
-      localStorage.setItem(this.SAVE_KEY, JSON.stringify(gameState));
-      console.log('GameSaveManager: saveGameState - сохранено успешно');
-      return true;
+      // Сжимаем и создаём хеш для проверки целостности
+      const compressedGameState = this.compressData(gameState);
+      const hash = this.createHash(compressedGameState);
+      
+      const saveData = {
+        data: compressedGameState,
+        hash: hash,
+        version: '1.0'
+      };
+
+      // Шифруем данные
+      const encryptedData = this.encryptData(saveData);
+              if (encryptedData) {
+          localStorage.setItem(this.SAVE_KEY, encryptedData);
+          return true;
+        } else {
+          return false;
+        }
     } catch (error) {
-      console.warn('Ошибка сохранения игры:', error);
       return false;
     }
   }
@@ -53,7 +114,28 @@ class GameSaveManager {
         return null;
       }
 
-      const gameState = JSON.parse(saveData);
+      // Дешифруем данные
+      const decryptedData = this.decryptData(saveData);
+      if (!decryptedData) {
+        this.clearSave();
+        return null;
+      }
+
+      // Проверяем версию
+      if (decryptedData.version !== '1.0') {
+        this.clearSave();
+        return null;
+      }
+
+      // Проверяем целостность данных
+      const expectedHash = this.createHash(decryptedData.data);
+      if (decryptedData.hash !== expectedHash) {
+        this.clearSave();
+        return null;
+      }
+
+      // Восстанавливаем данные
+      const gameState = this.decompressData(decryptedData.data);
       
       // Проверяем, что сохранение не слишком старое (24 часа)
       const now = Date.now();
@@ -65,7 +147,6 @@ class GameSaveManager {
 
       return gameState;
     } catch (error) {
-      console.warn('Ошибка загрузки игры:', error);
       this.clearSave();
       return null;
     }
@@ -77,8 +158,6 @@ class GameSaveManager {
   hasSavedGame() {
     const saveData = this.loadGameState();
     const hasSave = saveData !== null && saveData.status === StatusEvents.PLAYING;
-    console.log('GameSaveManager: hasSavedGame:', hasSave);
-    console.log('GameSaveManager: saveData:', saveData);
     return hasSave;
   }
 
@@ -126,9 +205,7 @@ class GameSaveManager {
    */
   serializeGameData() {
     return {
-      startTime: dataManager.startTime,
-      endTime: dataManager.endTime,
-      gameStartCount: dataManager.gameStartCount,
+      startTimestamp: dataManager.startTimestamp,
       reviveUsed: dataManager.reviveUsed
     };
   }
@@ -140,10 +217,7 @@ class GameSaveManager {
     if (!gameData) {
       return;
     }
-
-    dataManager.startTime = gameData.startTime;
-    dataManager.endTime = gameData.endTime;
-    dataManager.gameStartCount = gameData.gameStartCount;
+    dataManager.startTimestamp = gameData.startTimestamp || null;
     dataManager.reviveUsed = gameData.reviveUsed;
   }
 
@@ -152,7 +226,7 @@ class GameSaveManager {
    */
   serializeEntities(world) {
     const entities = [];
-    // Получаем все сущности с компонентом Position
+    // Получаем все сущности с компонентом Position (включая плитки)
     for (const entity of world.entityManager._entities) {
       if (entity.hasComponent(window.Components.Position)) {
         const entityData = {
@@ -185,15 +259,35 @@ class GameSaveManager {
       return data;
     }
     
+    // Исключаем только визуальные компоненты, но сохраняем логику плиток
+    const componentName = component.constructor.name;
+    if (componentName === 'SpriteObjects' || componentName === 'Animated') {
+      return data; // Не сохраняем визуальные объекты
+    }
+    
+    // Для плиток сохраняем только важные данные
+    if (componentName === 'Tile') {
+      return {
+        baseType: component.baseType,
+        mark: component.mark
+      };
+    }
+    
     // Получаем схему компонента
     if (component.constructor.schema) {
       Object.keys(component.constructor.schema).forEach(key => {
         data[key] = component[key];
       });
     } else {
-      // Если нет схемы, копируем все свойства
+      // Если нет схемы, копируем только важные свойства
       Object.keys(component).forEach(key => {
-        if (typeof component[key] !== 'function') {
+        if (typeof component[key] !== 'function' && 
+            key !== 'spriteObj' && 
+            key !== 'dmgText' && 
+            key !== 'hpText' && 
+            key !== 'xpText' && 
+            key !== 'coinIcon' && 
+            key !== 'markObj') {
           data[key] = component[key];
         }
       });
@@ -210,13 +304,9 @@ class GameSaveManager {
       return;
     }
 
-    // Очищаем существующие сущности (кроме плиток)
+    // Очищаем все существующие сущности
     for (const entity of world.entityManager._entities.slice()) {
       if (entity.hasComponent(window.Components.Position)) {
-        // Удаляем только акторов, оставляем плитки
-        if (entity.hasComponent(window.Components.Tile)) {
-          continue;
-        }
         entity.remove();
       }
     }

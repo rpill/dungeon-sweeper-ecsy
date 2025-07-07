@@ -85,6 +85,19 @@ export class LevelGenerator {
 
   generateBaseLevel() {
     console.log('LevelGenerator: generateBaseLevel - создаем базовый уровень');
+    
+    // Инициализируем размеры и spatialMap
+    this.width = dataManager.width;
+    this.height = dataManager.height;
+    this.spatialMap = new Map();
+    
+    // Инициализируем spatialMap пустыми значениями
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        this.spatialMap.set(`${x},${y}`, null);
+      }
+    }
+    
     // Создаём только плитки (НЕ добавляем их в spatialMap)
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {

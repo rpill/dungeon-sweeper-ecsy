@@ -29,6 +29,7 @@ import {
 } from '../components';
 import { findEntityAt } from '../helpers';
 import { dataManager } from '../../DataManager';
+import { ORB_RADIUS } from '../../constants/actor';
 
 export class RenderSystem extends System {
   init(attributes) {
@@ -99,10 +100,11 @@ export class RenderSystem extends System {
         frame = tile.baseType + 10;
         let totalDmg = 0;
         let gazerNearby = false;
-        // Проверяем радиус 2 клетки на наличие GAZER
-        for (let dx = -2; dx <= 2; dx++) {
-          for (let dy = -2; dy <= 2; dy++) {
+        // Проверяем радиус ORB_RADIUS клетки на наличие GAZER
+        for (let dx = -ORB_RADIUS; dx <= ORB_RADIUS; dx++) {
+          for (let dy = -ORB_RADIUS; dy <= ORB_RADIUS; dy++) {
             if (dx === 0 && dy === 0) continue;
+            if (dx * dx + dy * dy > ORB_RADIUS * ORB_RADIUS) continue;
             const mx = position.x + dx;
             const my = position.y + dy;
             const monster = findEntityAt(this.queries.actors.results, mx, my, Monster, Attack);

@@ -19,9 +19,8 @@ class DataManager {
   reset() {
     this.status = StatusEvents.NONE;
     this.player = null;
-    this.startTime = null;
-    this.endTime = null;
-    this.gameStartCount = 1;
+    this.startTimestamp = null;
+    this.endTimestamp = null;
     this.reviveUsed = false;
   }
 
@@ -29,9 +28,8 @@ class DataManager {
     this.scene = scene;
     this.status = StatusEvents.NONE;
     this.player = new Player();
-    this.startTime = null;
-    this.endTime = null;
-    this.gameStartCount = (this.gameStartCount || 1) + 1;
+    this.startTimestamp = null;
+    this.endTimestamp = null;
     this.reviveUsed = false;
     console.log('DataManager: initialize - сцена:', !!scene, 'игрок:', !!this.player);
   }
@@ -42,22 +40,18 @@ class DataManager {
     console.log('DataManager: setStatus -', previous, '->', status);
     
     if (status === StatusEvents.PLAYING) {
-      if (this.startTime === null) {
-        this.startTime = Date.now();
+      if (!this.startTimestamp) {
+        this.startTimestamp = Date.now();
       }
-      this.endTime = null;
+      this.endTimestamp = null;
     }
     if (status === StatusEvents.WIN || status === StatusEvents.LOSE) {
-      this.endTime = Date.now();
-      // Очищаем сохранение при завершении игры
+      this.endTimestamp = Date.now();
       gameSaveManager.clearSave();
     }
     sceneEvents.emit(StatusEvents.CHANGED, { previous, current: status });
     
-    // Автоматически сохраняем игру при изменении статуса на PLAYING
     if (status === StatusEvents.PLAYING) {
-      console.log('DataManager: setStatus - сохраняем игру при статусе PLAYING');
-      // Используем setTimeout чтобы дать время на инициализацию
       setTimeout(() => {
         gameSaveManager.saveGameState();
       }, 100);
@@ -65,8 +59,12 @@ class DataManager {
   }
 
   getElapsedTime() {
-    if (this.startTime && this.endTime) {
-      return Math.floor((this.endTime - this.startTime) / 1000);
+    if (this.startTimestamp) {
+      if (this.status === StatusEvents.WIN || this.status === StatusEvents.LOSE) {
+        return Math.floor((this.endTimestamp - this.startTimestamp) / 1000);
+      } else {
+        return Math.floor((Date.now() - this.startTimestamp) / 1000);
+      }
     }
     return 0;
   }

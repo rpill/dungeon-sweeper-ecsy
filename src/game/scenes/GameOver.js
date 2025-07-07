@@ -54,8 +54,25 @@ export class GameOver extends Scene {
         if (player.isAuthorized && player.isAuthorized()) {
           // BestTime: только если победа
           if (data.win) {
-            window.ysdk.leaderboards.setScore('BestTime', data.time * 1000).catch(()=>{}).finally(() => {
-              dataManager.clearLeaderboardCache();
+            // Получаем текущее лучшее время игрока
+            window.ysdk.leaderboards.getPlayerEntry('BestTime').then(entry => {
+              const prevBest = entry && typeof entry.score === 'number' ? entry.score : null;
+              const newTime = data.time * 1000; // переводим в миллисекунды
+              // Если нет предыдущего результата или новое время лучше — отправляем
+              if (prevBest === null || newTime < prevBest) {
+                window.ysdk.leaderboards.setScore('BestTime', newTime)
+                  .catch(()=>{})
+                  .finally(() => {
+                    dataManager.clearLeaderboardCache();
+                  });
+              }
+            }).catch(() => {
+              // Если не удалось получить предыдущее время — просто отправляем
+              window.ysdk.leaderboards.setScore('BestTime', data.time * 1000)
+                .catch(()=>{})
+                .finally(() => {
+                  dataManager.clearLeaderboardCache();
+                });
             });
           }
           // TotalScore: плюсуем очки

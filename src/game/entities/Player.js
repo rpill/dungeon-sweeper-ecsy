@@ -56,6 +56,11 @@ export class Player {
     });
     sceneEvents.emit(PlayerEvents.XP_CHANGED, { current: this.xp });
     sceneEvents.emit(PlayerEvents.LEVEL_UP);
+
+    // Если после апа всё ещё хватает XP на следующий уровень — снова эмитим CAN_LEVEL_UP
+    if (this.xp >= this.nextLevelXP()) {
+      sceneEvents.emit(PlayerEvents.CAN_LEVEL_UP);
+    }
   }
 
   heal(amount = null) {

@@ -52,7 +52,7 @@ export class Menu extends Scene {
     // Отладочная информация
     console.log('Menu: gameScene exists:', !!gameScene);
     console.log('Menu: gameScene isPaused:', gameScene ? gameScene.scene.isPaused() : false);
-    console.log('Menu: hasSavedGame:', hasSavedGame);
+
     console.log('Menu: canContinue:', canContinue);
     
     if (canContinue) {
@@ -375,10 +375,10 @@ export class Menu extends Scene {
     const xName = 100;
     const xScore = centerX + 30;
     const xTime = width - 50;
-    this.add.bitmapText(xRank, y, 'ui', '#', 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xName, y, 'ui', t('playerName'), 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xScore, y, 'ui', t('score'), 16).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xTime, y, 'ui', t('time'), 16).setOrigin(1, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xRank, y, 'ui', '#', 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xName, y, 'ui', t('playerName'), 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xScore, y, 'ui', t('score'), 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
+    this.add.bitmapText(xTime, y, 'ui', t('time'), 15).setOrigin(1, 0.5).setTint(0xaaaaaa);
     y += 30;
     let userInTop = false;
     scoreRes.entries.forEach((entry, i) => {
@@ -431,11 +431,11 @@ export class Menu extends Scene {
     const xName = 100;
     const xScore = xCenter + 30;
     const xTime = width - 50;
-    const maxNameLen = 13;
+    const maxNameLen = 20;
     let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 3) + '...' : name;
-    this.add.bitmapText(xRank, y, 'ui', rank, 15).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xName, y, 'ui', displayName, 15).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xScore, y, 'ui', score, 15).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xTime, y, 'ui', bestTime, 15).setOrigin(1, 0.5).setTint(tint);
+    this.add.bitmapText(xRank, y, 'ui', rank, 13).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xName, y, 'ui', displayName, 10).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xScore, y, 'ui', score, 13).setOrigin(0, 0.5).setTint(tint);
+    this.add.bitmapText(xTime, y, 'ui', bestTime, 13).setOrigin(1, 0.5).setTint(tint);
   }
 }

@@ -148,15 +148,15 @@ export class Game extends Phaser.Scene {
   }
 
   loadSavedGame() {
-    console.log('Game: loadSavedGame - начинаем загрузку сохраненной игры');
+
     const savedGame = gameSaveManager.loadGameState();
     if (!savedGame) {
-      console.log('Game: loadSavedGame - сохранение не найдено, начинаем новую игру');
+
       // Если не удалось загрузить сохранение, начинаем новую игру
       this.startNewGame();
       return;
     }
-    console.log('Game: loadSavedGame - сохранение найдено, статус:', savedGame.status);
+
 
     // Инициализируем базовые компоненты
     if (audioManager && typeof audioManager.destroy === 'function') {
@@ -178,11 +178,7 @@ export class Game extends Phaser.Scene {
       this.game.ecs.componentsRegistered = true;
     }
 
-    // Генерируем базовый уровень (плитки)
-    const levelGenerator = new LevelGenerator(this.game.ecs.world);
-    levelGenerator.generateBaseLevel(); // Нужно создать этот метод
-
-    // Восстанавливаем состояние игры
+    // Восстанавливаем состояние игры (включая плитки)
     gameSaveManager.deserializePlayer(savedGame.player);
     gameSaveManager.deserializeGameData(savedGame.gameData);
     gameSaveManager.restoreEntities(this.game.ecs.world, savedGame.entities);
@@ -200,11 +196,11 @@ export class Game extends Phaser.Scene {
 
     // Восстанавливаем статус игры
     dataManager.setStatus(savedGame.status);
-    console.log('Game: loadSavedGame - статус восстановлен:', savedGame.status);
+
 
     // Запускаем UI сцену
     this.scene.launch(SCENE_KEYS.UI);
-    console.log('Game: loadSavedGame - загрузка завершена');
+
   }
 
   initializeSystems() {
