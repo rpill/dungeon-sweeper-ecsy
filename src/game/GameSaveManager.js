@@ -205,7 +205,8 @@ class GameSaveManager {
    */
   serializeGameData() {
     return {
-      startTimestamp: dataManager.startTimestamp,
+      elapsedTime: dataManager.elapsedTime,
+      startTime: dataManager.startTime,
       reviveUsed: dataManager.reviveUsed
     };
   }
@@ -217,7 +218,8 @@ class GameSaveManager {
     if (!gameData) {
       return;
     }
-    dataManager.startTimestamp = gameData.startTimestamp || null;
+    dataManager.elapsedTime = gameData.elapsedTime || 0;
+    dataManager.startTime = gameData.startTime || null;
     dataManager.reviveUsed = gameData.reviveUsed;
   }
 

@@ -19,8 +19,8 @@ class DataManager {
   reset() {
     this.status = StatusEvents.NONE;
     this.player = null;
-    this.startTimestamp = null;
-    this.endTimestamp = null;
+    this.startTime = null;
+    this.elapsedTime = 0;
     this.reviveUsed = false;
   }
 
@@ -28,8 +28,8 @@ class DataManager {
     this.scene = scene;
     this.status = StatusEvents.NONE;
     this.player = new Player();
-    this.startTimestamp = null;
-    this.endTimestamp = null;
+    this.startTime = null;
+    this.elapsedTime = 0;
     this.reviveUsed = false;
     console.log('DataManager: initialize - сцена:', !!scene, 'игрок:', !!this.player);
   }
@@ -40,14 +40,20 @@ class DataManager {
     console.log('DataManager: setStatus -', previous, '->', status);
     
     if (status === StatusEvents.PLAYING) {
-      if (!this.startTimestamp) {
-        this.startTimestamp = Date.now();
+      if (!this.startTime) {
+        this.startTime = Date.now();
       }
-      this.endTimestamp = null;
     }
     if (status === StatusEvents.WIN || status === StatusEvents.LOSE) {
-      this.endTimestamp = Date.now();
+      if (this.startTime) {
+        this.elapsedTime += Math.floor((Date.now() - this.startTime) / 1000);
+        this.startTime = null;
+      }
       gameSaveManager.clearSave();
+    }
+    if (status !== StatusEvents.PLAYING && this.startTime) {
+      this.elapsedTime += Math.floor((Date.now() - this.startTime) / 1000);
+      this.startTime = null;
     }
     sceneEvents.emit(StatusEvents.CHANGED, { previous, current: status });
     
@@ -59,14 +65,10 @@ class DataManager {
   }
 
   getElapsedTime() {
-    if (this.startTimestamp) {
-      if (this.status === StatusEvents.WIN || this.status === StatusEvents.LOSE) {
-        return Math.floor((this.endTimestamp - this.startTimestamp) / 1000);
-      } else {
-        return Math.floor((Date.now() - this.startTimestamp) / 1000);
-      }
+    if (this.startTime) {
+      return this.elapsedTime + Math.floor((Date.now() - this.startTime) / 1000);
     }
-    return 0;
+    return this.elapsedTime;
   }
 
   LEADERBOARD_CACHE_KEY = 'leaderboardCache';
