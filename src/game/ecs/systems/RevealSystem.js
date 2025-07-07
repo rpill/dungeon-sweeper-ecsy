@@ -40,6 +40,8 @@ export class RevealSystem extends System {
         }
       });
       
+      // Сохранение теперь происходит в PlayerInputSystem после каждого действия
+      
       // Если клетка уже была открыта и не нашли новых акторов, воспроизводим звук отказа
       if (wasAlreadyRevealed && !foundNewActor) {
         sceneEvents.emit(AudioEvents.DENIED);

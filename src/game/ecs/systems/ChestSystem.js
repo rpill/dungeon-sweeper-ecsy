@@ -68,6 +68,9 @@ export class ChestSystem extends System {
           chest.addComponent(Opened);
         }
       }
+      
+      // Удаляем компонент TryOpen после обработки
+      chest.removeComponent(TryOpen);
     });
   }
 } 

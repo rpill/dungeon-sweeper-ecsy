@@ -4,6 +4,7 @@ import { sceneEvents } from '../events/EventsCenter';
 import { AudioEvents, StatusEvents } from '../events/EventNames';
 import { audioManager } from '../AudioManager';
 import { dataManager } from '../DataManager';
+import { gameSaveManager } from '../GameSaveManager';
 import { t } from '../i18n';
 
 export class Menu extends Scene {
@@ -43,18 +44,35 @@ export class Menu extends Scene {
     this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff);
     offsetY += 130;
 
-    // Кнопка "Продолжить" только если сцена GAME существует и активна
+    // Кнопка "Продолжить" если есть сохраненная игра или сцена GAME существует и активна
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
-    if (gameScene && gameScene.scene.isPaused()) {
+    const hasSavedGame = gameSaveManager.hasSavedGame();
+    const canContinue = (gameScene && gameScene.scene.isPaused()) || hasSavedGame;
+    
+    // Отладочная информация
+    console.log('Menu: gameScene exists:', !!gameScene);
+    console.log('Menu: gameScene isPaused:', gameScene ? gameScene.scene.isPaused() : false);
+    console.log('Menu: hasSavedGame:', hasSavedGame);
+    console.log('Menu: canContinue:', canContinue);
+    
+    if (canContinue) {
       const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('continue'), 25)
         .setOrigin(0.5)
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true });
       continueBtn.on('pointerdown', () => {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        dataManager.setStatus(StatusEvents.PLAYING);
-        this.scene.resume(SCENE_KEYS.GAME);
-        this.scene.launch(SCENE_KEYS.UI);
+        
+        if (gameScene && gameScene.scene.isPaused()) {
+          // Продолжаем текущую игру
+          dataManager.setStatus(StatusEvents.PLAYING);
+          this.scene.resume(SCENE_KEYS.GAME);
+          this.scene.launch(SCENE_KEYS.UI);
+        } else if (hasSavedGame) {
+          // Загружаем сохраненную игру
+          this.scene.start(SCENE_KEYS.GAME, { loadSavedGame: true });
+        }
+        
         this.scene.stop();
       });
       offsetY += 60;
@@ -68,6 +86,7 @@ export class Menu extends Scene {
     newGameBtn.on('pointerdown', () => {
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       audioManager.stopWinMusic();
+      gameSaveManager.clearSave();
       this.scene.start(SCENE_KEYS.LEVEL_LOADING);
     });
     offsetY += 60;

@@ -19,6 +19,7 @@ import { sceneEvents } from '../events/EventsCenter';
 import { EffectManager } from '../EffectManager';
 import { audioManager } from '../AudioManager';
 import { ObjectCounterSystem } from '../ecs/systems/ObjectCounterSystem';
+import { gameSaveManager } from '../GameSaveManager';
 import { t } from '../i18n';
 
 export class Game extends Phaser.Scene {
@@ -26,7 +27,7 @@ export class Game extends Phaser.Scene {
     super({ key: SCENE_KEYS.GAME });
   }
 
-  create() {
+  create(data = {}) {
     // Инициализируем глобальный менеджер звуков
     audioManager.initialize(this);
     
@@ -39,7 +40,19 @@ export class Game extends Phaser.Scene {
     sceneEvents.on(StatusEvents.CHANGED, this.onStatusChanged, this);
     this.events.on('shutdown', this.onSceneShutdown, this);
     
-    this.startNewGame();
+    // Обработка событий игрока для сохранения
+    sceneEvents.on('player:hp_changed', this.onPlayerChanged, this);
+    sceneEvents.on('player:xp_changed', this.onPlayerChanged, this);
+    sceneEvents.on('player:level_up', this.onPlayerChanged, this);
+    
+    // Проверяем, нужно ли загрузить сохраненную игру
+    if (data.loadSavedGame) {
+      this.loadSavedGame();
+    } else {
+      this.startNewGame();
+    }
+
+    // Сохранение теперь происходит после каждого действия игрока
   }
 
   onStatusChanged({ previous, current }) {
@@ -78,6 +91,16 @@ export class Game extends Phaser.Scene {
 
   onSceneShutdown() {
     sceneEvents.off(StatusEvents.CHANGED, this.onStatusChanged, this);
+    sceneEvents.off('player:hp_changed', this.onPlayerChanged, this);
+    sceneEvents.off('player:xp_changed', this.onPlayerChanged, this);
+    sceneEvents.off('player:level_up', this.onPlayerChanged, this);
+  }
+
+  onPlayerChanged() {
+    // Сохраняем игру при важных изменениях игрока
+    if (dataManager.status === StatusEvents.PLAYING) {
+      gameSaveManager.saveGameState();
+    }
   }
 
   update(time, delta) {
@@ -107,6 +130,84 @@ export class Game extends Phaser.Scene {
     const levelGenerator = new LevelGenerator(this.game.ecs.world);
     levelGenerator.generate();
 
+    this.initializeSystems();
+
+    // Инициализируем менеджер эффектов
+    if (this.effectManager && typeof this.effectManager.destroy === 'function') {
+      this.effectManager.destroy();
+    }
+    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
+
+    // Переинициализируем AudioManager для новой игры
+    audioManager.reinitialize(this);
+
+    // Музыка будет запущена автоматически через onUserInteraction при первом клике
+
+    // Запускаем UI сцену
+    this.scene.launch(SCENE_KEYS.UI);
+  }
+
+  loadSavedGame() {
+    console.log('Game: loadSavedGame - начинаем загрузку сохраненной игры');
+    const savedGame = gameSaveManager.loadGameState();
+    if (!savedGame) {
+      console.log('Game: loadSavedGame - сохранение не найдено, начинаем новую игру');
+      // Если не удалось загрузить сохранение, начинаем новую игру
+      this.startNewGame();
+      return;
+    }
+    console.log('Game: loadSavedGame - сохранение найдено, статус:', savedGame.status);
+
+    // Инициализируем базовые компоненты
+    if (audioManager && typeof audioManager.destroy === 'function') {
+      audioManager.destroy();
+    }
+    audioManager.initialize(this);
+    
+    dataManager.initialize(this);
+    this.game.ecs = {};
+    this.game.ecs.world = new World();
+
+    window.ecsWorld = this.game.ecs.world;
+    window.Components = Components;
+
+    if (!this.game.ecs.componentsRegistered) {
+      Object.values(Components).forEach(component => {
+        this.game.ecs.world.registerComponent(component);
+      });
+      this.game.ecs.componentsRegistered = true;
+    }
+
+    // Генерируем базовый уровень (плитки)
+    const levelGenerator = new LevelGenerator(this.game.ecs.world);
+    levelGenerator.generateBaseLevel(); // Нужно создать этот метод
+
+    // Восстанавливаем состояние игры
+    gameSaveManager.deserializePlayer(savedGame.player);
+    gameSaveManager.deserializeGameData(savedGame.gameData);
+    gameSaveManager.restoreEntities(this.game.ecs.world, savedGame.entities);
+
+    this.initializeSystems();
+
+    // Инициализируем менеджер эффектов
+    if (this.effectManager && typeof this.effectManager.destroy === 'function') {
+      this.effectManager.destroy();
+    }
+    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
+
+    // Переинициализируем AudioManager
+    audioManager.reinitialize(this);
+
+    // Восстанавливаем статус игры
+    dataManager.setStatus(savedGame.status);
+    console.log('Game: loadSavedGame - статус восстановлен:', savedGame.status);
+
+    // Запускаем UI сцену
+    this.scene.launch(SCENE_KEYS.UI);
+    console.log('Game: loadSavedGame - загрузка завершена');
+  }
+
+  initializeSystems() {
     if (!this.renderContainer) {
       this.renderContainer = this.add.container();
     }
@@ -138,21 +239,9 @@ export class Game extends Phaser.Scene {
     this.game.ecs.world.registerSystem(WallCombatSystem);
     this.game.ecs.world.registerSystem(ButterflySystem);
     this.game.ecs.world.registerSystem(ObjectCounterSystem);
-
-    // Инициализируем менеджер эффектов
-    if (this.effectManager && typeof this.effectManager.destroy === 'function') {
-      this.effectManager.destroy();
-    }
-    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
-
-    // Переинициализируем AudioManager для новой игры
-    audioManager.reinitialize(this);
-
-    // Музыка будет запущена автоматически через onUserInteraction при первом клике
-
-    // Запускаем UI сцену
-    this.scene.launch(SCENE_KEYS.UI);
   }
+
+
 
   /**
    * Показывает UI с кнопками 'Ожить' и 'Сдаться' после смерти

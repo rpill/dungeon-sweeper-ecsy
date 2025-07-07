@@ -31,16 +31,7 @@ export class LevelGenerator {
     }
 
     // 1. Создаём плитки (НЕ добавляем их в spatialMap)
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        const tileEntity = this.world.createEntity();
-        tileEntity.addComponent(Components.Position, { x, y });
-        tileEntity.addComponent(Components.Tile, {
-          baseType: Phaser.Math.Between(0, 4)
-        });
-        // НЕ добавляем плитки в spatialMap
-      }
-    }
+    this.generateBaseLevel();
 
     // 2. Генерация акторов в слоях с оптимизацией
     this.beginLayer();
@@ -90,6 +81,22 @@ export class LevelGenerator {
     this.postProcessGeneration();
 
     dataManager.setStatus(StatusEvents.PLAYING);
+  }
+
+  generateBaseLevel() {
+    console.log('LevelGenerator: generateBaseLevel - создаем базовый уровень');
+    // Создаём только плитки (НЕ добавляем их в spatialMap)
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const tileEntity = this.world.createEntity();
+        tileEntity.addComponent(Components.Position, { x, y });
+        tileEntity.addComponent(Components.Tile, {
+          baseType: Phaser.Math.Between(0, 4)
+        });
+        // НЕ добавляем плитки в spatialMap
+      }
+    }
+    console.log('LevelGenerator: generateBaseLevel - базовый уровень создан');
   }
 
   beginLayer() {

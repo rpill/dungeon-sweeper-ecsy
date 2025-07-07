@@ -115,7 +115,7 @@ export class RenderSystem extends System {
         }
         if (gazerNearby) {
           // Показываем знак вопроса цветом 0x88ccd0
-          if (!spriteObjects.dmgText) {
+          if (!spriteObjects.dmgText || typeof spriteObjects.dmgText.setText !== 'function') {
             const dmgText = this.scene.add.bitmapText(
               tileX + this.tileSize / 2,
               tileY + this.tileSize / 2,
@@ -143,7 +143,7 @@ export class RenderSystem extends System {
             }
           }
           if (totalDmg > 0) {
-            if (!spriteObjects.dmgText) {
+            if (!spriteObjects.dmgText || typeof spriteObjects.dmgText.setText !== 'function') {
               const dmgText = this.scene.add.bitmapText(
                 tileX + this.tileSize / 2,
                 tileY + this.tileSize / 2,
@@ -158,7 +158,7 @@ export class RenderSystem extends System {
               spriteObjects.dmgText.setTint(0xffffff);
             }
           } else {
-            if (spriteObjects.dmgText) {
+            if (spriteObjects.dmgText && typeof spriteObjects.dmgText.destroy === 'function') {
               spriteObjects.dmgText.destroy();
               spriteObjects.dmgText = null;
             }
@@ -166,12 +166,12 @@ export class RenderSystem extends System {
         }
       }
       // Если на клетке есть активная сущность (например, бабочка), удаляем dmgText
-      if (anyActiveEntity && spriteObjects.dmgText) {
+      if (anyActiveEntity && spriteObjects.dmgText && typeof spriteObjects.dmgText.destroy === 'function') {
         spriteObjects.dmgText.destroy();
         spriteObjects.dmgText = null;
       }
     }
-    if (!spriteObjects.spriteObj) {
+    if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
       const tileSprite = this.scene.add.image(
         tileX,
         tileY,
@@ -186,7 +186,7 @@ export class RenderSystem extends System {
 
     // --- ОТРИСОВКА МЕТКИ ---
     // Удаляем старую метку, если есть
-    if (spriteObjects.markObj) {
+    if (spriteObjects.markObj && typeof spriteObjects.markObj.destroy === 'function') {
       spriteObjects.markObj.destroy();
       spriteObjects.markObj = null;
     }
@@ -227,7 +227,7 @@ export class RenderSystem extends System {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }
-    if (!spriteObjects.spriteObj) {
+    if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY + offsetY,
@@ -241,7 +241,7 @@ export class RenderSystem extends System {
     }
     // Урон
     if (!entity.hasComponent(Defeated) && entity.hasComponent(Attack)) {
-      if (!spriteObjects.dmgText) {
+      if (!spriteObjects.dmgText || typeof spriteObjects.dmgText.setText !== 'function') {
         const attack = entity.getComponent(Attack);
         const dmgText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2,
@@ -255,13 +255,13 @@ export class RenderSystem extends System {
         spriteObjects.dmgText.setText(String(entity.getComponent(Attack).value));
         spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
       }
-    } else if (spriteObjects.dmgText) {
+    } else if (spriteObjects.dmgText && typeof spriteObjects.dmgText.destroy === 'function') {
       spriteObjects.dmgText.destroy();
       spriteObjects.dmgText = null;
     }
     // Монетка и XP
     if (entity.hasComponent(Defeated)) {
-      if (!spriteObjects.coinIcon) {
+      if (!spriteObjects.coinIcon || typeof spriteObjects.coinIcon.setPosition !== 'function') {
         const coin = this.scene.add.image(
           tileX + this.tileSize / 2 - 9,
           tileY + this.tileSize + 10,
@@ -274,7 +274,7 @@ export class RenderSystem extends System {
       }
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
-      if (!spriteObjects.xpText) {
+      if (!spriteObjects.xpText || typeof spriteObjects.xpText.setText !== 'function') {
         const xpText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2 + 9,
           tileY + this.tileSize - 5,
@@ -288,8 +288,8 @@ export class RenderSystem extends System {
         spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
       }
     } else {
-      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
-      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
+      if (spriteObjects.coinIcon && typeof spriteObjects.coinIcon.destroy === 'function') { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText && typeof spriteObjects.xpText.destroy === 'function') { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 
@@ -316,7 +316,7 @@ export class RenderSystem extends System {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }
-    if (!spriteObjects.spriteObj) {
+    if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY + offsetY,
@@ -330,7 +330,7 @@ export class RenderSystem extends System {
     }
     // Урон
     if (!entity.hasComponent(Defeated) && entity.hasComponent(RevealedAsMonster)) {
-      if (!spriteObjects.dmgText) {
+      if (!spriteObjects.dmgText || typeof spriteObjects.dmgText.setText !== 'function') {
         const attack = entity.getComponent(Attack);
         const dmgText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2,
@@ -344,13 +344,13 @@ export class RenderSystem extends System {
         spriteObjects.dmgText.setText(String(entity.getComponent(Attack).value));
         spriteObjects.dmgText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
       }
-    } else if (spriteObjects.dmgText) {
+    } else if (spriteObjects.dmgText && typeof spriteObjects.dmgText.destroy === 'function') {
       spriteObjects.dmgText.destroy();
       spriteObjects.dmgText = null;
     }
     // Монетка и XP
     if (entity.hasComponent(Defeated)) {
-      if (!spriteObjects.coinIcon) {
+      if (!spriteObjects.coinIcon || typeof spriteObjects.coinIcon.setPosition !== 'function') {
         const coin = this.scene.add.image(
           tileX + this.tileSize / 2 - 9,
           tileY + this.tileSize + 10,
@@ -363,7 +363,7 @@ export class RenderSystem extends System {
       }
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
-      if (!spriteObjects.xpText) {
+      if (!spriteObjects.xpText || typeof spriteObjects.xpText.setText !== 'function') {
         const xpText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2 + 9,
           tileY + this.tileSize - 5,
@@ -377,15 +377,14 @@ export class RenderSystem extends System {
         spriteObjects.xpText.setPosition(tileX + this.tileSize / 2 + 9, tileY + this.tileSize - 5);
       }
     } else {
-      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
-      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
+      if (spriteObjects.coinIcon && typeof spriteObjects.coinIcon.destroy === 'function') { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText && typeof spriteObjects.xpText.destroy === 'function') { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 
   renderItem(entity) {
     if (!entity.hasComponent(Revealed) && !entity.hasComponent(Opened) && !dataManager.debug) return;
     
-    // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
       entity.addComponent(SpriteObjects);
     }
@@ -396,9 +395,8 @@ export class RenderSystem extends System {
     const tileX = position.x * this.tileSize;
     const tileY = position.y * this.tileSize;
     
-    // Специальная обработка для ключа - создаем анимацию
     if (entity.hasComponent(Key)) {
-      if (!spriteObjects.spriteObj) {
+      if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.play !== 'function') {
         const spriteObj = this.scene.add.sprite(
           tileX + this.tileSize / 2,
           tileY + this.tileSize / 2,
@@ -420,8 +418,7 @@ export class RenderSystem extends System {
         spriteObjects.spriteObj = spriteObj;
       }
     } else {
-      // Обычная обработка для других предметов
-      if (!spriteObjects.spriteObj) {
+      if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
         const spriteObj = this.scene.add.image(
           tileX,
           tileY,
@@ -439,7 +436,6 @@ export class RenderSystem extends System {
   renderWall(entity) {
     if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
     
-    // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
       entity.addComponent(SpriteObjects);
     }
@@ -453,13 +449,11 @@ export class RenderSystem extends System {
     const tileY = y * this.tileSize;
     let frame = sprite.frame;
     
-    // Если стена разрушена, используем DefeatedSprite
     if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
       const defeatedSprite = entity.getComponent(DefeatedSprite);
       frame = defeatedSprite.frame;
     }
-    
-    if (!spriteObjects.spriteObj) {
+    if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
       const spriteObj = this.scene.add.image(
         tileX,
         tileY,
@@ -476,7 +470,7 @@ export class RenderSystem extends System {
     if (entity.hasComponent(Health) && !entity.hasComponent(Defeated)) {
       const health = entity.getComponent(Health);
       const hpText = `${health.current}/${health.max}`;
-      if (!spriteObjects.hpText) {
+      if (!spriteObjects.hpText || typeof spriteObjects.hpText.setText !== 'function') {
         const text = this.scene.add.bitmapText(
           tileX + this.tileSize / 2,
           tileY + this.tileSize - 4,
@@ -489,7 +483,7 @@ export class RenderSystem extends System {
         spriteObjects.hpText.setText(hpText);
         spriteObjects.hpText.setPosition(tileX + this.tileSize / 2, tileY + this.tileSize - 4);
       }
-    } else if (spriteObjects.hpText) {
+    } else if (spriteObjects.hpText && typeof spriteObjects.hpText.destroy === 'function') {
       spriteObjects.hpText.destroy();
       spriteObjects.hpText = null;
     }
@@ -498,7 +492,7 @@ export class RenderSystem extends System {
     if (entity.hasComponent(Defeated) && entity.hasComponent(XP)) {
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
-      if (!spriteObjects.xpText) {
+      if (!spriteObjects.xpText || typeof spriteObjects.xpText.setText !== 'function') {
         const xpText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2 + 9,
           tileY + this.tileSize - 5,
@@ -513,7 +507,7 @@ export class RenderSystem extends System {
       }
       
       // Отображаем иконку монетки
-      if (!spriteObjects.coinIcon) {
+      if (!spriteObjects.coinIcon || typeof spriteObjects.coinIcon.setPosition !== 'function') {
         const coin = this.scene.add.image(
           tileX + this.tileSize / 2 - 7,
           tileY + this.tileSize + 10,
@@ -526,15 +520,14 @@ export class RenderSystem extends System {
       }
     } else {
       // Убираем отображение опыта, если стена не разрушена или не содержит XP
-      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
-      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
+      if (spriteObjects.coinIcon && typeof spriteObjects.coinIcon.destroy === 'function') { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText && typeof spriteObjects.xpText.destroy === 'function') { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 
   renderChest(entity) {
-    if (!entity.hasComponent(Revealed) && !dataManager.debug) return;
+    if (!entity.hasComponent(Revealed) && !entity.hasComponent(Opened) && !dataManager.debug) return;
     
-    // Получаем или создаем SpriteObjects компонент
     if (!entity.hasComponent(SpriteObjects)) {
       entity.addComponent(SpriteObjects);
     }
@@ -542,36 +535,31 @@ export class RenderSystem extends System {
     
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    const x = position.x;
-    const y = position.y;
-    const tileX = x * this.tileSize;
-    const tileY = y * this.tileSize;
-    // Центрируем сундук
-    const centerX = tileX + this.tileSize / 2;
-    const centerY = tileY + this.tileSize / 2;
+    const tileX = position.x * this.tileSize;
+    const tileY = position.y * this.tileSize;
     let frame = sprite.frame;
-    if (entity.hasComponent(OpenedSprite) && entity.hasComponent(Opened)) {
+    if (entity.hasComponent(Opened) && entity.hasComponent(OpenedSprite)) {
       const openedSprite = entity.getComponent(OpenedSprite);
       frame = openedSprite.frame;
     }
-    if (!spriteObjects.spriteObj) {
+    if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.setFrame !== 'function') {
       const spriteObj = this.scene.add.image(
-        centerX,
-        centerY,
+        tileX,
+        tileY,
         sprite.spriteSheet,
         frame
-      ).setOrigin(0.5).setDepth(2);
+      ).setOrigin(0).setDepth(2);
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
-      spriteObjects.spriteObj.setPosition(centerX, centerY);
+      spriteObjects.spriteObj.setPosition(tileX, tileY);
     }
     
     // Отображаем опыт у открытых сундуков с XP
     if (entity.hasComponent(Opened) && entity.hasComponent(XP)) {
       const xp = entity.getComponent(XP);
       const xpValue = xp ? xp.value : 0;
-      if (!spriteObjects.xpText) {
+      if (!spriteObjects.xpText || typeof spriteObjects.xpText.setText !== 'function') {
         const xpText = this.scene.add.bitmapText(
           tileX + this.tileSize / 2 + 9,
           tileY + this.tileSize - 5,
@@ -586,7 +574,7 @@ export class RenderSystem extends System {
       }
       
       // Отображаем иконку монетки
-      if (!spriteObjects.coinIcon) {
+      if (!spriteObjects.coinIcon || typeof spriteObjects.coinIcon.setPosition !== 'function') {
         const coin = this.scene.add.image(
           tileX + this.tileSize / 2 - 7,
           tileY + this.tileSize + 10,
@@ -599,8 +587,8 @@ export class RenderSystem extends System {
       }
     } else {
       // Убираем отображение опыта, если сундук не открыт или не содержит XP
-      if (spriteObjects.coinIcon) { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
-      if (spriteObjects.xpText) { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
+      if (spriteObjects.coinIcon && typeof spriteObjects.coinIcon.destroy === 'function') { spriteObjects.coinIcon.destroy(); spriteObjects.coinIcon = null; }
+      if (spriteObjects.xpText && typeof spriteObjects.xpText.destroy === 'function') { spriteObjects.xpText.destroy(); spriteObjects.xpText = null; }
     }
   }
 

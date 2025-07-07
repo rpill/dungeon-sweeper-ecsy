@@ -26,6 +26,7 @@ import {
 import { dataManager } from '../../DataManager';
 import { StatusEvents, AudioEvents } from '../../events/EventNames';
 import { sceneEvents } from '../../events/EventsCenter';
+import { gameSaveManager } from '../../GameSaveManager';
 
 const TIME_TO_HOVER_MENU = 0.33;
 
@@ -146,6 +147,7 @@ export class PlayerInputSystem extends System {
       if (!chest.hasComponent(TryOpen)) {
         chest.addComponent(TryOpen);
       }
+      this.saveAfterAction();
       return;
     }
     const chestToCollect = this.queries.actors.results.find(actor => {
@@ -158,6 +160,7 @@ export class PlayerInputSystem extends System {
     });
     if (chestToCollect) {
       chestToCollect.addComponent(TryCollect);
+      this.saveAfterAction();
       return;
     }
     if (dataManager.player && dataManager.player.hp > 0) {
@@ -171,6 +174,7 @@ export class PlayerInputSystem extends System {
       });
       if (wall) {
         wall.addComponent(TryAttackWall);
+        this.saveAfterAction();
         return;
       }
     } else if (dataManager.player && dataManager.player.hp <= 0) {
@@ -201,6 +205,7 @@ export class PlayerInputSystem extends System {
       if (actor.hasComponent(Mimic)) {
         actor.addComponent(RevealedAsMonster);
       }
+      this.saveAfterAction();
       return;
     }
     const monsterToCollect = this.queries.actors.results.find(actor => {
@@ -213,6 +218,7 @@ export class PlayerInputSystem extends System {
     });
     if (monsterToCollect) {
       monsterToCollect.addComponent(TryCollectLoot);
+      this.saveAfterAction();
       return;
     }
     const wallToCollect = this.queries.actors.results.find(actor => {
@@ -226,6 +232,7 @@ export class PlayerInputSystem extends System {
     });
     if (wallToCollect) {
       wallToCollect.addComponent(TryCollectLoot);
+      this.saveAfterAction();
       return;
     }
     const item = this.queries.actors.results.find(actor => {
@@ -237,6 +244,7 @@ export class PlayerInputSystem extends System {
     });
     if (item) {
       item.addComponent(UseItem);
+      this.saveAfterAction();
       return;
     }
     const butterfly = this.queries.actors.results.find(actor => {
@@ -245,12 +253,29 @@ export class PlayerInputSystem extends System {
     });
     if (butterfly && !butterfly.hasComponent(TryJump)) {
       butterfly.addComponent(TryJump);
+      this.saveAfterAction();
     }
     if (tileEntity && !tileEntity.hasComponent(TryReveal)) {
       tileEntity.addComponent(TryReveal);
       if (!liveMonster) {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       }
+    }
+    
+    // Сохраняем состояние после любого действия игрока
+    this.saveAfterAction();
+  }
+
+  saveAfterAction() {
+    // Сохраняем игру после любого действия игрока
+    if (dataManager.status === StatusEvents.PLAYING) {
+      console.log('PlayerInputSystem: saveAfterAction - сохраняем игру');
+      // Используем setTimeout чтобы дать время системам обработать действие
+      setTimeout(() => {
+        gameSaveManager.saveGameState();
+      }, 100);
+    } else {
+      console.log('PlayerInputSystem: saveAfterAction - статус не PLAYING:', dataManager.status);
     }
   }
 
@@ -375,6 +400,7 @@ export class PlayerInputSystem extends System {
           }
         }
         this.hideMarkMenu();
+        this.saveAfterAction();
         if (pointer.event.preventDefault) pointer.event.preventDefault();
         pointer.event.stopPropagation();
         if (pointer.event.stopImmediatePropagation) pointer.event.stopImmediatePropagation();

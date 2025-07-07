@@ -37,6 +37,9 @@ export class CollectSystem extends System {
         spriteObjects.destroyAll();
       }
 
+      // Удаляем компонент TryCollect перед удалением сущности
+      chest.removeComponent(TryCollect);
+      
       // Удаляем сундук из мира
       chest.remove();
     });

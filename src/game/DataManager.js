@@ -1,6 +1,7 @@
 import { StatusEvents } from './events/EventNames';
 import { Player } from './entities/Player';
 import { sceneEvents } from './events/EventsCenter';
+import { gameSaveManager } from './GameSaveManager';
 
 class DataManager {
   constructor() {
@@ -32,11 +33,14 @@ class DataManager {
     this.endTime = null;
     this.gameStartCount = (this.gameStartCount || 1) + 1;
     this.reviveUsed = false;
+    console.log('DataManager: initialize - сцена:', !!scene, 'игрок:', !!this.player);
   }
 
   setStatus(status) {
     const previous = this.status;
     this.status = status;
+    console.log('DataManager: setStatus -', previous, '->', status);
+    
     if (status === StatusEvents.PLAYING) {
       if (this.startTime === null) {
         this.startTime = Date.now();
@@ -45,8 +49,19 @@ class DataManager {
     }
     if (status === StatusEvents.WIN || status === StatusEvents.LOSE) {
       this.endTime = Date.now();
+      // Очищаем сохранение при завершении игры
+      gameSaveManager.clearSave();
     }
     sceneEvents.emit(StatusEvents.CHANGED, { previous, current: status });
+    
+    // Автоматически сохраняем игру при изменении статуса на PLAYING
+    if (status === StatusEvents.PLAYING) {
+      console.log('DataManager: setStatus - сохраняем игру при статусе PLAYING');
+      // Используем setTimeout чтобы дать время на инициализацию
+      setTimeout(() => {
+        gameSaveManager.saveGameState();
+      }, 100);
+    }
   }
 
   getElapsedTime() {
