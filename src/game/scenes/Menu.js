@@ -26,6 +26,7 @@ export class Menu extends Scene {
     this.menuGroup = null;
     this.leaderboardRows = [];
     this.activeLeaderboardTab = 'score';
+    this.leaderboardBackBtn = null;
     this.leaderboardCache = null;
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
