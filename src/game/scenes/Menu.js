@@ -6,13 +6,26 @@ import { audioManager } from '../AudioManager';
 import { dataManager } from '../DataManager';
 import { gameSaveManager } from '../GameSaveManager';
 import { t } from '../i18n';
+import Phaser from 'phaser';
 
 export class Menu extends Scene {
   constructor() {
     super({ key: SCENE_KEYS.MENU });
+    this.activeLeaderboardTab = 'score'; // 'score' или 'time'
+    this.leaderboardRows = [];
+    this.menuGroup = null;
+    this.leaderboardGroup = null;
   }
 
   create() {
+    // Сброс всех ссылок на UI-элементы для корректной работы после restart
+    this.leaderboardTitle = null;
+    this.scoreBtn = null;
+    this.timeBtn = null;
+    this.leaderboardGroup = null;
+    this.menuGroup = null;
+    this.leaderboardRows = [];
+    this.activeLeaderboardTab = 'score';
     this.leaderboardCache = null;
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
@@ -39,22 +52,18 @@ export class Menu extends Scene {
       audioManager.onUserInteraction();
     });
 
+    // --- Группа основного меню ---
+    this.menuGroup = this.add.container(0, 0);
     let offsetY = -150;
     // Заголовок
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff);
+    this.menuGroup.add(
+      this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff)
+    );
     offsetY += 130;
-
-    // Кнопка "Продолжить" если есть сохраненная игра или сцена GAME существует и активна
+    // Кнопка "Продолжить"
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
     const hasSavedGame = gameSaveManager.hasSavedGame();
     const canContinue = (gameScene && gameScene.scene.isPaused()) || hasSavedGame;
-    
-    // Отладочная информация
-    console.log('Menu: gameScene exists:', !!gameScene);
-    console.log('Menu: gameScene isPaused:', gameScene ? gameScene.scene.isPaused() : false);
-
-    console.log('Menu: canContinue:', canContinue);
-    
     if (canContinue) {
       const continueBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('continue'), 25)
         .setOrigin(0.5)
@@ -62,22 +71,18 @@ export class Menu extends Scene {
         .setInteractive({ useHandCursor: true });
       continueBtn.on('pointerdown', () => {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        
         if (gameScene && gameScene.scene.isPaused()) {
-          // Продолжаем текущую игру
           dataManager.setStatus(StatusEvents.PLAYING);
           this.scene.resume(SCENE_KEYS.GAME);
           this.scene.launch(SCENE_KEYS.UI);
         } else if (hasSavedGame) {
-          // Загружаем сохраненную игру
           this.scene.start(SCENE_KEYS.GAME, { loadSavedGame: true });
         }
-        
         this.scene.stop();
       });
+      this.menuGroup.add(continueBtn);
       offsetY += 60;
     }
-
     // Кнопка "Новая игра"
     const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('newGame'), 25)
       .setOrigin(0.5)
@@ -89,8 +94,8 @@ export class Menu extends Scene {
       gameSaveManager.clearSave();
       this.scene.start(SCENE_KEYS.LEVEL_LOADING);
     });
+    this.menuGroup.add(newGameBtn);
     offsetY += 60;
-
     // Кнопка "Правила"
     const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('rules'), 25)
       .setOrigin(0.5)
@@ -100,8 +105,8 @@ export class Menu extends Scene {
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       this.showRules();
     });
+    this.menuGroup.add(rulesBtn);
     offsetY += 60;
-
     // Кнопка "Настройки звука"
     const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('settings'), 25)
       .setOrigin(0.5)
@@ -111,9 +116,9 @@ export class Menu extends Scene {
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       this.showAudioSettings();
     });
+    this.menuGroup.add(settingsBtn);
     offsetY += 60;
-
-    // Кнопка "Таблица лидеров" только для авторизованных пользователей, всегда последней
+    // Кнопка "Таблица лидеров"
     if (window.ysdk && window.ysdk.getPlayer) {
       window.ysdk.getPlayer().then(player => {
         if (!this.scene.isActive() || this.scene.isSleeping()) return;
@@ -126,10 +131,19 @@ export class Menu extends Scene {
             sceneEvents.emit(AudioEvents.PLAYER_CLICK);
             this.showLeaderboard();
           });
+          this.menuGroup.add(leaderboardBtn);
         }
       }).catch((err) => { });
     }
-
+    // --- Группа таблицы лидеров ---
+    this.leaderboardGroup = this.add.container(0, 0);
+    this.leaderboardGroup.setVisible(false);
+    // Фон и затемнение для таблицы лидеров
+    this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setDepth(0);
+    this.leaderboardRect = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55).setOrigin(0.5).setDepth(0);
+    this.leaderboardGroup.add([this.leaderboardBg, this.leaderboardRect]);
+    // Заголовок и вкладки будут добавляться в renderLeaderboardTabs
+    // ---
     // Сигнализируем о готовности меню для LoadingAPI только один раз за сессию
     if (!window._menuReadyCalled && window.onMenuReady) {
       window.onMenuReady();
@@ -326,116 +340,236 @@ export class Menu extends Scene {
   }
 
   showLeaderboard() {
-    // Проверяем кэш через dataManager
-    const cache = dataManager.getLeaderboardCache();
-    if (cache) {
-      this.renderLeaderboard(cache);
-      return;
+    this.menuGroup.setVisible(false);
+    this.leaderboardGroup.setVisible(true);
+    if (!this.leaderboardTitle || !this.scoreBtn || !this.timeBtn) {
+      this.renderLeaderboardTabs();
+    } else {
+      this.leaderboardTitle.setVisible(true);
+      this.scoreBtn.setVisible(true);
+      this.timeBtn.setVisible(true);
     }
+    // Создаём кнопку 'Назад' только один раз
+    if (!this.leaderboardBackBtn) {
+      const centerX = this.cameras.main.centerX;
+      const centerY = this.cameras.main.centerY;
+      this.leaderboardBackBtn = this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
+        .setOrigin(0.5)
+        .setTint(0xffffff)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(10)
+        .on('pointerdown', () => {
+          sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+          this.scene.restart();
+        });
+      this.leaderboardGroup.add(this.leaderboardBackBtn);
+    } else {
+      this.leaderboardBackBtn.setVisible(true);
+    }
+    this.switchLeaderboardTab(this.activeLeaderboardTab);
+  }
+
+  renderLeaderboardTabs() {
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+    // Заголовок
+    const titleY = centerY - 250;
+    this.leaderboardTitle = this.add.bitmapText(centerX, titleY, 'ui', t('leaderboard'), 25)
+      .setOrigin(0.5)
+      .setTint(0xffffff)
+      .setDepth(10);
+    this.leaderboardGroup.add(this.leaderboardTitle);
+    // Кнопки под заголовком
+    const btnY = titleY + 70;
+    const btnOffset = 90;
+    this.scoreBtn = this.add.bitmapText(centerX - btnOffset, btnY, 'ui', t('scoreTab'), 22)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(10);
+    this.scoreBtn.on('pointerdown', () => {
+      if (this.activeLeaderboardTab !== 'score') {
+        this.switchLeaderboardTab('score');
+      }
+    });
+    this.leaderboardGroup.add(this.scoreBtn);
+    this.timeBtn = this.add.bitmapText(centerX + btnOffset, btnY, 'ui', t('timeTab'), 22)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(10);
+    this.timeBtn.on('pointerdown', () => {
+      if (this.activeLeaderboardTab !== 'time') {
+        this.switchLeaderboardTab('time');
+      }
+    });
+    this.leaderboardGroup.add(this.timeBtn);
+    this.scoreBtn.setTint(this.activeLeaderboardTab === 'score' ? 0xffff00 : 0xffffff);
+    this.timeBtn.setTint(this.activeLeaderboardTab === 'time' ? 0xffff00 : 0xffffff);
+  }
+
+  switchLeaderboardTab(tab) {
+    this.activeLeaderboardTab = tab;
+    if (this.scoreBtn && this.timeBtn) {
+      this.scoreBtn.setTint(this.activeLeaderboardTab === 'score' ? 0xffff00 : 0xffffff);
+      this.timeBtn.setTint(this.activeLeaderboardTab === 'time' ? 0xffff00 : 0xffffff);
+    }
+    this.renderLeaderboardContent();
+  }
+
+  renderLeaderboardContent() {
+    // Удаляем старые строки таблицы
+    if (this.leaderboardRows && this.leaderboardRows.length) {
+      this.leaderboardRows.forEach(row => row.destroy());
+      this.leaderboardRows = [];
+    }
+    const tab = this.activeLeaderboardTab;
+    const leaderboardName = tab === 'score' ? 'TotalScore' : 'BestTime';
     if (window.ysdk && window.ysdk.leaderboards) {
-      window.ysdk.leaderboards.getEntries('TotalScore', { quantityTop: 10, includeUser: true }).then(scoreRes => {
+      window.ysdk.leaderboards.getEntries(leaderboardName, { quantityTop: 10, includeUser: true }).then(scoreRes => {
         window.ysdk.getPlayer().then(player => {
           const userId = player && player.getUniqueID ? player.getUniqueID() : null;
-          const bestTimePromises = scoreRes.entries.map(entry =>
-            window.ysdk.leaderboards.getPlayerEntry('BestTime').then(timeEntry => {
-              if (timeEntry && timeEntry.player && timeEntry.player.uniqueID === entry.player.uniqueID) {
-                return timeEntry;
-              }
-              return null;
-            }).catch(() => null)
-          );
-          Promise.all(bestTimePromises).then(times => {
-            const data = { scoreRes, userId, times };
-            dataManager.setLeaderboardCache(data);
-            this.renderLeaderboard(data);
-          });
+          this.renderLeaderboardGeneric(tab, scoreRes, userId);
         });
       });
     }
   }
 
-  renderLeaderboard(cache) {
-    const { scoreRes, userId, times } = cache;
+  loadAndRenderLeaderboard(tab) {
+    const leaderboardName = tab === 'score' ? 'TotalScore' : 'BestTime';
+    if (window.ysdk && window.ysdk.leaderboards) {
+      window.ysdk.leaderboards.getEntries(leaderboardName, { quantityTop: 10, includeUser: true }).then(scoreRes => {
+        window.ysdk.getPlayer().then(player => {
+          const userId = player && player.getUniqueID ? player.getUniqueID() : null;
+          this.renderLeaderboardGeneric(tab, scoreRes, userId);
+        });
+      });
+    }
+  }
+
+  renderLeaderboardGeneric(tab, scoreRes, userId) {
+    // Удаляем старые строки таблицы
+    if (this.leaderboardRows && this.leaderboardRows.length) {
+      this.leaderboardRows.forEach(row => row.destroy());
+      this.leaderboardRows = [];
+    }
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
     const width = this.cameras.main.width;
-    let offsetY = -240;
-    // Фон меню
-    this.add.image(centerX, centerY, 'menu_background');
-    const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
-    bg.setOrigin(0.5);
-    bg.setDepth(0);
-    this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
-      .setOrigin(0.5)
-      .setTint(0xffffff);
-    offsetY += 60;
-    let y = centerY + offsetY;
-    // Заголовки по тем же X, что и строки
+    let offsetY = -130;
+    // Заголовки
     const xRank = 50;
     const xName = 100;
-    const xScore = centerX + 30;
+    const xScore = width - 50;
     const xTime = width - 50;
-    this.add.bitmapText(xRank, y, 'ui', '#', 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xName, y, 'ui', t('playerName'), 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xScore, y, 'ui', t('score'), 15).setOrigin(0, 0.5).setTint(0xaaaaaa);
-    this.add.bitmapText(xTime, y, 'ui', t('time'), 15).setOrigin(1, 0.5).setTint(0xaaaaaa);
+    let y = centerY + offsetY;
+    this.leaderboardRows = [];
+    this.leaderboardRows.push(
+      this.add.bitmapText(xRank, y, 'ui', '#', 15).setOrigin(0, 0.5).setTint(0xaaaaaa).setDepth(5)
+    );
+    this.leaderboardRows.push(
+      this.add.bitmapText(xName, y, 'ui', t('playerName'), 15).setOrigin(0, 0.5).setTint(0xaaaaaa).setDepth(5)
+    );
+    if (tab === 'score') {
+      this.leaderboardRows.push(
+        this.add.bitmapText(xScore, y, 'ui', t('score'), 15).setOrigin(1, 0.5).setTint(0xaaaaaa).setDepth(5)
+      );
+    } else {
+      this.leaderboardRows.push(
+        this.add.bitmapText(xTime, y, 'ui', t('time'), 15).setOrigin(1, 0.5).setTint(0xaaaaaa).setDepth(5)
+      );
+    }
+    this.leaderboardRows.forEach(row => this.leaderboardGroup.add(row));
     y += 30;
     let userInTop = false;
-    scoreRes.entries.forEach((entry, i) => {
+    scoreRes.entries.forEach((entry) => {
       const name = entry.player.publicName || t('anonymous');
-      const score = entry.formattedScore || entry.score;
+      const value = entry.formattedScore || entry.score;
       const rank = entry.rank;
-      let bestTime = '-';
-      const timeEntry = times[i];
-      if (timeEntry && timeEntry.score) {
-        bestTime = (timeEntry.formattedScore || (Math.floor(timeEntry.score / 1000) + 's'));
-      }
       const isUser = userId && entry.player.uniqueID === userId;
       if (isUser) userInTop = true;
       const tint = isUser ? 0xffff00 : 0xffffff;
-      this.drawLeaderboardRow(centerX, y, rank, name, score, bestTime, tint);
-      y += 30;
+      let row;
+      if (tab === 'score') {
+        row = this.drawLeaderboardRowScore(centerX, y, rank, name, value, tint);
+      } else {
+        row = this.drawLeaderboardRowTime(centerX, y, rank, name, value, tint);
+      }
+      if (Array.isArray(row)) {
+        row.forEach(r => this.leaderboardGroup.add(r));
+        this.leaderboardRows.push(...row);
+      } else {
+        this.leaderboardGroup.add(row);
+        this.leaderboardRows.push(row);
+      }
+      y += 25;
     });
     if (!userInTop && userId) {
-      window.ysdk.leaderboards.getPlayerEntry('TotalScore').then(userEntry => {
-        window.ysdk.leaderboards.getPlayerEntry('BestTime').then(userTimeEntry => {
-          let bestTime = '-';
-          if (userTimeEntry && userTimeEntry.score) {
-            bestTime = userTimeEntry.formattedScore || (Math.floor(userTimeEntry.score / 1000) + 's');
-          }
-          const userRank = (typeof userEntry.rank === 'number' && userEntry.rank >= 0) ? userEntry.rank + 1 : 1;
-          this.drawLeaderboardRow(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), userEntry.formattedScore || userEntry.score, bestTime, 0xffff00);
-        }).catch(err => {
-          const userRank = (typeof userEntry.rank === 'number' && userEntry.rank >= 0) ? userEntry.rank + 1 : 1;
-          this.drawLeaderboardRow(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), userEntry.formattedScore || userEntry.score, '-', 0xffff00);
-        });
+      window.ysdk.leaderboards.getPlayerEntry(tab === 'score' ? 'TotalScore' : 'BestTime').then(userEntry => {
+        const userRank = (typeof userEntry.rank === 'number' && userEntry.rank >= 0) ? userEntry.rank + 1 : 1;
+        const value = userEntry.formattedScore || userEntry.score;
+        let row;
+        if (tab === 'score') {
+          row = this.drawLeaderboardRowScore(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), value, 0xffff00);
+        } else {
+          row = this.drawLeaderboardRowTime(centerX, y, userRank, userEntry.player.publicName || t('anonymous'), value, 0xffff00);
+        }
+        if (Array.isArray(row)) {
+          row.forEach(r => this.leaderboardGroup.add(r));
+          this.leaderboardRows.push(...row);
+        } else {
+          this.leaderboardGroup.add(row);
+          this.leaderboardRows.push(row);
+        }
       }).catch(err => {
         if (err.code === 'LEADERBOARD_PLAYER_NOT_PRESENT') {
-          this.drawLeaderboardRow(centerX, y, 1, t('anonymous'), 0, '-', 0xffff00);
+          let row;
+          if (tab === 'score') {
+            row = this.drawLeaderboardRowScore(centerX, y, 1, t('anonymous'), 0, 0xffff00);
+          } else {
+            row = this.drawLeaderboardRowTime(centerX, y, 1, t('anonymous'), '-', 0xffff00);
+          }
+          if (Array.isArray(row)) {
+            row.forEach(r => this.leaderboardGroup.add(r));
+            this.leaderboardRows.push(...row);
+          } else {
+            this.leaderboardGroup.add(row);
+            this.leaderboardRows.push(row);
+          }
         }
       });
     }
-    this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
-      .setOrigin(0.5)
-      .setTint(0xffffff)
-      .setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => {
-        sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-        this.scene.restart();
-      });
   }
 
-  drawLeaderboardRow(xCenter, y, rank, name, score, bestTime, tint = 0xffffff) {
+  drawLeaderboardRowScore(xCenter, y, rank, name, score, tint = 0xffffff) {
     const width = this.cameras.main.width;
     const xRank = 50;
     const xName = 100;
-    const xScore = xCenter + 30;
+    const xScore = width - 50;
+    const maxNameLen = 20;
+    let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 3) + '...' : name;
+    return [
+      this.add.bitmapText(xRank, y, 'ui', rank, 13).setOrigin(0, 0.5).setTint(tint).setDepth(5),
+      this.add.bitmapText(xName, y, 'ui', displayName, 10).setOrigin(0, 0.5).setTint(tint).setDepth(5),
+      this.add.bitmapText(xScore, y, 'ui', score, 13).setOrigin(1, 0.5).setTint(tint).setDepth(5)
+    ];
+  }
+
+  drawLeaderboardRowTime(xCenter, y, rank, name, time, tint = 0xffffff) {
+    const width = this.cameras.main.width;
+    const xRank = 50;
+    const xName = 100;
     const xTime = width - 50;
     const maxNameLen = 20;
     let displayName = name.length > maxNameLen ? name.slice(0, maxNameLen - 3) + '...' : name;
-    this.add.bitmapText(xRank, y, 'ui', rank, 13).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xName, y, 'ui', displayName, 10).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xScore, y, 'ui', score, 13).setOrigin(0, 0.5).setTint(tint);
-    this.add.bitmapText(xTime, y, 'ui', bestTime, 13).setOrigin(1, 0.5).setTint(tint);
+    let displayTime = '-';
+    if (typeof time === 'number' && !isNaN(time)) {
+      displayTime = Math.floor(time / 1000) + 's';
+    } else if (typeof time === 'string') {
+      displayTime = time;
+    }
+    return [
+      this.add.bitmapText(xRank, y, 'ui', rank, 13).setOrigin(0, 0.5).setTint(tint).setDepth(5),
+      this.add.bitmapText(xName, y, 'ui', displayName, 10).setOrigin(0, 0.5).setTint(tint).setDepth(5),
+      this.add.bitmapText(xTime, y, 'ui', displayTime, 13).setOrigin(1, 0.5).setTint(tint).setDepth(5)
+    ];
   }
 }

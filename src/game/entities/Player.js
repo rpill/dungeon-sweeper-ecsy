@@ -106,5 +106,9 @@ export class Player {
       previous: prevHP,
       current: this.hp
     });
+    
+    if (this.xp >= this.nextLevelXP()) {
+      sceneEvents.emit(PlayerEvents.CAN_LEVEL_UP);
+    }
   }
 }
