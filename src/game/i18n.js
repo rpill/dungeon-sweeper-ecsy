@@ -31,6 +31,10 @@ export const TEXTS = {
     leaderboard: "Таблица лидеров",
     playerName: "Имя",
     anonymous: "Аноним",
+    leaderboardAuthDescription: "Авторизуйтесь, чтобы ваша информация отобразилась в таблице лидеров.",
+    leaderboardAuthButton: "Авторизоваться",
+    bestTime: "Лучшее время",
+    totalScore: "Общий счет",
     // ... добавьте остальные строки
   },
   en: {
@@ -65,6 +69,10 @@ export const TEXTS = {
     leaderboard: "Leaderboard",
     playerName: "Name",
     anonymous: "Anonymous",
+    leaderboardAuthDescription: "Sign in to display your information on the leaderboard.",
+    leaderboardAuthButton: "Sign in",
+    bestTime: "Best time",
+    totalScore: "Total score",
     // ... add other strings
   }
 };

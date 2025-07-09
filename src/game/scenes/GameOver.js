@@ -93,6 +93,24 @@ export class GameOver extends Scene {
     }
     // --- конец лидербордов ---
 
+    // --- Локальное сохранение для неавторизованных ---
+    if (window.ysdk && window.ysdk.getPlayer) {
+      window.ysdk.getPlayer().then(player => {
+        if (!player.isAuthorized || !player.isAuthorized()) {
+          // Сохраняем лучший результат (BestTime) только если победа
+          if (data.win) {
+            const prevBest = Number(localStorage.getItem('bestTime') || 0);
+            const newTime = data.time * 1000;
+            if (!prevBest || newTime < prevBest) {
+              localStorage.setItem('bestTime', newTime);
+            }
+          }
+          // Сохраняем общий счет (TotalScore)
+          const prevScore = Number(localStorage.getItem('totalScore') || 0);
+          localStorage.setItem('totalScore', prevScore + data.score);
+        }
+      });
+    }
     // Кнопка "В меню"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)
       .setOrigin(0.5)

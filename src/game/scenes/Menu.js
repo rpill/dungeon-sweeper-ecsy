@@ -120,22 +120,15 @@ export class Menu extends Scene {
     this.menuGroup.add(settingsBtn);
     offsetY += 60;
     // Кнопка "Таблица лидеров"
-    if (window.ysdk && window.ysdk.getPlayer) {
-      window.ysdk.getPlayer().then(player => {
-        if (!this.scene.isActive() || this.scene.isSleeping()) return;
-        if (player.isAuthorized && player.isAuthorized()) {
-          const leaderboardBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
-            .setOrigin(0.5)
-            .setTint(0xffff00)
-            .setInteractive({ useHandCursor: true });
-          leaderboardBtn.on('pointerdown', () => {
-            sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-            this.showLeaderboard();
-          });
-          this.menuGroup.add(leaderboardBtn);
-        }
-      }).catch((err) => { });
-    }
+    const leaderboardBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
+      .setOrigin(0.5)
+      .setTint(0xffff00)
+      .setInteractive({ useHandCursor: true });
+    leaderboardBtn.on('pointerdown', () => {
+      sceneEvents.emit(AudioEvents.PLAYER_CLICK);
+      this.showLeaderboard();
+    });
+    this.menuGroup.add(leaderboardBtn);
     // --- Группа таблицы лидеров ---
     this.leaderboardGroup = this.add.container(0, 0);
     this.leaderboardGroup.setVisible(false);
@@ -340,37 +333,147 @@ export class Menu extends Scene {
     });
   }
 
-  showLeaderboard() {
-    this.menuGroup.setVisible(false);
+  async showLeaderboard() {
     this.leaderboardGroup.setVisible(true);
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+    // Проверяем авторизацию
+    let player = null;
+    if (window.ysdk && window.ysdk.getPlayer) {
+      try {
+        player = await window.ysdk.getPlayer();
+      } catch (e) {}
+    }
+    if (!player || !player.isAuthorized || !player.isAuthorized()) {
+      // Неавторизованный пользователь: показываем только локальные рекорды
+      this.renderLocalLeaderboard(centerX, centerY);
+      return;
+    }
+    // Авторизованный — стандартная логика
     if (!this.leaderboardTitle || !this.scoreBtn || !this.timeBtn) {
       this.renderLeaderboardTabs();
-    } else {
-      this.leaderboardTitle.setVisible(true);
-      this.scoreBtn.setVisible(true);
-      this.timeBtn.setVisible(true);
     }
-    // Создаём кнопку 'Назад' только один раз
+    this.leaderboardTitle.setVisible(true);
     if (!this.leaderboardBackBtn) {
-      const centerX = this.cameras.main.centerX;
-      const centerY = this.cameras.main.centerY;
       this.leaderboardBackBtn = this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
         .setOrigin(0.5)
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true })
-        .setDepth(10)
         .on('pointerdown', () => {
-          sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-          this.scene.restart();
+          this.leaderboardGroup.setVisible(false);
         });
       this.leaderboardGroup.add(this.leaderboardBackBtn);
-    } else {
-      this.leaderboardBackBtn.setVisible(true);
     }
+    this.leaderboardBackBtn.setVisible(true);
     this.switchLeaderboardTab(this.activeLeaderboardTab);
   }
 
+  renderLocalLeaderboard(centerX, centerY) {
+    // Очищаем старые строки
+    if (this.leaderboardRows && this.leaderboardRows.length) {
+      this.leaderboardRows.forEach(row => row.destroy());
+      this.leaderboardRows = [];
+    }
+    // Удаляем старый заголовок, если есть
+    if (this.leaderboardTitle) {
+      this.leaderboardTitle.destroy();
+      this.leaderboardTitle = null;
+    }
+    // Заголовок
+    this.leaderboardTitle = this.add.bitmapText(centerX, centerY - 180, 'ui', t('leaderboard'), 25).setOrigin(0.5);
+    this.leaderboardGroup.add(this.leaderboardTitle);
+    this.leaderboardTitle.setVisible(true);
+    // Получаем локальные рекорды
+    const bestTime = Number(localStorage.getItem('bestTime') || 0);
+    const totalScore = Number(localStorage.getItem('totalScore') || 0);
+    // Показываем две строки: BestTime и TotalScore
+    let y = centerY - 80;
+    const bestTimeText = this.add.bitmapText(centerX, y, 'ui', `${t('bestTime')}: ${bestTime ? (bestTime/1000).toFixed(2) + 's' : '-'}`, 22).setOrigin(0.5);
+    this.leaderboardGroup.add(bestTimeText);
+    this.leaderboardRows.push(bestTimeText);
+    y += 40;
+    const totalScoreText = this.add.bitmapText(centerX, y, 'ui', `${t('totalScore')}: ${totalScore}`, 22).setOrigin(0.5);
+    this.leaderboardGroup.add(totalScoreText);
+    this.leaderboardRows.push(totalScoreText);
+    y += 80;
+    // Описание и кнопка авторизации
+    const desc = this.add.bitmapText(centerX, y, 'ui', t('leaderboardAuthDescription'), 11)
+      .setOrigin(0.5)
+      .setMaxWidth(400)
+      .setLineSpacing(12);
+    this.leaderboardGroup.add(desc);
+    this.leaderboardRows.push(desc);
+    y += 80;
+    const authBtn = this.add.bitmapText(centerX, y, 'ui', t('leaderboardAuthButton'), 20)
+      .setOrigin(0.5)
+      .setTint(0xffff00)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', async () => {
+        if (window.ysdk && window.ysdk.auth) {
+          await window.ysdk.auth.openAuthDialog();
+          // После авторизации — синхронизируем локальные данные
+          await this.syncLocalStatsWithServer();
+          // Обновляем таблицу
+          this.showLeaderboard();
+        }
+      });
+    this.leaderboardGroup.add(authBtn);
+    this.leaderboardRows.push(authBtn);
+    // Кнопка назад
+    if (!this.leaderboardBackBtn) {
+      this.leaderboardBackBtn = this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
+        .setOrigin(0.5)
+        .setTint(0xffffff)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => {
+          this.leaderboardGroup.setVisible(false);
+        });
+      this.leaderboardGroup.add(this.leaderboardBackBtn);
+    }
+    this.leaderboardBackBtn.setVisible(true);
+  }
+
+  async syncLocalStatsWithServer() {
+    // Получаем локальные рекорды
+    const bestTime = Number(localStorage.getItem('bestTime') || 0);
+    const totalScore = Number(localStorage.getItem('totalScore') || 0);
+    if (!window.ysdk || !window.ysdk.leaderboards) return;
+    // Синхронизируем BestTime
+    if (bestTime) {
+      try {
+        const entry = await window.ysdk.leaderboards.getPlayerEntry('BestTime');
+        if (!entry || bestTime < entry.score) {
+          await window.ysdk.leaderboards.setScore('BestTime', bestTime);
+        }
+      } catch (err) {
+        if (err.code === 'LEADERBOARD_PLAYER_NOT_PRESENT') {
+          await window.ysdk.leaderboards.setScore('BestTime', bestTime);
+        }
+      }
+    }
+    // Синхронизируем TotalScore
+    if (totalScore) {
+      try {
+        const entry = await window.ysdk.leaderboards.getPlayerEntry('TotalScore');
+        const newScore = (entry && typeof entry.score === 'number' ? entry.score : 0) + totalScore;
+        await window.ysdk.leaderboards.setScore('TotalScore', newScore);
+      } catch (err) {
+        if (err.code === 'LEADERBOARD_PLAYER_NOT_PRESENT') {
+          await window.ysdk.leaderboards.setScore('TotalScore', totalScore);
+        }
+      }
+    }
+    // Очищаем локальные данные
+    localStorage.removeItem('bestTime');
+    localStorage.removeItem('totalScore');
+  }
+
   renderLeaderboardTabs() {
+    // Удаляем старый заголовок, если есть
+    if (this.leaderboardTitle) {
+      this.leaderboardTitle.destroy();
+      this.leaderboardTitle = null;
+    }
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
     // Заголовок
