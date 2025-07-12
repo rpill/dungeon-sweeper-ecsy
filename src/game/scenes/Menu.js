@@ -388,7 +388,11 @@ export class Menu extends Scene {
     const totalScore = Number(localStorage.getItem('totalScore') || 0);
     // Показываем две строки: BestTime и TotalScore
     let y = centerY - 80;
-    const bestTimeText = this.add.bitmapText(centerX, y, 'ui', `${t('bestTime')}: ${bestTime ? (bestTime/1000).toFixed(2) + 's' : '-'}`, 22).setOrigin(0.5);
+    let bestTimeStr = '-';
+    if (bestTime) {
+      bestTimeStr = formatTime(bestTime / 1000);
+    }
+    const bestTimeText = this.add.bitmapText(centerX, y, 'ui', `${t('bestTime')}: ${bestTimeStr}`, 22).setOrigin(0.5);
     this.leaderboardGroup.add(bestTimeText);
     this.leaderboardRows.push(bestTimeText);
     y += 40;
@@ -485,8 +489,8 @@ export class Menu extends Scene {
     this.leaderboardGroup.add(this.leaderboardTitle);
     // Кнопки под заголовком
     const btnY = titleY + 70;
-    const btnOffset = 90;
-    this.scoreBtn = this.add.bitmapText(centerX - btnOffset, btnY, 'ui', t('scoreTab'), 22)
+    const btnOffset = 130;
+    this.scoreBtn = this.add.bitmapText(centerX - btnOffset, btnY, 'ui', t('leaderboardByScore'), 22)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .setDepth(10);
@@ -496,7 +500,7 @@ export class Menu extends Scene {
       }
     });
     this.leaderboardGroup.add(this.scoreBtn);
-    this.timeBtn = this.add.bitmapText(centerX + btnOffset, btnY, 'ui', t('timeTab'), 22)
+    this.timeBtn = this.add.bitmapText(centerX + btnOffset, btnY, 'ui', t('leaderboardByTime'), 22)
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .setDepth(10);
@@ -526,18 +530,6 @@ export class Menu extends Scene {
       this.leaderboardRows = [];
     }
     const tab = this.activeLeaderboardTab;
-    const leaderboardName = tab === 'score' ? 'TotalScore' : 'BestTime';
-    if (window.ysdk && window.ysdk.leaderboards) {
-      window.ysdk.leaderboards.getEntries(leaderboardName, { quantityTop: 10, includeUser: true }).then(scoreRes => {
-        window.ysdk.getPlayer().then(player => {
-          const userId = player && player.getUniqueID ? player.getUniqueID() : null;
-          this.renderLeaderboardGeneric(tab, scoreRes, userId);
-        });
-      });
-    }
-  }
-
-  loadAndRenderLeaderboard(tab) {
     const leaderboardName = tab === 'score' ? 'TotalScore' : 'BestTime';
     if (window.ysdk && window.ysdk.leaderboards) {
       window.ysdk.leaderboards.getEntries(leaderboardName, { quantityTop: 10, includeUser: true }).then(scoreRes => {
@@ -675,5 +667,18 @@ export class Menu extends Scene {
       this.add.bitmapText(xName, y, 'ui', displayName, 10).setOrigin(0, 0.5).setTint(tint).setDepth(5),
       this.add.bitmapText(xTime, y, 'ui', displayTime, 13).setOrigin(1, 0.5).setTint(tint).setDepth(5)
     ];
+  }
+}
+
+// Добавить функцию форматирования времени (как в GameOver.js)
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const pad = Phaser.Utils.String.Pad;
+  if (h > 0) {
+    return `${pad(h, 2, '0', 1)}:${pad(m, 2, '0', 1)}:${pad(s, 2, '0', 1)}`;
+  } else {
+    return `${pad(m, 2, '0', 1)}:${pad(s, 2, '0', 1)}`;
   }
 }

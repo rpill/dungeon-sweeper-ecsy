@@ -31,13 +31,11 @@ class DataManager {
     this.startTime = null;
     this.elapsedTime = 0;
     this.reviveUsed = false;
-    console.log('DataManager: initialize - сцена:', !!scene, 'игрок:', !!this.player);
   }
 
   setStatus(status) {
     const previous = this.status;
     this.status = status;
-    console.log('DataManager: setStatus -', previous, '->', status);
     
     if (status === StatusEvents.PLAYING) {
       if (!this.startTime) {
@@ -69,30 +67,6 @@ class DataManager {
       return this.elapsedTime + Math.floor((Date.now() - this.startTime) / 1000);
     }
     return this.elapsedTime;
-  }
-
-  LEADERBOARD_CACHE_KEY = 'leaderboardCache';
-  LEADERBOARD_CACHE_TTL = 60 * 1000; // 1 минута
-
-  setLeaderboardCache(data) {
-    localStorage.setItem(this.LEADERBOARD_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
-  }
-
-  getLeaderboardCache() {
-    const cacheStr = localStorage.getItem(this.LEADERBOARD_CACHE_KEY);
-    if (cacheStr) {
-      try {
-        const cacheObj = JSON.parse(cacheStr);
-        if (cacheObj.timestamp && (Date.now() - cacheObj.timestamp < this.LEADERBOARD_CACHE_TTL)) {
-          return cacheObj.data;
-        }
-      } catch (e) {}
-    }
-    return null;
-  }
-
-  clearLeaderboardCache() {
-    localStorage.removeItem(this.LEADERBOARD_CACHE_KEY);
   }
 }
 

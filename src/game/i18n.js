@@ -35,6 +35,8 @@ export const TEXTS = {
     leaderboardAuthButton: "Авторизоваться",
     bestTime: "Лучшее время",
     totalScore: "Общий счет",
+    leaderboardByScore: "По очкам",
+    leaderboardByTime: "По времени",
     // ... добавьте остальные строки
   },
   en: {
@@ -73,6 +75,8 @@ export const TEXTS = {
     leaderboardAuthButton: "Sign in",
     bestTime: "Best time",
     totalScore: "Total score",
+    leaderboardByScore: "By score",
+    leaderboardByTime: "By time",
     // ... add other strings
   }
 };

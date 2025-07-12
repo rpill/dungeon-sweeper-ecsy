@@ -61,33 +61,32 @@ export class GameOver extends Scene {
               // Если нет предыдущего результата или новое время лучше — отправляем
               if (prevBest === null || newTime < prevBest) {
                 window.ysdk.leaderboards.setScore('BestTime', newTime)
-                  .catch(()=>{})
-                  .finally(() => {
-                    dataManager.clearLeaderboardCache();
-                  });
+                  .then(() => {
+                    // Отправляем TotalScore после успешного сохранения BestTime
+                    setTimeout(() => {
+                      this.sendTotalScore(data.score);
+                    }, 1100); // задержка чуть больше 1 секунды
+                  })
+                  .catch((err) => console.error('BestTime save error:', err));
+              } else {
+                // Отправляем TotalScore сразу, если BestTime не обновлялся
+                this.sendTotalScore(data.score);
               }
-            }).catch(() => {
+            }).catch((err) => {
               // Если не удалось получить предыдущее время — просто отправляем
               window.ysdk.leaderboards.setScore('BestTime', data.time * 1000)
-                .catch(()=>{})
-                .finally(() => {
-                  dataManager.clearLeaderboardCache();
-                });
+                .then(() => {
+                  // Отправляем TotalScore после успешного сохранения BestTime
+                  setTimeout(() => {
+                    this.sendTotalScore(data.score);
+                  }, 1100);
+                })
+                .catch((err) => console.error('BestTime save error:', err));
             });
+          } else {
+            // Если не победа, отправляем только TotalScore
+            this.sendTotalScore(data.score);
           }
-          // TotalScore: плюсуем очки
-          window.ysdk.leaderboards.getPlayerEntry('TotalScore')
-            .then(entry => {
-              const prev = entry && typeof entry.score === 'number' ? entry.score : 0;
-              window.ysdk.leaderboards.setScore('TotalScore', prev + data.score).catch(()=>{}).finally(() => {
-                dataManager.clearLeaderboardCache();
-              });
-            })
-            .catch(() => {
-              window.ysdk.leaderboards.setScore('TotalScore', data.score).catch(()=>{}).finally(() => {
-                dataManager.clearLeaderboardCache();
-              });
-            });
         }
       });
     }
@@ -128,6 +127,21 @@ export class GameOver extends Scene {
         }
         
         this.scene.start(SCENE_KEYS.MENU);
+      });
+  }
+
+  // Метод для отправки TotalScore
+  sendTotalScore(score) {
+    window.ysdk.leaderboards.getPlayerEntry('TotalScore')
+      .then(entry => {
+        const prev = entry && typeof entry.score === 'number' ? entry.score : 0;
+        const newTotal = prev + score;
+        window.ysdk.leaderboards.setScore('TotalScore', newTotal)
+          .catch((err) => console.error('TotalScore save error:', err));
+      })
+      .catch((err) => {
+        window.ysdk.leaderboards.setScore('TotalScore', score)
+          .catch((err) => console.error('TotalScore save error:', err));
       });
   }
 }

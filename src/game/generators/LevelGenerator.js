@@ -84,8 +84,6 @@ export class LevelGenerator {
   }
 
   generateBaseLevel() {
-    console.log('LevelGenerator: generateBaseLevel - создаем базовый уровень');
-    
     // Инициализируем размеры и spatialMap
     this.width = dataManager.width;
     this.height = dataManager.height;
@@ -109,7 +107,6 @@ export class LevelGenerator {
         // НЕ добавляем плитки в spatialMap
       }
     }
-    console.log('LevelGenerator: generateBaseLevel - базовый уровень создан');
   }
 
   beginLayer() {
