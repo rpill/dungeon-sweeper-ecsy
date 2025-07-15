@@ -457,6 +457,7 @@ export class Menu extends Scene {
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
+          this.activateMenuItems();
           this.leaderboardGroup.setVisible(false);
         });
       this.leaderboardGroup.add(this.leaderboardBackBtn);

@@ -110,6 +110,28 @@ export class GameOver extends Scene {
         }
       });
     }
+
+    // --- Показываем напоминание об отзыве ---
+    if (window.ysdk && window.ysdk.feedback) {
+      if (dataManager.getGamesPlayed() === 5) {
+        window.ysdk.feedback.canReview()
+          .then(({ value, reason }) => {
+            if (value) {
+              window.ysdk.feedback.requestReview()
+                .then(({ feedbackSent }) => {
+                  if (feedbackSent) {
+                    // Можно показать благодарность или анимацию
+                    console.log('Спасибо за вашу оценку!');
+                  } else {
+                    console.log('Окно оценки закрыто без оценки');
+                  }
+                });
+            } else {
+              console.log('Оценка недоступна:', reason);
+            }
+          });
+      }
+    }
     // Кнопка "В меню"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)
       .setOrigin(0.5)

@@ -13,6 +13,8 @@ class DataManager {
     this.tileSize = 48;
     this.debug = false;
     this.reset();
+    // Добавляем счётчик сыгранных игр
+    this.gamesPlayed = Number(localStorage.getItem('gamesPlayed') || 0);
     DataManager.instance = this;
 
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
@@ -35,6 +37,15 @@ class DataManager {
     this.reviveUsed = false;
   }
 
+  incrementGamesPlayed() {
+    this.gamesPlayed += 1;
+    localStorage.setItem('gamesPlayed', this.gamesPlayed);
+  }
+
+  getGamesPlayed() {
+    return this.gamesPlayed;
+  }
+
   setStatus(status) {
     const previous = this.status;
     this.status = status;
@@ -49,6 +60,7 @@ class DataManager {
         this.elapsedTime += Math.floor((Date.now() - this.startTime) / 1000);
         this.startTime = null;
       }
+      this.incrementGamesPlayed(); // увеличиваем счётчик сыгранных игр
       gameSaveManager.clearSave();
     }
     if (status !== StatusEvents.PLAYING && this.startTime) {
