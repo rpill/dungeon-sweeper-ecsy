@@ -17,6 +17,35 @@ export class Menu extends Scene {
     this.leaderboardGroup = null;
   }
 
+  // Универсальный метод для деактивации пунктов меню
+  deactivateMenuItems() {
+    if (this.menuGroup) {
+      this.menuGroup.list.forEach(child => {
+        if (child.type === 'BitmapText') {
+          child.setVisible(false);
+          if (child.input && child.input.enabled) {
+            child.disableInteractive();
+          }
+        }
+      });
+    }
+    this.input.setDefaultCursor('default');
+  }
+
+  // Универсальный метод для активации пунктов меню
+  activateMenuItems() {
+    if (this.menuGroup) {
+      this.menuGroup.list.forEach(child => {
+        if (child.type === 'BitmapText') {
+          child.setVisible(true);
+          if (child.input) {
+            child.setInteractive({ useHandCursor: true });
+          }
+        }
+      });
+    }
+  }
+
   create() {
     // Сброс всех ссылок на UI-элементы для корректной работы после restart
     this.leaderboardTitle = null;
@@ -146,12 +175,8 @@ export class Menu extends Scene {
   }
 
   showAudioSettings() {
-    // Скрываем все элементы меню
-    this.children.list.forEach(child => {
-      if (child.type === 'BitmapText' || child.type === 'Rectangle') {
-        child.setVisible(false);
-      }
-    });
+    // Скрываем все кнопки меню и отключаем интерактивность
+    this.deactivateMenuItems();
 
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
@@ -233,7 +258,9 @@ export class Menu extends Scene {
     backBtn.on('pointerdown', () => {
       // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-      
+      // Восстанавливаем видимость и интерактивность пунктов меню
+      this.activateMenuItems();
+      // Перезапускаем сцену
       this.scene.restart();
     });
   }
@@ -278,12 +305,8 @@ export class Menu extends Scene {
   }
 
   showRules() {
-    // Скрываем все элементы меню
-    this.children.list.forEach(child => {
-      if (child.type === 'BitmapText' || child.type === 'Rectangle') {
-        child.setVisible(false);
-      }
-    });
+    // Скрываем все кнопки меню и отключаем интерактивность
+    this.deactivateMenuItems();
 
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
@@ -334,6 +357,8 @@ export class Menu extends Scene {
   }
 
   async showLeaderboard() {
+    // Скрываем все кнопки меню и отключаем интерактивность
+    this.deactivateMenuItems();
     this.leaderboardGroup.setVisible(true);
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
@@ -360,6 +385,8 @@ export class Menu extends Scene {
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
+          // Восстанавливаем видимость и интерактивность пунктов меню
+          this.activateMenuItems();
           this.leaderboardGroup.setVisible(false);
         });
       this.leaderboardGroup.add(this.leaderboardBackBtn);

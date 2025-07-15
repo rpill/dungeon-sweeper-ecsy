@@ -14,6 +14,8 @@ class DataManager {
     this.debug = false;
     this.reset();
     DataManager.instance = this;
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
   }
 
   reset() {
@@ -67,6 +69,22 @@ class DataManager {
       return this.elapsedTime + Math.floor((Date.now() - this.startTime) / 1000);
     }
     return this.elapsedTime;
+  }
+
+  handleVisibilityChange() {
+    if (document.hidden) {
+      // Если страница скрыта, ставим таймер на паузу
+      if (this.status === StatusEvents.PLAYING && this.startTime) {
+        this.elapsedTime += Math.floor((Date.now() - this.startTime) / 1000);
+        this.startTime = null;
+        gameSaveManager.saveGameState(); // Сохраняем состояние при скрытии вкладки
+      }
+    } else {
+      // Если страница снова видима, возобновляем таймер
+      if (this.status === StatusEvents.PLAYING && !this.startTime) {
+        this.startTime = Date.now();
+      }
+    }
   }
 }
 
