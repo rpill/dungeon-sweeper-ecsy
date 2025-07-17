@@ -71,8 +71,23 @@ export class Menu extends Scene {
         audioManager.playMusic();
       }
     }
+    // Удаляем предыдущий фон, если есть
+    if (this.menuBg) {
+      this.menuBg.destroy();
+      this.menuBg = null;
+    }
     // Фон меню
-    this.add.image(centerX, centerY, 'menu_background');
+    if (window.innerWidth < window.innerHeight) {
+      // Мобильное устройство: cover по ширине/высоте
+      const bgTexture = this.textures.get('menu_background').getSourceImage();
+      const scaleX = this.scale.width / bgTexture.width;
+      const scaleY = this.scale.height / bgTexture.height;
+      const scale = Math.max(scaleX, scaleY);
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
+    } else {
+      // Десктоп: как было
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background');
+    }
     // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
     bg.setOrigin(0.5);
@@ -162,7 +177,17 @@ export class Menu extends Scene {
     this.leaderboardGroup = this.add.container(0, 0);
     this.leaderboardGroup.setVisible(false);
     // Фон и затемнение для таблицы лидеров
-    this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setDepth(0);
+    if (window.innerWidth < window.innerHeight) {
+      // Мобильное устройство: cover по ширине/высоте
+      const bgTexture = this.textures.get('menu_background').getSourceImage();
+      const scaleX = this.scale.width / bgTexture.width;
+      const scaleY = this.scale.height / bgTexture.height;
+      const scale = Math.max(scaleX, scaleY);
+      this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale).setDepth(0);
+    } else {
+      // Десктоп: как было
+      this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setDepth(0);
+    }
     this.leaderboardRect = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55).setOrigin(0.5).setDepth(0);
     this.leaderboardGroup.add([this.leaderboardBg, this.leaderboardRect]);
     // Заголовок и вкладки будут добавляться в renderLeaderboardTabs
@@ -182,8 +207,23 @@ export class Menu extends Scene {
     const centerY = this.cameras.main.centerY;
     let offsetY = -80;
 
+    // Удаляем предыдущий фон, если есть
+    if (this.menuBg) {
+      this.menuBg.destroy();
+      this.menuBg = null;
+    }
     // Фон меню
-    this.add.image(centerX, centerY, 'menu_background');
+    if (window.innerWidth < window.innerHeight) {
+      // Мобильное устройство: cover по ширине/высоте
+      const bgTexture = this.textures.get('menu_background').getSourceImage();
+      const scaleX = this.scale.width / bgTexture.width;
+      const scaleY = this.scale.height / bgTexture.height;
+      const scale = Math.max(scaleX, scaleY);
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
+    } else {
+      // Десктоп: как было
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background');
+    }
 
     // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
@@ -312,8 +352,23 @@ export class Menu extends Scene {
     const centerY = this.cameras.main.centerY;
     let offsetY = -120;
 
+    // Удаляем предыдущий фон, если есть
+    if (this.menuBg) {
+      this.menuBg.destroy();
+      this.menuBg = null;
+    }
     // Фон меню
-    this.add.image(centerX, centerY, 'menu_background');
+    if (window.innerWidth < window.innerHeight) {
+      // Мобильное устройство: cover по ширине/высоте
+      const bgTexture = this.textures.get('menu_background').getSourceImage();
+      const scaleX = this.scale.width / bgTexture.width;
+      const scaleY = this.scale.height / bgTexture.height;
+      const scale = Math.max(scaleX, scaleY);
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
+    } else {
+      // Десктоп: как было
+      this.menuBg = this.add.image(centerX, centerY, 'menu_background');
+    }
 
     // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);

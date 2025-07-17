@@ -21,6 +21,7 @@ import { audioManager } from '../AudioManager';
 import { ObjectCounterSystem } from '../ecs/systems/ObjectCounterSystem';
 import { gameSaveManager } from '../GameSaveManager';
 import { t } from '../i18n';
+import { isMobile } from '../utils';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -30,7 +31,7 @@ export class Game extends Phaser.Scene {
   create(data = {}) {
     // Инициализируем глобальный менеджер звуков
     audioManager.initialize(this);
-    
+
     // Добавляем обработчик первого взаимодействия
     this.input.on('pointerdown', () => {
       audioManager.onUserInteraction();
@@ -39,12 +40,12 @@ export class Game extends Phaser.Scene {
     // Централизованная обработка завершения игры
     sceneEvents.on(StatusEvents.CHANGED, this.onStatusChanged, this);
     this.events.on('shutdown', this.onSceneShutdown, this);
-    
+
     // Обработка событий игрока для сохранения
     sceneEvents.on('player:hp_changed', this.onPlayerChanged, this);
     sceneEvents.on('player:xp_changed', this.onPlayerChanged, this);
     sceneEvents.on('player:level_up', this.onPlayerChanged, this);
-    
+
     // Проверяем, нужно ли загрузить сохраненную игру
     if (data.loadSavedGame) {
       this.loadSavedGame();
@@ -65,9 +66,9 @@ export class Game extends Phaser.Scene {
     }
     if (current === StatusEvents.WIN) {
       audioManager.playWinMusic();
-      this.scene.start(SCENE_KEYS.GAME_OVER, { 
-        win: true, 
-        time: dataManager.getElapsedTime(), 
+      this.scene.start(SCENE_KEYS.GAME_OVER, {
+        win: true,
+        time: dataManager.getElapsedTime(),
         score: dataManager.player ? dataManager.player.score : 0
       });
     }
@@ -80,9 +81,9 @@ export class Game extends Phaser.Scene {
     if (current === StatusEvents.LOSE) {
       this.cameras.main.shake(1000, 0.002);
       this.time.delayedCall(2000, () => {
-        this.scene.start(SCENE_KEYS.GAME_OVER, { 
-          win: false, 
-          time: dataManager.getElapsedTime(), 
+        this.scene.start(SCENE_KEYS.GAME_OVER, {
+          win: false,
+          time: dataManager.getElapsedTime(),
           score: dataManager.player ? dataManager.player.score : 0
         });
       });
@@ -112,7 +113,7 @@ export class Game extends Phaser.Scene {
       audioManager.destroy();
     }
     audioManager.initialize(this);
-    
+
     dataManager.initialize(this);
     this.game.ecs = {};
     this.game.ecs.world = new World();
@@ -136,7 +137,7 @@ export class Game extends Phaser.Scene {
     if (this.effectManager && typeof this.effectManager.destroy === 'function') {
       this.effectManager.destroy();
     }
-    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
+    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize, this);
 
     // Переинициализируем AudioManager для новой игры
     audioManager.reinitialize(this);
@@ -163,7 +164,7 @@ export class Game extends Phaser.Scene {
       audioManager.destroy();
     }
     audioManager.initialize(this);
-    
+
     dataManager.initialize(this);
     this.game.ecs = {};
     this.game.ecs.world = new World();
@@ -189,7 +190,7 @@ export class Game extends Phaser.Scene {
     if (this.effectManager && typeof this.effectManager.destroy === 'function') {
       this.effectManager.destroy();
     }
-    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize);
+    this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize, this);
 
     // Переинициализируем AudioManager
     audioManager.reinitialize(this);
@@ -204,28 +205,48 @@ export class Game extends Phaser.Scene {
   }
 
   initializeSystems() {
-    if (!this.renderContainer) {
-      this.renderContainer = this.add.container();
+    const gridWidth = dataManager.width * dataManager.tileSize;
+    const gridHeight = dataManager.height * dataManager.tileSize;
+    if (isMobile) {
+        this.offsetX = (this.scale.width - gridWidth) / 2;
+        this.offsetY = (this.scale.height - gridHeight) / 2;
+    } else {
+        this.offsetX = 0;
+        this.offsetY = 0;
+    }
+
+    // Фон под сеткой (оставляем только для мобильных, если нужно)
+    if (isMobile) {
+      this.add.rectangle(
+        this.cameras.main.centerX,
+        this.offsetY + gridHeight / 2,
+        gridWidth,
+        gridHeight,
+        0x1a1a1a
+      ).setOrigin(0.5);
     }
 
     this.game.ecs.world.registerSystem(RenderSystem, {
       scene: this,
-      container: this.renderContainer,
       tileSize: dataManager.tileSize,
+      offsetX: this.offsetX,
+      offsetY: this.offsetY,
     });
     this.game.ecs.world.registerSystem(PlayerInputSystem, {
       scene: this,
       tileSize: dataManager.tileSize,
+      offsetX: this.offsetX,
+      offsetY: this.offsetY,
     });
     this.game.ecs.world.registerSystem(CombatSystem);
     this.game.ecs.world.registerSystem(RevealSystem);
-    
+
     // Регистрируем EffectSystem
     this.game.ecs.world.registerSystem(EffectSystem, {
       scene: this,
       tileSize: dataManager.tileSize,
     });
-    
+
     this.game.ecs.world.registerSystem(ItemActivationSystem, {
       scene: this,
     });
@@ -245,22 +266,23 @@ export class Game extends Phaser.Scene {
   showReviveOrSurrenderUI() {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY - 40;
-    const width = 300;
-    const height = 180;
+    const isMobileDevice = window.innerWidth < window.innerHeight;
+    const width = isMobileDevice ? 600 : 300;
+    const height = isMobileDevice ? 360 : 180;
     // Затемняющий фон
     this.reviveBg = this.add.nineslice(centerX, centerY, 'hud', null, width, height, 8, 8, 8, 8).setDepth(1000);
     // Кнопка 'Ожить'
-    const btnWidth = 180;
-    const btnHeight = 44;
-    const btnSpacing = 18;
+    const btnWidth = isMobileDevice ? 360 : 180;
+    const btnHeight = isMobileDevice ? 88 : 44;
+    const btnSpacing = isMobileDevice ? 36 : 18;
     const totalHeight = btnHeight * 2 + btnSpacing;
     const firstBtnY = centerY - totalHeight / 2 + btnHeight / 2;
     const secondBtnY = firstBtnY + btnHeight + btnSpacing;
     this.reviveBtn = this.add.container(centerX, firstBtnY).setDepth(1001);
     const reviveBtnBg = this.add.nineslice(0, 0, 'button-green', null, btnWidth, btnHeight, 8, 8, 8, 8);
     reviveBtnBg.setInteractive({ useHandCursor: true });
-    const reviveIcon = this.add.image(-btnWidth/2 + 24, 0, 'icons', 33).setScale(0.9);
-    const reviveText = this.add.bitmapText(10, 0, 'ui', t('revive'), 18).setOrigin(0.5).setTint(0xffffff);
+    const reviveIcon = this.add.image(-btnWidth / 2 + (isMobileDevice ? 48 : 24), 0, 'icons', 33).setScale(isMobileDevice ? 1.8 : 0.9);
+    const reviveText = this.add.bitmapText(10, 0, 'ui', t('revive'), isMobileDevice ? 36 : 18).setOrigin(0.5).setTint(0xffffff);
     this.reviveBtn.add([reviveBtnBg, reviveIcon, reviveText]);
     reviveBtnBg.on('pointerdown', () => {
       this.handleReviveClick();
@@ -269,7 +291,7 @@ export class Game extends Phaser.Scene {
     this.surrenderBtn = this.add.container(centerX, secondBtnY).setDepth(1001);
     const surrenderBtnBg = this.add.nineslice(0, 0, 'button', null, btnWidth, btnHeight, 8, 8, 8, 8);
     surrenderBtnBg.setInteractive({ useHandCursor: true });
-    const surrenderText = this.add.bitmapText(0, 0, 'ui', t('surrender'), 18).setOrigin(0.5).setTint(0xffffff);
+    const surrenderText = this.add.bitmapText(0, 0, 'ui', t('surrender'), isMobileDevice ? 36 : 18).setOrigin(0.5).setTint(0xffffff);
     this.surrenderBtn.add([surrenderBtnBg, surrenderText]);
     surrenderBtnBg.on('pointerdown', () => {
       dataManager.endTime = Date.now();
@@ -297,7 +319,7 @@ export class Game extends Phaser.Scene {
     audioManager.pauseMusic();
     window.ysdk.adv.showRewardedVideo({
       callbacks: {
-        onOpen: () => {},
+        onOpen: () => { },
         onRewarded: () => {
           dataManager.player.revive();
           dataManager.setStatus(StatusEvents.PLAYING);

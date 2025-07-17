@@ -39,6 +39,8 @@ export class PlayerInputSystem extends System {
   init(attributes) {
     this.scene = attributes.scene;
     this.tileSize = attributes.tileSize;
+    this.offsetX = attributes.offsetX || 0;
+    this.offsetY = attributes.offsetY || 0;
     this._markMenuJustClosed = false;
     this._markMenuActive = false;
     this._markMenuInternalClick = false;
@@ -75,8 +77,10 @@ export class PlayerInputSystem extends System {
       this._markMenuJustClosed = false;
       return;
     }
-    const x = Math.floor(pointer.worldX / this.tileSize);
-    const y = Math.floor(pointer.worldY / this.tileSize);
+    const offsetX = this.offsetX;
+    const offsetY = this.offsetY;
+    const x = Math.floor((pointer.worldX - offsetX) / this.tileSize);
+    const y = Math.floor((pointer.worldY - offsetY) / this.tileSize);
     const tileEntity = this.queries.tiles.results.find(tile => {
       const pos = tile.getComponent(Position);
       return pos.x === x && pos.y === y;
@@ -322,6 +326,8 @@ export class PlayerInputSystem extends System {
     const gridWidth = dataManager.width;
     const gridHeight = dataManager.height;
     const tileSize = this.tileSize;
+    const offsetX = this.offsetX;
+    const offsetY = this.offsetY;
 
     const hasMark = tileEntity && tileEntity.getComponent(Tile).mark;
 
@@ -341,18 +347,18 @@ export class PlayerInputSystem extends System {
     const menuHeight = rows * btnSize;
 
     // Позиция меню (справа от тайла, но не выходить за границы)
-    let menuX = (tileX + 1) * tileSize;
-    let menuY = tileY * tileSize;
+    let menuX = offsetX + (tileX + 1) * tileSize;
+    let menuY = offsetY + tileY * tileSize;
     // Если меню выходит за низ — сдвигаем вверх
-    if (menuY + menuHeight > gridHeight * tileSize) {
-      menuY = gridHeight * tileSize - menuHeight;
+    if (menuY + menuHeight > offsetY + gridHeight * tileSize) {
+      menuY = offsetY + gridHeight * tileSize - menuHeight;
     }
     // Если меню выходит за правую границу — рисуем слева
-    if (menuX + menuWidth > gridWidth * tileSize) {
-      menuX = tileX * tileSize - menuWidth;
+    if (menuX + menuWidth > offsetX + gridWidth * tileSize) {
+      menuX = offsetX + tileX * tileSize - menuWidth;
     }
     // Если всё равно не помещается — прижимаем к левому краю
-    if (menuX < 0) menuX = 4;
+    if (menuX < offsetX) menuX = offsetX + 4;
 
     // Создаём кнопки
     this._markMenuButtons = marks.map((mark, i) => {
@@ -428,8 +434,8 @@ export class PlayerInputSystem extends System {
 
     // Добавляем оверлей tiles 15 поверх выбранного тайла
     this._markMenuTileOverlay = this.scene.add.image(
-      tileX * tileSize,
-      tileY * tileSize,
+      offsetX + tileX * tileSize,
+      offsetY + tileY * tileSize,
       'tiles',
       15
     ).setOrigin(0, 0).setDisplaySize(tileSize, tileSize).setDepth(998);

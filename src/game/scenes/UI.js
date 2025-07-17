@@ -6,6 +6,7 @@ import { dataManager } from '../DataManager';
 import actorDefinitions from '../data/actor-definitions.json';
 import { audioManager } from '../AudioManager';
 import { t } from '../i18n';
+import { isMobile } from '../utils';
 
 export class UI extends Scene {
   constructor() {
@@ -15,54 +16,118 @@ export class UI extends Scene {
   create() {
     this.player = dataManager.player;
 
-    const hudHeight = 80;
+    const hudHeight = isMobile ? 160 : 80;
     const hudY = this.scale.height;
     const hudWidth = this.scale.width;
+
+    if(isMobile) {
+      const topHudHeight = 160;
+      this.add.image(0, 0, 'hud').setOrigin(0, 0).setDisplaySize(hudWidth, topHudHeight);
+      // Центрируем обе кнопки по центру HUD, между ними 24px
+      const buttonGap = 100;
+      const infoButtonWidth = 160;
+      const menuButtonWidth = 140;
+      const totalWidth = infoButtonWidth + menuButtonWidth + buttonGap;
+      const startX = (hudWidth - totalWidth) / 2;
+      this.infoButtonContainer = this.add.container(startX + infoButtonWidth / 2, topHudHeight / 2);
+      this.menuButtonContainer = this.add.container(startX + infoButtonWidth + buttonGap + menuButtonWidth / 2, topHudHeight / 2);
+    }
 
     const hudBg = this.add.image(0, hudY, 'hud')
       .setOrigin(0, 1)
       .setDisplaySize(hudWidth, hudHeight);
 
-    this.playerFrame = this.add.sprite(48, hudY - hudHeight / 2, 'hero_frame');
-    this.playerPortrait = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'hero');
-    this.playerFrame.setInteractive();
-    this.playerFrame.on('pointerdown', () => {
-      if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
-      if (this.player.xp >= this.player.nextLevelXP()) {
-        // Воспроизводим звук повышения уровня
-        sceneEvents.emit(AudioEvents.LEVEL_UP);
-        this.player.levelUp();
-      }
-    });
-
-    // HP
-    this.playerHP = this.add.sprite(100, hudY - hudHeight / 2 - 21, 'icons', 0);
-    this.hpText = this.add.bitmapText(
-      114,
-      hudY - hudHeight / 2 - 24,
-      'ui',
-      `${this.player.hp}/${this.player.maxHP}`,
-      10
-    );
-
-    // Level
-    this.levelText = this.add.bitmapText(
-      93,
-      hudY - hudHeight / 2 + 18,
-      'ui',
-      `${t('level')} ${this.player.level}`,
-      10
-    );
-
-    // XP
-    this.playerXP = this.add.sprite(100, hudY - hudHeight / 2, 'icons', 10);
-    this.xpText = this.add.bitmapText(
-      114,
-      hudY - hudHeight / 2 - 3,
-      'ui',
-      `${this.player.xp}/${this.player.nextLevelXP()}`,
-      10
-    );
+    // Нижний HUD
+    // Центр нижнего HUD
+    const bottomHudCenterY = hudY - hudHeight / 2;
+    // Размеры иконок
+    const iconScale = isMobile ? 2 : 1;
+    const textSize = isMobile ? 20 : 10;
+    // Координаты для выравнивания по ширине (примерно по центру HUD)
+    let baseX = isMobile ? hudWidth / 2 - 120 + 60 : 48;
+    // Рамка и портрет героя
+    if (isMobile) {
+      // Мобильная верстка HUD снизу
+      const bottomHudCenterY = hudY - hudHeight / 2;
+      const iconScale = 2;
+      const textSize = 20;
+      let baseX = hudWidth / 2 - 120 + 60;
+      // Портрет
+      this.playerFrame = this.add.sprite(baseX, bottomHudCenterY, 'hero_frame').setScale(iconScale);
+      this.playerPortrait = this.add.sprite(baseX, bottomHudCenterY + 10, 'hero').setScale(iconScale);
+      this.playerFrame.setInteractive();
+      this.playerFrame.on('pointerdown', () => {
+        if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
+        if (this.player.xp >= this.player.nextLevelXP()) {
+          sceneEvents.emit(AudioEvents.LEVEL_UP);
+          this.player.levelUp();
+        }
+      });
+      // Смещения относительно портрета (как на десктопе, но *2)
+      const dx = 52 * iconScale;
+      this.playerHP = this.add.sprite(baseX + dx, bottomHudCenterY - 21 * iconScale, 'icons', 0).setScale(iconScale);
+      this.hpText = this.add.bitmapText(
+        baseX + dx + 14 * iconScale,
+        bottomHudCenterY - 24 * iconScale,
+        'ui',
+        `${this.player.hp}/${this.player.maxHP}`,
+        textSize
+      );
+      this.levelText = this.add.bitmapText(
+        baseX + dx - 7 * iconScale,
+        bottomHudCenterY + 18 * iconScale,
+        'ui',
+        `${t('level')} ${this.player.level}`,
+        textSize
+      );
+      this.playerXP = this.add.sprite(baseX + dx, bottomHudCenterY, 'icons', 10).setScale(iconScale);
+      this.xpText = this.add.bitmapText(
+        baseX + dx + 14 * iconScale,
+        bottomHudCenterY - 3 * iconScale,
+        'ui',
+        `${this.player.xp}/${this.player.nextLevelXP()}`,
+        textSize
+      );
+      this.levelUpAnimation = this.add.sprite(baseX, bottomHudCenterY + 10, 'level_up', 0).setScale(iconScale);
+      this.levelUpAnimation.setVisible(false);
+    } else {
+      // Десктопная верстка HUD снизу (как было раньше)
+      this.playerFrame = this.add.sprite(48, hudY - hudHeight / 2, 'hero_frame');
+      this.playerPortrait = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'hero');
+      this.playerFrame.setInteractive();
+      this.playerFrame.on('pointerdown', () => {
+        if (dataManager.status !== StatusEvents.PLAYING && dataManager.status !== StatusEvents.INFO_OPEN) return;
+        if (this.player.xp >= this.player.nextLevelXP()) {
+          sceneEvents.emit(AudioEvents.LEVEL_UP);
+          this.player.levelUp();
+        }
+      });
+      this.playerHP = this.add.sprite(100, hudY - hudHeight / 2 - 21, 'icons', 0);
+      this.hpText = this.add.bitmapText(
+        114,
+        hudY - hudHeight / 2 - 24,
+        'ui',
+        `${this.player.hp}/${this.player.maxHP}`,
+        10
+      );
+      this.levelText = this.add.bitmapText(
+        93,
+        hudY - hudHeight / 2 + 18,
+        'ui',
+        `${t('level')} ${this.player.level}`,
+        10
+      );
+      this.playerXP = this.add.sprite(100, hudY - hudHeight / 2, 'icons', 10);
+      this.xpText = this.add.bitmapText(
+        114,
+        hudY - hudHeight / 2 - 3,
+        'ui',
+        `${this.player.xp}/${this.player.nextLevelXP()}`,
+        10
+      );
+      this.levelUpAnimation = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'level_up', 0);
+      this.levelUpAnimation.setVisible(false);
+    }
 
     const halfHP = Math.floor(this.player.maxHP / 2);
     this.hpText.setText(`${Math.max(0, this.player.hp)}/${this.player.maxHP}`);
@@ -81,20 +146,21 @@ export class UI extends Scene {
     }
     this.xpText.setText(`${Math.max(0, this.player.xp)}/${this.player.nextLevelXP()}`);
 
-    // Анимация повышения уровня
-    this.levelUpAnimation = this.add.sprite(48, hudY - hudHeight / 2 + 5, 'level_up', 0);
-    this.levelUpAnimation.setVisible(false);
-
+    // Эффект возможности повысить уровень
     // Проверяем, может ли игрок повысить уровень
     if (this.player.xp >= this.player.nextLevelXP()) {
       this.levelUpAnimation.setVisible(true);
       this.levelUpAnimation.play('can_level_up');
     }
 
+    if(!isMobile) {
+      this.infoButtonContainer = this.add.container(hudWidth - 160, hudY - hudHeight / 2);
+      this.menuButtonContainer = this.add.container(hudWidth - 60, hudY - hudHeight / 2);
+    }
+
     // Кнопка информации об объектах (NineSlice)
-    this.infoButtonContainer = this.add.container(hudWidth - 160, hudY - hudHeight / 2);
-    const infoButtonBg = this.add.nineslice(0, 0, 'button', null, 80, 40, 8, 8, 8, 8);
-    const infoButtonText = this.add.bitmapText(0, 0, 'ui', t('summary'), 10).setOrigin(0.5);
+    const infoButtonBg = this.add.nineslice(0, 0, 'button', null, isMobile ? 160 : 80, isMobile ? 80 : 40, 8, 8, 8, 8);
+    const infoButtonText = this.add.bitmapText(0, 0, 'ui', t('summary'), isMobile ? 20 : 10).setOrigin(0.5);
     this.infoButtonContainer.add([infoButtonBg, infoButtonText]);
     infoButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
@@ -104,9 +170,8 @@ export class UI extends Scene {
       });
 
     // Кнопка "Меню" (NineSlice)
-    this.menuButtonContainer = this.add.container(hudWidth - 60, hudY - hudHeight / 2);
-    const menuButtonBg = this.add.nineslice(0, 0, 'button', null, 70, 40, 8, 8, 8, 8);
-    const menuButtonText = this.add.bitmapText(0, 0, 'ui', t('menu'), 10).setOrigin(0.5);
+    const menuButtonBg = this.add.nineslice(0, 0, 'button', null, isMobile ? 140 : 70, isMobile ? 80 : 40, 8, 8, 8, 8);
+    const menuButtonText = this.add.bitmapText(0, 0, 'ui', t('menu'), isMobile ? 20 : 10).setOrigin(0.5);
     this.menuButtonContainer.add([menuButtonBg, menuButtonText]);
     menuButtonBg.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
@@ -166,19 +231,20 @@ export class UI extends Scene {
   createObjectInfoWindow() {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
-    
-    // Создаем фон - почти на всю высоту и ширину с отступами 20px
+    // Создаём фон - почти на всю высоту и ширину с отступами 20px
     // Учитываем размер UI (HUD) - 80px снизу
-    this.rectWidth = this.cameras.main.width - 40;  // 20px отступы с каждой стороны
-    this.rectHeight = this.cameras.main.height - 40 - 80; // 20px отступы + 80px для UI
-    
-    // Создаем фон из спрайта book.png
-    this.objectInfoBg = this.add.image(centerX, centerY - 40, 'book');
+    this.rectWidth = this.cameras.main.width - 40;
+    if (isMobile) {
+      this.rectHeight = 460;
+    } else {
+      this.rectHeight = this.cameras.main.height - 40 - 80;
+    }
+    // Создаём фон из спрайта book.png
+    this.objectInfoBg = this.add.image(centerX, centerY, 'book');
     this.objectInfoBg.setDisplaySize(this.rectWidth, this.rectHeight);
     this.objectInfoBg.setVisible(false);
-
     // Контейнер для спрайтов
-    this.objectInfoContainer = this.add.container(centerX, centerY - 40);
+    this.objectInfoContainer = this.add.container(centerX, centerY);
     this.objectInfoContainer.setVisible(false);
   }
 

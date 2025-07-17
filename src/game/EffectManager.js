@@ -1,11 +1,13 @@
 import { Effect, EffectAnimation, EffectPosition } from './ecs/components';
 import { sceneEvents } from './events/EventsCenter';
 import { EffectEvents } from './events/EventNames';
+import { isMobile } from './utils';
 
 export class EffectManager {
-  constructor(world, tileSize) {
+  constructor(world, tileSize, scene) {
     this.world = world;
     this.tileSize = tileSize;
+    this.scene = scene;
     this.setupEventListeners();
   }
 
@@ -37,9 +39,15 @@ export class EffectManager {
       alpha: 1.0
     });
 
+    let sceneOffsetX = 0;
+    let sceneOffsetY = 0;
+    if (isMobile && this.scene) {
+      sceneOffsetX = this.scene.offsetX || 0;
+      sceneOffsetY = this.scene.offsetY || 0;
+    }
     entity.addComponent(EffectPosition, {
-      x: x * this.tileSize + this.tileSize / 2,
-      y: y * this.tileSize + this.tileSize / 2,
+      x: sceneOffsetX + x * this.tileSize + this.tileSize / 2,
+      y: sceneOffsetY + y * this.tileSize + this.tileSize / 2,
       offsetX: offsetX,
       offsetY: offsetY,
       depth: 10

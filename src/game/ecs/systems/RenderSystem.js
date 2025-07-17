@@ -35,6 +35,8 @@ export class RenderSystem extends System {
   init(attributes) {
     this.scene = attributes.scene;
     this.tileSize = attributes.tileSize;
+    this.offsetX = attributes.offsetX || 0;
+    this.offsetY = attributes.offsetY || 0;
     this.animationCounter = 0; // Счетчик для уникальных ключей анимаций
     this.fontSize = 10;
   }
@@ -69,8 +71,8 @@ export class RenderSystem extends System {
   renderTile(entity) {
     const tile = entity.getComponent(Tile);
     const position = entity.getComponent(Position);
-    const tileX = position.x * this.tileSize;
-    const tileY = position.y * this.tileSize;
+    const tileX = this.offsetX + position.x * this.tileSize;
+    const tileY = this.offsetY + position.y * this.tileSize;
     let frame = tile.baseType;
     
     // Получаем или создаем SpriteObjects компонент
@@ -220,8 +222,8 @@ export class RenderSystem extends System {
     
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    const tileX = position.x * this.tileSize;
-    const tileY = position.y * this.tileSize;
+    const tileX = this.offsetX + position.x * this.tileSize;
+    const tileY = this.offsetY + position.y * this.tileSize;
     let offsetY = entity.hasComponent(Butterfly) ? 0 : -8;
     let frame = sprite.frame;
     // Для мины показываем defeated-спрайт только если есть MineWasTriggered
@@ -236,6 +238,7 @@ export class RenderSystem extends System {
         sprite.spriteSheet,
         frame
       ).setOrigin(0).setDepth(2);
+      spriteObj.setInteractive();
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -306,8 +309,8 @@ export class RenderSystem extends System {
     
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    const tileX = position.x * this.tileSize;
-    const tileY = position.y * this.tileSize;
+    const tileX = this.offsetX + position.x * this.tileSize;
+    const tileY = this.offsetY + position.y * this.tileSize;
     let offsetY = entity.hasComponent(RevealedAsMonster) ? -8 : 0;
     let frame = sprite.frame;
     if (!entity.hasComponent(RevealedAsMonster)) {
@@ -325,6 +328,7 @@ export class RenderSystem extends System {
         sprite.spriteSheet,
         frame
       ).setOrigin(0).setDepth(2);
+      spriteObj.setInteractive();
       spriteObjects.spriteObj = spriteObj;
     } else {
       spriteObjects.spriteObj.setFrame(frame);
@@ -394,8 +398,8 @@ export class RenderSystem extends System {
     
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    const tileX = position.x * this.tileSize;
-    const tileY = position.y * this.tileSize;
+    const tileX = this.offsetX + position.x * this.tileSize;
+    const tileY = this.offsetY + position.y * this.tileSize;
     
     if (entity.hasComponent(Key)) {
       if (!spriteObjects.spriteObj || typeof spriteObjects.spriteObj.play !== 'function') {
@@ -447,8 +451,8 @@ export class RenderSystem extends System {
     const position = entity.getComponent(Position);
     const x = position.x;
     const y = position.y;
-    const tileX = x * this.tileSize;
-    const tileY = y * this.tileSize;
+    const tileX = this.offsetX + x * this.tileSize;
+    const tileY = this.offsetY + y * this.tileSize;
     let frame = sprite.frame;
     
     if (entity.hasComponent(Defeated) && entity.hasComponent(DefeatedSprite)) {
@@ -537,8 +541,8 @@ export class RenderSystem extends System {
     
     const sprite = entity.getComponent(Sprite);
     const position = entity.getComponent(Position);
-    const tileX = position.x * this.tileSize;
-    const tileY = position.y * this.tileSize;
+    const tileX = this.offsetX + position.x * this.tileSize;
+    const tileY = this.offsetY + position.y * this.tileSize;
     let frame = sprite.frame;
     if (entity.hasComponent(Opened) && entity.hasComponent(OpenedSprite)) {
       const openedSprite = entity.getComponent(OpenedSprite);
