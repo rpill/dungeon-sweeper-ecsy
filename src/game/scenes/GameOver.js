@@ -5,6 +5,7 @@ import { sceneEvents } from '../events/EventsCenter';
 import { audioManager } from '../AudioManager';
 import { t } from '../i18n';
 import { dataManager } from '../DataManager';
+import { yandexGames } from '../platform/YandexGames';
 
 export class GameOver extends Scene {
   constructor() {
@@ -27,11 +28,11 @@ export class GameOver extends Scene {
       }
     }
 
-    // Фон меню
+    // Р¤РѕРЅ РјРµРЅСЋ
     this.add.image(centerX, centerY, 'menu_background');
 
     const bgColor = data.win ? 0x445f41 : 0xa04f4f;
-    // Полупрозрачный затемняющий фон
+    // РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№ Р·Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, bgColor, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
@@ -48,35 +49,35 @@ export class GameOver extends Scene {
     this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('score')}: ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 70;
 
-    // --- Лидерборды ---
-    if (window.ysdk && window.ysdk.getPlayer && window.ysdk.leaderboards) {
-      window.ysdk.getPlayer().then(player => {
+    // --- Р›РёРґРµСЂР±РѕСЂРґС‹ ---
+    if (yandexGames.sdk && yandexGames.sdk.getPlayer && yandexGames.sdk.leaderboards) {
+      yandexGames.sdk.getPlayer().then(player => {
         if (player.isAuthorized && player.isAuthorized()) {
-          // BestTime: только если победа
+          // BestTime: С‚РѕР»СЊРєРѕ РµСЃР»Рё РїРѕР±РµРґР°
           if (data.win) {
-            // Получаем текущее лучшее время игрока
-            window.ysdk.leaderboards.getPlayerEntry('BestTime').then(entry => {
+            // РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РµРµ Р»СѓС‡С€РµРµ РІСЂРµРјСЏ РёРіСЂРѕРєР°
+            yandexGames.sdk.leaderboards.getPlayerEntry('BestTime').then(entry => {
               const prevBest = entry && typeof entry.score === 'number' ? entry.score : null;
-              const newTime = data.time * 1000; // переводим в миллисекунды
-              // Если нет предыдущего результата или новое время лучше — отправляем
+              const newTime = data.time * 1000; // РїРµСЂРµРІРѕРґРёРј РІ РјРёР»Р»РёСЃРµРєСѓРЅРґС‹
+              // Р•СЃР»Рё РЅРµС‚ РїСЂРµРґС‹РґСѓС‰РµРіРѕ СЂРµР·СѓР»СЊС‚Р°С‚Р° РёР»Рё РЅРѕРІРѕРµ РІСЂРµРјСЏ Р»СѓС‡С€Рµ вЂ” РѕС‚РїСЂР°РІР»СЏРµРј
               if (prevBest === null || newTime < prevBest) {
-                window.ysdk.leaderboards.setScore('BestTime', newTime)
+                yandexGames.sdk.leaderboards.setScore('BestTime', newTime)
                   .then(() => {
-                    // Отправляем TotalScore после успешного сохранения BestTime
+                    // РћС‚РїСЂР°РІР»СЏРµРј TotalScore РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ BestTime
                     setTimeout(() => {
                       this.sendTotalScore(data.score);
-                    }, 1100); // задержка чуть больше 1 секунды
+                    }, 1100); // Р·Р°РґРµСЂР¶РєР° С‡СѓС‚СЊ Р±РѕР»СЊС€Рµ 1 СЃРµРєСѓРЅРґС‹
                   })
                   .catch((err) => console.error('BestTime save error:', err));
               } else {
-                // Отправляем TotalScore сразу, если BestTime не обновлялся
+                // РћС‚РїСЂР°РІР»СЏРµРј TotalScore СЃСЂР°Р·Сѓ, РµСЃР»Рё BestTime РЅРµ РѕР±РЅРѕРІР»СЏР»СЃСЏ
                 this.sendTotalScore(data.score);
               }
             }).catch((err) => {
-              // Если не удалось получить предыдущее время — просто отправляем
-              window.ysdk.leaderboards.setScore('BestTime', data.time * 1000)
+              // Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ РїСЂРµРґС‹РґСѓС‰РµРµ РІСЂРµРјСЏ вЂ” РїСЂРѕСЃС‚Рѕ РѕС‚РїСЂР°РІР»СЏРµРј
+              yandexGames.sdk.leaderboards.setScore('BestTime', data.time * 1000)
                 .then(() => {
-                  // Отправляем TotalScore после успешного сохранения BestTime
+                  // РћС‚РїСЂР°РІР»СЏРµРј TotalScore РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ BestTime
                   setTimeout(() => {
                     this.sendTotalScore(data.score);
                   }, 1100);
@@ -84,19 +85,19 @@ export class GameOver extends Scene {
                 .catch((err) => console.error('BestTime save error:', err));
             });
           } else {
-            // Если не победа, отправляем только TotalScore
+            // Р•СЃР»Рё РЅРµ РїРѕР±РµРґР°, РѕС‚РїСЂР°РІР»СЏРµРј С‚РѕР»СЊРєРѕ TotalScore
             this.sendTotalScore(data.score);
           }
         }
       });
     }
-    // --- конец лидербордов ---
+    // --- РєРѕРЅРµС† Р»РёРґРµСЂР±РѕСЂРґРѕРІ ---
 
-    // --- Локальное сохранение для неавторизованных ---
-    if (window.ysdk && window.ysdk.getPlayer) {
-      window.ysdk.getPlayer().then(player => {
+    // --- Р›РѕРєР°Р»СЊРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ РґР»СЏ РЅРµР°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… ---
+    if (yandexGames.sdk && yandexGames.sdk.getPlayer) {
+      yandexGames.sdk.getPlayer().then(player => {
         if (!player.isAuthorized || !player.isAuthorized()) {
-          // Сохраняем лучший результат (BestTime) только если победа
+          // РЎРѕС…СЂР°РЅСЏРµРј Р»СѓС‡С€РёР№ СЂРµР·СѓР»СЊС‚Р°С‚ (BestTime) С‚РѕР»СЊРєРѕ РµСЃР»Рё РїРѕР±РµРґР°
           if (data.win) {
             const prevBest = Number(localStorage.getItem('bestTime') || 0);
             const newTime = data.time * 1000;
@@ -104,35 +105,35 @@ export class GameOver extends Scene {
               localStorage.setItem('bestTime', newTime);
             }
           }
-          // Сохраняем общий счет (TotalScore)
+          // РЎРѕС…СЂР°РЅСЏРµРј РѕР±С‰РёР№ СЃС‡РµС‚ (TotalScore)
           const prevScore = Number(localStorage.getItem('totalScore') || 0);
           localStorage.setItem('totalScore', prevScore + data.score);
         }
       });
     }
 
-    // --- Показываем напоминание об отзыве ---
-    if (window.ysdk && window.ysdk.feedback) {
+    // --- РџРѕРєР°Р·С‹РІР°РµРј РЅР°РїРѕРјРёРЅР°РЅРёРµ РѕР± РѕС‚Р·С‹РІРµ ---
+    if (yandexGames.sdk && yandexGames.sdk.feedback) {
       if (dataManager.getGamesPlayed() === 5) {
-        window.ysdk.feedback.canReview()
+        yandexGames.sdk.feedback.canReview()
           .then(({ value, reason }) => {
             if (value) {
-              window.ysdk.feedback.requestReview()
+              yandexGames.sdk.feedback.requestReview()
                 .then(({ feedbackSent }) => {
                   if (feedbackSent) {
-                    // Можно показать благодарность или анимацию
-                    console.log('Спасибо за вашу оценку!');
+                    // РњРѕР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ Р±Р»Р°РіРѕРґР°СЂРЅРѕСЃС‚СЊ РёР»Рё Р°РЅРёРјР°С†РёСЋ
+                    console.log('РЎРїР°СЃРёР±Рѕ Р·Р° РІР°С€Сѓ РѕС†РµРЅРєСѓ!');
                   } else {
-                    console.log('Окно оценки закрыто без оценки');
+                    console.log('РћРєРЅРѕ РѕС†РµРЅРєРё Р·Р°РєСЂС‹С‚Рѕ Р±РµР· РѕС†РµРЅРєРё');
                   }
                 });
             } else {
-              console.log('Оценка недоступна:', reason);
+              console.log('РћС†РµРЅРєР° РЅРµРґРѕСЃС‚СѓРїРЅР°:', reason);
             }
           });
       }
     }
-    // Кнопка "В меню"
+    // РљРЅРѕРїРєР° "Р’ РјРµРЅСЋ"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
@@ -140,10 +141,10 @@ export class GameOver extends Scene {
       .on('pointerdown', () => {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
         
-        // Принудительно останавливаем музыку победы
+        // РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј РјСѓР·С‹РєСѓ РїРѕР±РµРґС‹
         audioManager.forceStopWinMusic();
         
-        // Запускаем обычную музыку если она не играет
+        // Р—Р°РїСѓСЃРєР°РµРј РѕР±С‹С‡РЅСѓСЋ РјСѓР·С‹РєСѓ РµСЃР»Рё РѕРЅР° РЅРµ РёРіСЂР°РµС‚
         if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
           audioManager.playMusic();
         }
@@ -152,18 +153,19 @@ export class GameOver extends Scene {
       });
   }
 
-  // Метод для отправки TotalScore
+  // РњРµС‚РѕРґ РґР»СЏ РѕС‚РїСЂР°РІРєРё TotalScore
   sendTotalScore(score) {
-    window.ysdk.leaderboards.getPlayerEntry('TotalScore')
+    yandexGames.sdk.leaderboards.getPlayerEntry('TotalScore')
       .then(entry => {
         const prev = entry && typeof entry.score === 'number' ? entry.score : 0;
         const newTotal = prev + score;
-        window.ysdk.leaderboards.setScore('TotalScore', newTotal)
+        yandexGames.sdk.leaderboards.setScore('TotalScore', newTotal)
           .catch((err) => console.error('TotalScore save error:', err));
       })
       .catch((err) => {
-        window.ysdk.leaderboards.setScore('TotalScore', score)
+        yandexGames.sdk.leaderboards.setScore('TotalScore', score)
           .catch((err) => console.error('TotalScore save error:', err));
       });
   }
 }
+

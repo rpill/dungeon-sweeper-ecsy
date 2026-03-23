@@ -22,6 +22,7 @@ import { ObjectCounterSystem } from '../ecs/systems/ObjectCounterSystem';
 import { gameSaveManager } from '../GameSaveManager';
 import { t } from '../i18n';
 import { isMobile } from '../utils';
+import { yandexGames } from '../platform/YandexGames';
 
 export class Game extends Phaser.Scene {
   constructor() {
@@ -29,40 +30,38 @@ export class Game extends Phaser.Scene {
   }
 
   create(data = {}) {
-    // Инициализируем глобальный менеджер звуков
+    // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РіР»РѕР±Р°Р»СЊРЅС‹Р№ РјРµРЅРµРґР¶РµСЂ Р·РІСѓРєРѕРІ
     audioManager.initialize(this);
 
-    // Добавляем обработчик первого взаимодействия
+    // Р”РѕР±Р°РІР»СЏРµРј РѕР±СЂР°Р±РѕС‚С‡РёРє РїРµСЂРІРѕРіРѕ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ
     this.input.on('pointerdown', () => {
       audioManager.onUserInteraction();
     });
 
-    // Централизованная обработка завершения игры
+    // Р¦РµРЅС‚СЂР°Р»РёР·РѕРІР°РЅРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° Р·Р°РІРµСЂС€РµРЅРёСЏ РёРіСЂС‹
     sceneEvents.on(StatusEvents.CHANGED, this.onStatusChanged, this);
     this.events.on('shutdown', this.onSceneShutdown, this);
 
-    // Обработка событий игрока для сохранения
+    // РћР±СЂР°Р±РѕС‚РєР° СЃРѕР±С‹С‚РёР№ РёРіСЂРѕРєР° РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ
     sceneEvents.on('player:hp_changed', this.onPlayerChanged, this);
     sceneEvents.on('player:xp_changed', this.onPlayerChanged, this);
     sceneEvents.on('player:level_up', this.onPlayerChanged, this);
 
-    // Проверяем, нужно ли загрузить сохраненную игру
+    // РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅРѕ Р»Рё Р·Р°РіСЂСѓР·РёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРЅСѓСЋ РёРіСЂСѓ
     if (data.loadSavedGame) {
       this.loadSavedGame();
     } else {
       this.startNewGame();
     }
 
-    // Сохранение теперь происходит после каждого действия игрока
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ С‚РµРїРµСЂСЊ РїСЂРѕРёСЃС…РѕРґРёС‚ РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ РґРµР№СЃС‚РІРёСЏ РёРіСЂРѕРєР°
   }
 
   onStatusChanged({ previous, current }) {
-    if (window.ysdk?.features?.GameplayAPI) {
-      if (current === StatusEvents.PLAYING && previous !== StatusEvents.PLAYING) {
-        window.ysdk.features.GameplayAPI.start();
-      } else if (previous === StatusEvents.PLAYING && current !== StatusEvents.PLAYING) {
-        window.ysdk.features.GameplayAPI.stop();
-      }
+    if (current === StatusEvents.PLAYING && previous !== StatusEvents.PLAYING) {
+      yandexGames.startGameplay();
+    } else if (previous === StatusEvents.PLAYING && current !== StatusEvents.PLAYING) {
+      yandexGames.stopGameplay();
     }
     if (current === StatusEvents.WIN) {
       audioManager.playWinMusic();
@@ -98,7 +97,7 @@ export class Game extends Phaser.Scene {
   }
 
   onPlayerChanged() {
-    // Сохраняем игру при важных изменениях игрока
+    // РЎРѕС…СЂР°РЅСЏРµРј РёРіСЂСѓ РїСЂРё РІР°Р¶РЅС‹С… РёР·РјРµРЅРµРЅРёСЏС… РёРіСЂРѕРєР°
     if (dataManager.status === StatusEvents.PLAYING) {
       gameSaveManager.saveGameState();
     }
@@ -133,18 +132,18 @@ export class Game extends Phaser.Scene {
 
     this.initializeSystems();
 
-    // Инициализируем менеджер эффектов
+    // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РјРµРЅРµРґР¶РµСЂ СЌС„С„РµРєС‚РѕРІ
     if (this.effectManager && typeof this.effectManager.destroy === 'function') {
       this.effectManager.destroy();
     }
     this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize, this);
 
-    // Переинициализируем AudioManager для новой игры
+    // РџРµСЂРµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј AudioManager РґР»СЏ РЅРѕРІРѕР№ РёРіСЂС‹
     audioManager.reinitialize(this);
 
-    // Музыка будет запущена автоматически через onUserInteraction при первом клике
+    // РњСѓР·С‹РєР° Р±СѓРґРµС‚ Р·Р°РїСѓС‰РµРЅР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё С‡РµСЂРµР· onUserInteraction РїСЂРё РїРµСЂРІРѕРј РєР»РёРєРµ
 
-    // Запускаем UI сцену
+    // Р—Р°РїСѓСЃРєР°РµРј UI СЃС†РµРЅСѓ
     this.scene.launch(SCENE_KEYS.UI);
   }
 
@@ -153,13 +152,13 @@ export class Game extends Phaser.Scene {
     const savedGame = gameSaveManager.loadGameState();
     if (!savedGame) {
 
-      // Если не удалось загрузить сохранение, начинаем новую игру
+      // Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ, РЅР°С‡РёРЅР°РµРј РЅРѕРІСѓСЋ РёРіСЂСѓ
       this.startNewGame();
       return;
     }
 
 
-    // Инициализируем базовые компоненты
+    // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р±Р°Р·РѕРІС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹
     if (audioManager && typeof audioManager.destroy === 'function') {
       audioManager.destroy();
     }
@@ -179,27 +178,27 @@ export class Game extends Phaser.Scene {
       this.game.ecs.componentsRegistered = true;
     }
 
-    // Восстанавливаем состояние игры (включая плитки)
+    // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РёРіСЂС‹ (РІРєР»СЋС‡Р°СЏ РїР»РёС‚РєРё)
     gameSaveManager.deserializePlayer(savedGame.player);
     gameSaveManager.deserializeGameData(savedGame.gameData);
     gameSaveManager.restoreEntities(this.game.ecs.world, savedGame.entities);
 
     this.initializeSystems();
 
-    // Инициализируем менеджер эффектов
+    // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РјРµРЅРµРґР¶РµСЂ СЌС„С„РµРєС‚РѕРІ
     if (this.effectManager && typeof this.effectManager.destroy === 'function') {
       this.effectManager.destroy();
     }
     this.effectManager = new EffectManager(this.game.ecs.world, dataManager.tileSize, this);
 
-    // Переинициализируем AudioManager
+    // РџРµСЂРµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј AudioManager
     audioManager.reinitialize(this);
 
-    // Восстанавливаем статус игры
+    // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃС‚Р°С‚СѓСЃ РёРіСЂС‹
     dataManager.setStatus(savedGame.status);
 
 
-    // Запускаем UI сцену
+    // Р—Р°РїСѓСЃРєР°РµРј UI СЃС†РµРЅСѓ
     this.scene.launch(SCENE_KEYS.UI);
 
   }
@@ -215,7 +214,7 @@ export class Game extends Phaser.Scene {
         this.offsetY = 0;
     }
 
-    // Фон под сеткой (оставляем только для мобильных, если нужно)
+    // Р¤РѕРЅ РїРѕРґ СЃРµС‚РєРѕР№ (РѕСЃС‚Р°РІР»СЏРµРј С‚РѕР»СЊРєРѕ РґР»СЏ РјРѕР±РёР»СЊРЅС‹С…, РµСЃР»Рё РЅСѓР¶РЅРѕ)
     if (isMobile) {
       this.add.rectangle(
         this.cameras.main.centerX,
@@ -241,7 +240,7 @@ export class Game extends Phaser.Scene {
     this.game.ecs.world.registerSystem(CombatSystem);
     this.game.ecs.world.registerSystem(RevealSystem);
 
-    // Регистрируем EffectSystem
+    // Р РµРіРёСЃС‚СЂРёСЂСѓРµРј EffectSystem
     this.game.ecs.world.registerSystem(EffectSystem, {
       scene: this,
       tileSize: dataManager.tileSize,
@@ -261,7 +260,7 @@ export class Game extends Phaser.Scene {
 
 
   /**
-   * Показывает UI с кнопками 'Ожить' и 'Сдаться' после смерти
+   * РџРѕРєР°Р·С‹РІР°РµС‚ UI СЃ РєРЅРѕРїРєР°РјРё 'РћР¶РёС‚СЊ' Рё 'РЎРґР°С‚СЊСЃСЏ' РїРѕСЃР»Рµ СЃРјРµСЂС‚Рё
    */
   showReviveOrSurrenderUI() {
     const centerX = this.cameras.main.centerX;
@@ -269,9 +268,9 @@ export class Game extends Phaser.Scene {
     const isMobileDevice = window.innerWidth < window.innerHeight;
     const width = isMobileDevice ? 600 : 300;
     const height = isMobileDevice ? 360 : 180;
-    // Затемняющий фон
+    // Р—Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
     this.reviveBg = this.add.nineslice(centerX, centerY, 'hud', null, width, height, 8, 8, 8, 8).setDepth(1000);
-    // Кнопка 'Ожить'
+    // РљРЅРѕРїРєР° 'РћР¶РёС‚СЊ'
     const btnWidth = isMobileDevice ? 360 : 180;
     const btnHeight = isMobileDevice ? 88 : 44;
     const btnSpacing = isMobileDevice ? 36 : 18;
@@ -287,7 +286,7 @@ export class Game extends Phaser.Scene {
     reviveBtnBg.on('pointerdown', () => {
       this.handleReviveClick();
     });
-    // Кнопка 'Сдаться'
+    // РљРЅРѕРїРєР° 'РЎРґР°С‚СЊСЃСЏ'
     this.surrenderBtn = this.add.container(centerX, secondBtnY).setDepth(1001);
     const surrenderBtnBg = this.add.nineslice(0, 0, 'button', null, btnWidth, btnHeight, 8, 8, 8, 8);
     surrenderBtnBg.setInteractive({ useHandCursor: true });
@@ -308,8 +307,8 @@ export class Game extends Phaser.Scene {
   }
 
   handleReviveClick() {
-    if (!window.ysdk?.adv?.showRewardedVideo) {
-      // Для локальной разработки просто восстанавливаем здоровье
+    if (!yandexGames.canShowRewardedVideo()) {
+      // Р”Р»СЏ Р»РѕРєР°Р»СЊРЅРѕР№ СЂР°Р·СЂР°Р±РѕС‚РєРё РїСЂРѕСЃС‚Рѕ РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РґРѕСЂРѕРІСЊРµ
       dataManager.player.revive();
       dataManager.setStatus(StatusEvents.PLAYING);
       this.hideReviveOrSurrenderUI();
@@ -317,8 +316,7 @@ export class Game extends Phaser.Scene {
       return;
     }
     audioManager.pauseMusic();
-    window.ysdk.adv.showRewardedVideo({
-      callbacks: {
+    yandexGames.showRewardedVideo({
         onOpen: () => { },
         onRewarded: () => {
           dataManager.player.revive();
@@ -335,12 +333,12 @@ export class Game extends Phaser.Scene {
           }
         },
         onError: () => {
-          // Можно показать ошибку или оставить UI
+          // РњРѕР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ РѕС€РёР±РєСѓ РёР»Рё РѕСЃС‚Р°РІРёС‚СЊ UI
           if (audioManager.settings.musicEnabled && audioManager.music && audioManager.music.isPaused) {
             audioManager.resumeMusic();
           }
         }
-      }
-    });
+          });
   }
 }
+

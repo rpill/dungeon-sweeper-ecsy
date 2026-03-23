@@ -1,43 +1,49 @@
 import StartGame from './game/main';
 import { setLangBySDK } from './game/i18n';
+import { yandexGames } from './game/platform/YandexGames';
 
-let ysdk = null;
 let adClosed = false;
 let menuLoaded = false;
 
 function tryGameReady() {
   if (adClosed && menuLoaded) {
-    window.ysdk.features.LoadingAPI?.ready();
+    yandexGames.loadingReady();
   }
 }
 
-function initSDK() {
-  if (window.YaGames) {
-    window.YaGames.init().then(sdk => {
-      ysdk = sdk;
-      window.ysdk = sdk;
-      setLangBySDK(sdk);
-      ysdk.adv.showFullscreenAdv({
-        callbacks: {
-          onClose: () => {
-            adClosed = true;
-            tryGameReady();
-          },
-          onError: () => {
-            adClosed = true;
-            tryGameReady();
-          }
-        }
-      });
-      window.onMenuReady = () => {
-        menuLoaded = true;
-        tryGameReady();
-      };
-      StartGame('game-container');
-    });
-  } else {
-    setTimeout(initSDK, 50);
+async function bootstrapGame() {
+  try {
+    await yandexGames.init();
+  } catch (error) {
+    console.warn('[bootstrap] SDK init failed, continuing with fallback SDK.', error);
+  }
+
+  setLangBySDK(yandexGames.getSDK());
+
+  yandexGames.showFullscreenAd({
+    onClose: () => {
+      adClosed = true;
+      tryGameReady();
+    },
+    onError: () => {
+      adClosed = true;
+      tryGameReady();
+    },
+  });
+
+  window.onMenuReady = () => {
+    menuLoaded = true;
+    tryGameReady();
+  };
+
+  StartGame('game-container');
+
+  if (import.meta.env.DEV) {
+    const { registerGenerationDevTools } = await import('./game/generators/devGenerationReport');
+    registerGenerationDevTools();
   }
 }
 
-document.addEventListener('DOMContentLoaded', initSDK);
+document.addEventListener('DOMContentLoaded', () => {
+  bootstrapGame();
+});
