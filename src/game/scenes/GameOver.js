@@ -28,11 +28,11 @@ export class GameOver extends Scene {
       }
     }
 
-    // Р¤РѕРЅ РјРµРЅСЋ
+    // Фон меню
     this.add.image(centerX, centerY, 'menu_background');
 
     const bgColor = data.win ? 0x445f41 : 0xa04f4f;
-    // РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№ Р·Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
+    // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, bgColor, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
@@ -49,35 +49,35 @@ export class GameOver extends Scene {
     this.add.bitmapText(centerX, centerY + offsetY, 'ui', `${t('score')}: ${data.score}`, 18).setOrigin(0.5).setTint(0xffffff);
     offsetY += 70;
 
-    // --- Р›РёРґРµСЂР±РѕСЂРґС‹ ---
+    // --- Лидерборды ---
     if (yandexGames.sdk && yandexGames.sdk.getPlayer && yandexGames.sdk.leaderboards) {
       yandexGames.sdk.getPlayer().then(player => {
         if (player.isAuthorized && player.isAuthorized()) {
-          // BestTime: С‚РѕР»СЊРєРѕ РµСЃР»Рё РїРѕР±РµРґР°
+          // BestTime: только если победа
           if (data.win) {
-            // РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РµРµ Р»СѓС‡С€РµРµ РІСЂРµРјСЏ РёРіСЂРѕРєР°
+            // Получаем текущее лучшее время игрока
             yandexGames.sdk.leaderboards.getPlayerEntry('BestTime').then(entry => {
               const prevBest = entry && typeof entry.score === 'number' ? entry.score : null;
-              const newTime = data.time * 1000; // РїРµСЂРµРІРѕРґРёРј РІ РјРёР»Р»РёСЃРµРєСѓРЅРґС‹
-              // Р•СЃР»Рё РЅРµС‚ РїСЂРµРґС‹РґСѓС‰РµРіРѕ СЂРµР·СѓР»СЊС‚Р°С‚Р° РёР»Рё РЅРѕРІРѕРµ РІСЂРµРјСЏ Р»СѓС‡С€Рµ вЂ” РѕС‚РїСЂР°РІР»СЏРµРј
+              const newTime = data.time * 1000; // переводим в миллисекунды
+              // Если нет предыдущего результата или новое время лучше — отправляем
               if (prevBest === null || newTime < prevBest) {
                 yandexGames.sdk.leaderboards.setScore('BestTime', newTime)
                   .then(() => {
-                    // РћС‚РїСЂР°РІР»СЏРµРј TotalScore РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ BestTime
+                    // Отправляем TotalScore после успешного сохранения BestTime
                     setTimeout(() => {
                       this.sendTotalScore(data.score);
-                    }, 1100); // Р·Р°РґРµСЂР¶РєР° С‡СѓС‚СЊ Р±РѕР»СЊС€Рµ 1 СЃРµРєСѓРЅРґС‹
+                    }, 1100); // задержка чуть больше 1 секунды
                   })
                   .catch((err) => console.error('BestTime save error:', err));
               } else {
-                // РћС‚РїСЂР°РІР»СЏРµРј TotalScore СЃСЂР°Р·Сѓ, РµСЃР»Рё BestTime РЅРµ РѕР±РЅРѕРІР»СЏР»СЃСЏ
+                // Отправляем TotalScore сразу, если BestTime не обновлялся
                 this.sendTotalScore(data.score);
               }
             }).catch((err) => {
-              // Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ РїСЂРµРґС‹РґСѓС‰РµРµ РІСЂРµРјСЏ вЂ” РїСЂРѕСЃС‚Рѕ РѕС‚РїСЂР°РІР»СЏРµРј
+              // Если не удалось получить предыдущее время — просто отправляем
               yandexGames.sdk.leaderboards.setScore('BestTime', data.time * 1000)
                 .then(() => {
-                  // РћС‚РїСЂР°РІР»СЏРµРј TotalScore РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ BestTime
+                  // Отправляем TotalScore после успешного сохранения BestTime
                   setTimeout(() => {
                     this.sendTotalScore(data.score);
                   }, 1100);
@@ -85,19 +85,19 @@ export class GameOver extends Scene {
                 .catch((err) => console.error('BestTime save error:', err));
             });
           } else {
-            // Р•СЃР»Рё РЅРµ РїРѕР±РµРґР°, РѕС‚РїСЂР°РІР»СЏРµРј С‚РѕР»СЊРєРѕ TotalScore
+            // Если не победа, отправляем только TotalScore
             this.sendTotalScore(data.score);
           }
         }
       });
     }
-    // --- РєРѕРЅРµС† Р»РёРґРµСЂР±РѕСЂРґРѕРІ ---
+    // --- конец лидербордов ---
 
-    // --- Р›РѕРєР°Р»СЊРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ РґР»СЏ РЅРµР°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… ---
+    // --- Локальное сохранение для неавторизованных ---
     if (yandexGames.sdk && yandexGames.sdk.getPlayer) {
       yandexGames.sdk.getPlayer().then(player => {
         if (!player.isAuthorized || !player.isAuthorized()) {
-          // РЎРѕС…СЂР°РЅСЏРµРј Р»СѓС‡С€РёР№ СЂРµР·СѓР»СЊС‚Р°С‚ (BestTime) С‚РѕР»СЊРєРѕ РµСЃР»Рё РїРѕР±РµРґР°
+          // Сохраняем лучший результат (BestTime) только если победа
           if (data.win) {
             const prevBest = Number(localStorage.getItem('bestTime') || 0);
             const newTime = data.time * 1000;
@@ -105,14 +105,14 @@ export class GameOver extends Scene {
               localStorage.setItem('bestTime', newTime);
             }
           }
-          // РЎРѕС…СЂР°РЅСЏРµРј РѕР±С‰РёР№ СЃС‡РµС‚ (TotalScore)
+          // Сохраняем общий счет (TotalScore)
           const prevScore = Number(localStorage.getItem('totalScore') || 0);
           localStorage.setItem('totalScore', prevScore + data.score);
         }
       });
     }
 
-    // --- РџРѕРєР°Р·С‹РІР°РµРј РЅР°РїРѕРјРёРЅР°РЅРёРµ РѕР± РѕС‚Р·С‹РІРµ ---
+    // --- Показываем напоминание об отзыве ---
     if (yandexGames.sdk && yandexGames.sdk.feedback) {
       if (dataManager.getGamesPlayed() === 5) {
         yandexGames.sdk.feedback.canReview()
@@ -121,19 +121,19 @@ export class GameOver extends Scene {
               yandexGames.sdk.feedback.requestReview()
                 .then(({ feedbackSent }) => {
                   if (feedbackSent) {
-                    // РњРѕР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ Р±Р»Р°РіРѕРґР°СЂРЅРѕСЃС‚СЊ РёР»Рё Р°РЅРёРјР°С†РёСЋ
-                    console.log('РЎРїР°СЃРёР±Рѕ Р·Р° РІР°С€Сѓ РѕС†РµРЅРєСѓ!');
+                    // Можно показать благодарность или анимацию
+                    console.log('Спасибо за вашу оценку!');
                   } else {
-                    console.log('РћРєРЅРѕ РѕС†РµРЅРєРё Р·Р°РєСЂС‹С‚Рѕ Р±РµР· РѕС†РµРЅРєРё');
+                    console.log('Окно оценки закрыто без оценки');
                   }
                 });
             } else {
-              console.log('РћС†РµРЅРєР° РЅРµРґРѕСЃС‚СѓРїРЅР°:', reason);
+              console.log('Оценка недоступна:', reason);
             }
           });
       }
     }
-    // РљРЅРѕРїРєР° "Р’ РјРµРЅСЋ"
+    // Кнопка "В меню"
     const menuBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('menu'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
@@ -141,10 +141,10 @@ export class GameOver extends Scene {
       .on('pointerdown', () => {
         sceneEvents.emit(AudioEvents.PLAYER_CLICK);
         
-        // РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј РјСѓР·С‹РєСѓ РїРѕР±РµРґС‹
+        // Принудительно останавливаем музыку победы
         audioManager.forceStopWinMusic();
         
-        // Р—Р°РїСѓСЃРєР°РµРј РѕР±С‹С‡РЅСѓСЋ РјСѓР·С‹РєСѓ РµСЃР»Рё РѕРЅР° РЅРµ РёРіСЂР°РµС‚
+        // Запускаем обычную музыку если она не играет
         if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
           audioManager.playMusic();
         }
@@ -153,7 +153,7 @@ export class GameOver extends Scene {
       });
   }
 
-  // РњРµС‚РѕРґ РґР»СЏ РѕС‚РїСЂР°РІРєРё TotalScore
+  // Метод для отправки TotalScore
   sendTotalScore(score) {
     yandexGames.sdk.leaderboards.getPlayerEntry('TotalScore')
       .then(entry => {
@@ -168,4 +168,3 @@ export class GameOver extends Scene {
       });
   }
 }
-

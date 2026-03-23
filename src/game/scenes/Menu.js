@@ -12,13 +12,13 @@ import { yandexGames } from '../platform/YandexGames';
 export class Menu extends Scene {
   constructor() {
     super({ key: SCENE_KEYS.MENU });
-    this.activeLeaderboardTab = 'score'; // 'score' РёР»Рё 'time'
+    this.activeLeaderboardTab = 'score'; // 'score' или 'time'
     this.leaderboardRows = [];
     this.menuGroup = null;
     this.leaderboardGroup = null;
   }
 
-  // РЈРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ РјРµС‚РѕРґ РґР»СЏ РґРµР°РєС‚РёРІР°С†РёРё РїСѓРЅРєС‚РѕРІ РјРµРЅСЋ
+  // Универсальный метод для деактивации пунктов меню
   deactivateMenuItems() {
     if (this.menuGroup) {
       this.menuGroup.list.forEach(child => {
@@ -33,7 +33,7 @@ export class Menu extends Scene {
     this.input.setDefaultCursor('default');
   }
 
-  // РЈРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ РјРµС‚РѕРґ РґР»СЏ Р°РєС‚РёРІР°С†РёРё РїСѓРЅРєС‚РѕРІ РјРµРЅСЋ
+  // Универсальный метод для активации пунктов меню
   activateMenuItems() {
     if (this.menuGroup) {
       this.menuGroup.list.forEach(child => {
@@ -48,7 +48,7 @@ export class Menu extends Scene {
   }
 
   create() {
-    // РЎР±СЂРѕСЃ РІСЃРµС… СЃСЃС‹Р»РѕРє РЅР° UI-СЌР»РµРјРµРЅС‚С‹ РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ РїРѕСЃР»Рµ restart
+    // Сброс всех ссылок на UI-элементы для корректной работы после restart
     this.leaderboardTitle = null;
     this.scoreBtn = null;
     this.timeBtn = null;
@@ -61,35 +61,35 @@ export class Menu extends Scene {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
-    // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј AudioManager РµСЃР»Рё РѕРЅ РµС‰Рµ РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ
+    // Инициализируем AudioManager если он еще не инициализирован
     if (!audioManager.scene) {
       audioManager.initialize(this);
     }
-    // РџСЂРѕРІРµСЂСЏРµРј Рё РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј РјСѓР·С‹РєСѓ РїРѕР±РµРґС‹ РµСЃР»Рё РѕРЅР° РёРіСЂР°РµС‚
+    // Проверяем и останавливаем музыку победы если она играет
     if (audioManager.winMusic && audioManager.winMusic.isPlaying) {
       audioManager.forceStopWinMusic();
       if (audioManager.music && !audioManager.music.isPlaying && audioManager.userInteracted && audioManager.settings.musicEnabled) {
         audioManager.playMusic();
       }
     }
-    // РЈРґР°Р»СЏРµРј РїСЂРµРґС‹РґСѓС‰РёР№ С„РѕРЅ, РµСЃР»Рё РµСЃС‚СЊ
+    // Удаляем предыдущий фон, если есть
     if (this.menuBg) {
       this.menuBg.destroy();
       this.menuBg = null;
     }
-    // Р¤РѕРЅ РјРµРЅСЋ
+    // Фон меню
     if (window.innerWidth < window.innerHeight) {
-      // РњРѕР±РёР»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ: cover РїРѕ С€РёСЂРёРЅРµ/РІС‹СЃРѕС‚Рµ
+      // Мобильное устройство: cover по ширине/высоте
       const bgTexture = this.textures.get('menu_background').getSourceImage();
       const scaleX = this.scale.width / bgTexture.width;
       const scaleY = this.scale.height / bgTexture.height;
       const scale = Math.max(scaleX, scaleY);
       this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
     } else {
-      // Р”РµСЃРєС‚РѕРї: РєР°Рє Р±С‹Р»Рѕ
+      // Десктоп: как было
       this.menuBg = this.add.image(centerX, centerY, 'menu_background');
     }
-    // РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№ Р·Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
+    // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
@@ -98,15 +98,15 @@ export class Menu extends Scene {
       audioManager.onUserInteraction();
     });
 
-    // --- Р“СЂСѓРїРїР° РѕСЃРЅРѕРІРЅРѕРіРѕ РјРµРЅСЋ ---
+    // --- Группа основного меню ---
     this.menuGroup = this.add.container(0, 0);
     let offsetY = -150;
-    // Р—Р°РіРѕР»РѕРІРѕРє
+    // Заголовок
     this.menuGroup.add(
       this.add.bitmapText(centerX, centerY + offsetY, 'ui', 'Castle Sweeper', 35).setOrigin(0.5).setTint(0xffffff)
     );
     offsetY += 130;
-    // РљРЅРѕРїРєР° "РџСЂРѕРґРѕР»Р¶РёС‚СЊ"
+    // Кнопка "Продолжить"
     const gameScene = this.scene.get(SCENE_KEYS.GAME);
     const hasSavedGame = gameSaveManager.hasSavedGame();
     const canContinue = (gameScene && gameScene.scene.isPaused()) || hasSavedGame;
@@ -129,7 +129,7 @@ export class Menu extends Scene {
       this.menuGroup.add(continueBtn);
       offsetY += 60;
     }
-    // РљРЅРѕРїРєР° "РќРѕРІР°СЏ РёРіСЂР°"
+    // Кнопка "Новая игра"
     const newGameBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('newGame'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
@@ -142,7 +142,7 @@ export class Menu extends Scene {
     });
     this.menuGroup.add(newGameBtn);
     offsetY += 60;
-    // РљРЅРѕРїРєР° "РџСЂР°РІРёР»Р°"
+    // Кнопка "Правила"
     const rulesBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('rules'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
@@ -153,7 +153,7 @@ export class Menu extends Scene {
     });
     this.menuGroup.add(rulesBtn);
     offsetY += 60;
-    // РљРЅРѕРїРєР° "РќР°СЃС‚СЂРѕР№РєРё Р·РІСѓРєР°"
+    // Кнопка "Настройки звука"
     const settingsBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('settings'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
@@ -164,7 +164,7 @@ export class Menu extends Scene {
     });
     this.menuGroup.add(settingsBtn);
     offsetY += 60;
-    // РљРЅРѕРїРєР° "РўР°Р±Р»РёС†Р° Р»РёРґРµСЂРѕРІ"
+    // Кнопка "Таблица лидеров"
     const leaderboardBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('leaderboard'), 25)
       .setOrigin(0.5)
       .setTint(0xffff00)
@@ -174,26 +174,26 @@ export class Menu extends Scene {
       this.showLeaderboard();
     });
     this.menuGroup.add(leaderboardBtn);
-    // --- Р“СЂСѓРїРїР° С‚Р°Р±Р»РёС†С‹ Р»РёРґРµСЂРѕРІ ---
+    // --- Группа таблицы лидеров ---
     this.leaderboardGroup = this.add.container(0, 0);
     this.leaderboardGroup.setVisible(false);
-    // Р¤РѕРЅ Рё Р·Р°С‚РµРјРЅРµРЅРёРµ РґР»СЏ С‚Р°Р±Р»РёС†С‹ Р»РёРґРµСЂРѕРІ
+    // Фон и затемнение для таблицы лидеров
     if (window.innerWidth < window.innerHeight) {
-      // РњРѕР±РёР»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ: cover РїРѕ С€РёСЂРёРЅРµ/РІС‹СЃРѕС‚Рµ
+      // Мобильное устройство: cover по ширине/высоте
       const bgTexture = this.textures.get('menu_background').getSourceImage();
       const scaleX = this.scale.width / bgTexture.width;
       const scaleY = this.scale.height / bgTexture.height;
       const scale = Math.max(scaleX, scaleY);
       this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale).setDepth(0);
     } else {
-      // Р”РµСЃРєС‚РѕРї: РєР°Рє Р±С‹Р»Рѕ
+      // Десктоп: как было
       this.leaderboardBg = this.add.image(centerX, centerY, 'menu_background').setDepth(0);
     }
     this.leaderboardRect = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55).setOrigin(0.5).setDepth(0);
     this.leaderboardGroup.add([this.leaderboardBg, this.leaderboardRect]);
-    // Р—Р°РіРѕР»РѕРІРѕРє Рё РІРєР»Р°РґРєРё Р±СѓРґСѓС‚ РґРѕР±Р°РІР»СЏС‚СЊСЃСЏ РІ renderLeaderboardTabs
+    // Заголовок и вкладки будут добавляться в renderLeaderboardTabs
     // ---
-    // РЎРёРіРЅР°Р»РёР·РёСЂСѓРµРј Рѕ РіРѕС‚РѕРІРЅРѕСЃС‚Рё РјРµРЅСЋ РґР»СЏ LoadingAPI С‚РѕР»СЊРєРѕ РѕРґРёРЅ СЂР°Р· Р·Р° СЃРµСЃСЃРёСЋ
+    // Сигнализируем о готовности меню для LoadingAPI только один раз за сессию
     if (!window._menuReadyCalled && window.onMenuReady) {
       window.onMenuReady();
       window._menuReadyCalled = true;
@@ -201,121 +201,121 @@ export class Menu extends Scene {
   }
 
   showAudioSettings() {
-    // РЎРєСЂС‹РІР°РµРј РІСЃРµ РєРЅРѕРїРєРё РјРµРЅСЋ Рё РѕС‚РєР»СЋС‡Р°РµРј РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚СЊ
+    // Скрываем все кнопки меню и отключаем интерактивность
     this.deactivateMenuItems();
 
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
     let offsetY = -80;
 
-    // РЈРґР°Р»СЏРµРј РїСЂРµРґС‹РґСѓС‰РёР№ С„РѕРЅ, РµСЃР»Рё РµСЃС‚СЊ
+    // Удаляем предыдущий фон, если есть
     if (this.menuBg) {
       this.menuBg.destroy();
       this.menuBg = null;
     }
-    // Р¤РѕРЅ РјРµРЅСЋ
+    // Фон меню
     if (window.innerWidth < window.innerHeight) {
-      // РњРѕР±РёР»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ: cover РїРѕ С€РёСЂРёРЅРµ/РІС‹СЃРѕС‚Рµ
+      // Мобильное устройство: cover по ширине/высоте
       const bgTexture = this.textures.get('menu_background').getSourceImage();
       const scaleX = this.scale.width / bgTexture.width;
       const scaleY = this.scale.height / bgTexture.height;
       const scale = Math.max(scaleX, scaleY);
       this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
     } else {
-      // Р”РµСЃРєС‚РѕРї: РєР°Рє Р±С‹Р»Рѕ
+      // Десктоп: как было
       this.menuBg = this.add.image(centerX, centerY, 'menu_background');
     }
 
-    // РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№ Р·Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
+    // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
 
-    // Р—Р°РіРѕР»РѕРІРѕРє
+    // Заголовок
     this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('soundSettings'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff);
     offsetY += 50;
 
-    // Р—Р°РіСЂСѓР¶Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё
+    // Загружаем настройки
     const settings = this.loadAudioSettings();
 
-    // РќР°СЃС‚СЂРѕР№РєР° РјСѓР·С‹РєРё
+    // Настройка музыки
     const musicText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', t('music'), 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
     const { frame: musicFrame, icon: musicIcon } = this.createToggleButton(centerX + 70, centerY + offsetY, settings.musicEnabled);
     
-    // РЎРѕР·РґР°РµРј РЅРµРІРёРґРёРјС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє РґР»СЏ РІСЃРµР№ СЃС‚СЂРѕРєРё РјСѓР·С‹РєРё
+    // Создаем невидимый прямоугольник для всей строки музыки
     const musicRow = this.add.rectangle(centerX, centerY + offsetY, 300, 40, 0xffffff, 0)
       .setInteractive({ useHandCursor: true });
     
-    // РћР±СЂР°Р±РѕС‚С‡РёРє РґР»СЏ РІСЃРµР№ СЃС‚СЂРѕРєРё
+    // Обработчик для всей строки
     musicRow.on('pointerdown', () => {
-      // Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёРј Р·РІСѓРє РєР»РёРєР°
+      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       
       settings.musicEnabled = !settings.musicEnabled;
       this.saveAudioSettings(settings);
       musicIcon.setVisible(settings.musicEnabled);
       
-      // РћР±РЅРѕРІР»СЏРµРј AudioManager С‡РµСЂРµР· СЃРѕР±С‹С‚РёСЏ
+      // Обновляем AudioManager через события
       sceneEvents.emit(AudioEvents.SETTINGS_CHANGED);
     });
     
     offsetY += 40;
 
-    // РќР°СЃС‚СЂРѕР№РєР° Р·РІСѓРєРѕРІ
+    // Настройка звуков
     const soundText = this.add.bitmapText(centerX - 100, centerY + offsetY, 'ui', t('sound'), 20)
       .setOrigin(0, 0.5)
       .setTint(0xffffff);
     
     const { frame: soundFrame, icon: soundIcon } = this.createToggleButton(centerX + 70, centerY + offsetY, settings.soundEnabled);
     
-    // РЎРѕР·РґР°РµРј РЅРµРІРёРґРёРјС‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє РґР»СЏ РІСЃРµР№ СЃС‚СЂРѕРєРё Р·РІСѓРєРѕРІ
+    // Создаем невидимый прямоугольник для всей строки звуков
     const soundRow = this.add.rectangle(centerX, centerY + offsetY, 300, 40, 0xffffff, 0)
       .setInteractive({ useHandCursor: true });
     
-    // РћР±СЂР°Р±РѕС‚С‡РёРє РґР»СЏ РІСЃРµР№ СЃС‚СЂРѕРєРё
+    // Обработчик для всей строки
     soundRow.on('pointerdown', () => {
-      // Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёРј Р·РІСѓРє РєР»РёРєР°
+      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       
       settings.soundEnabled = !settings.soundEnabled;
       this.saveAudioSettings(settings);
       soundIcon.setVisible(settings.soundEnabled);
       
-      // РћР±РЅРѕРІР»СЏРµРј AudioManager С‡РµСЂРµР· СЃРѕР±С‹С‚РёСЏ
+      // Обновляем AudioManager через события
       sceneEvents.emit(AudioEvents.SETTINGS_CHANGED);
     });
     offsetY += 60;
 
-    // РљРЅРѕРїРєР° "РќР°Р·Р°Рґ"
+    // Кнопка "Назад"
     const backBtn = this.add.bitmapText(centerX, centerY + offsetY, 'ui', t('back'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
     backBtn.on('pointerdown', () => {
-      // Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёРј Р·РІСѓРє РєР»РёРєР°
+      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
-      // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІРёРґРёРјРѕСЃС‚СЊ Рё РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚СЊ РїСѓРЅРєС‚РѕРІ РјРµРЅСЋ
+      // Восстанавливаем видимость и интерактивность пунктов меню
       this.activateMenuItems();
-      // РџРµСЂРµР·Р°РїСѓСЃРєР°РµРј СЃС†РµРЅСѓ
+      // Перезапускаем сцену
       this.scene.restart();
     });
   }
 
   createToggleButton(x, y, enabled) {
-    // РЎРѕР·РґР°РµРј СЂР°РјРєСѓ - Р±РµР»С‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЃ РѕР±РІРѕРґРєРѕР№ (Р±РµР· РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚Рё)
+    // Создаем рамку - белый прямоугольник с обводкой (без интерактивности)
     const frame = this.add.rectangle(x, y, 26, 26, 0xffffff, 0.2)
       .setStrokeStyle(2, 0xffffff);
 
-    // РЎРѕР·РґР°РµРј РёРєРѕРЅРєСѓ РіР°Р»РѕС‡РєРё (С„СЂРµР№Рј 30 РёР· icons) Р±РµР· РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚Рё
+    // Создаем иконку галочки (фрейм 30 из icons) без интерактивности
     const icon = this.add.image(x, y, 'icons', 30)
-      .setVisible(enabled); // РџРѕРєР°Р·С‹РІР°РµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅРѕ
+      .setVisible(enabled); // Показываем только если включено
 
-    // Р’РѕР·РІСЂР°С‰Р°РµРј РѕР±СЉРµРєС‚ СЃ РѕР±РѕРёРјРё СЌР»РµРјРµРЅС‚Р°РјРё
+    // Возвращаем объект с обоими элементами
     return { frame, icon };
   }
 
@@ -332,7 +332,7 @@ export class Menu extends Scene {
       const settings = saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
       return settings;
     } catch (error) {
-      console.warn('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё Р·РІСѓРєР°:', error);
+      console.warn('Не удалось загрузить настройки звука:', error);
       return defaultSettings;
     }
   }
@@ -341,37 +341,37 @@ export class Menu extends Scene {
     try {
       localStorage.setItem('audioSettings', JSON.stringify(settings));
     } catch (error) {
-      console.warn('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё Р·РІСѓРєР°:', error);
+      console.warn('Не удалось сохранить настройки звука:', error);
     }
   }
 
   showRules() {
-    // РЎРєСЂС‹РІР°РµРј РІСЃРµ РєРЅРѕРїРєРё РјРµРЅСЋ Рё РѕС‚РєР»СЋС‡Р°РµРј РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚СЊ
+    // Скрываем все кнопки меню и отключаем интерактивность
     this.deactivateMenuItems();
 
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
     let offsetY = -120;
 
-    // РЈРґР°Р»СЏРµРј РїСЂРµРґС‹РґСѓС‰РёР№ С„РѕРЅ, РµСЃР»Рё РµСЃС‚СЊ
+    // Удаляем предыдущий фон, если есть
     if (this.menuBg) {
       this.menuBg.destroy();
       this.menuBg = null;
     }
-    // Р¤РѕРЅ РјРµРЅСЋ
+    // Фон меню
     if (window.innerWidth < window.innerHeight) {
-      // РњРѕР±РёР»СЊРЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ: cover РїРѕ С€РёСЂРёРЅРµ/РІС‹СЃРѕС‚Рµ
+      // Мобильное устройство: cover по ширине/высоте
       const bgTexture = this.textures.get('menu_background').getSourceImage();
       const scaleX = this.scale.width / bgTexture.width;
       const scaleY = this.scale.height / bgTexture.height;
       const scale = Math.max(scaleX, scaleY);
       this.menuBg = this.add.image(centerX, centerY, 'menu_background').setScale(scale);
     } else {
-      // Р”РµСЃРєС‚РѕРї: РєР°Рє Р±С‹Р»Рѕ
+      // Десктоп: как было
       this.menuBg = this.add.image(centerX, centerY, 'menu_background');
     }
 
-    // РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№ Р·Р°С‚РµРјРЅСЏСЋС‰РёР№ С„РѕРЅ
+    // Полупрозрачный затемняющий фон
     const bg = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x293135, 0.55);
     bg.setOrigin(0.5);
     bg.setDepth(0);
@@ -399,13 +399,13 @@ export class Menu extends Scene {
       }
     });
 
-    // РљРЅРѕРїРєР° "РќР°Р·Р°Рґ"
+    // Кнопка "Назад"
     const backBtn = this.add.bitmapText(centerX, centerY + offsetY + 20, 'ui', t('back'), 18)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setInteractive({ useHandCursor: true });
     backBtn.on('pointerdown', () => {
-      // Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёРј Р·РІСѓРє РєР»РёРєР°
+      // Воспроизводим звук клика
       sceneEvents.emit(AudioEvents.PLAYER_CLICK);
       
       this.scene.restart();
@@ -413,12 +413,12 @@ export class Menu extends Scene {
   }
 
   async showLeaderboard() {
-    // РЎРєСЂС‹РІР°РµРј РІСЃРµ РєРЅРѕРїРєРё РјРµРЅСЋ Рё РѕС‚РєР»СЋС‡Р°РµРј РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚СЊ
+    // Скрываем все кнопки меню и отключаем интерактивность
     this.deactivateMenuItems();
     this.leaderboardGroup.setVisible(true);
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
-    // РџСЂРѕРІРµСЂСЏРµРј Р°РІС‚РѕСЂРёР·Р°С†РёСЋ
+    // Проверяем авторизацию
     let player = null;
     if (yandexGames.sdk && yandexGames.sdk.getPlayer) {
       try {
@@ -426,11 +426,11 @@ export class Menu extends Scene {
       } catch (e) {}
     }
     if (!player || !player.isAuthorized || !player.isAuthorized()) {
-      // РќРµР°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ: РїРѕРєР°Р·С‹РІР°РµРј С‚РѕР»СЊРєРѕ Р»РѕРєР°Р»СЊРЅС‹Рµ СЂРµРєРѕСЂРґС‹
+      // Неавторизованный пользователь: показываем только локальные рекорды
       this.renderLocalLeaderboard(centerX, centerY);
       return;
     }
-    // РђРІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹Р№ вЂ” СЃС‚Р°РЅРґР°СЂС‚РЅР°СЏ Р»РѕРіРёРєР°
+    // Авторизованный — стандартная логика
     if (!this.leaderboardTitle || !this.scoreBtn || !this.timeBtn) {
       this.renderLeaderboardTabs();
     }
@@ -441,7 +441,7 @@ export class Menu extends Scene {
         .setTint(0xffffff)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
-          // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІРёРґРёРјРѕСЃС‚СЊ Рё РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕСЃС‚СЊ РїСѓРЅРєС‚РѕРІ РјРµРЅСЋ
+          // Восстанавливаем видимость и интерактивность пунктов меню
           this.activateMenuItems();
           this.leaderboardGroup.setVisible(false);
         });
@@ -452,24 +452,24 @@ export class Menu extends Scene {
   }
 
   renderLocalLeaderboard(centerX, centerY) {
-    // РћС‡РёС‰Р°РµРј СЃС‚Р°СЂС‹Рµ СЃС‚СЂРѕРєРё
+    // Очищаем старые строки
     if (this.leaderboardRows && this.leaderboardRows.length) {
       this.leaderboardRows.forEach(row => row.destroy());
       this.leaderboardRows = [];
     }
-    // РЈРґР°Р»СЏРµРј СЃС‚Р°СЂС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє, РµСЃР»Рё РµСЃС‚СЊ
+    // Удаляем старый заголовок, если есть
     if (this.leaderboardTitle) {
       this.leaderboardTitle.destroy();
       this.leaderboardTitle = null;
     }
-    // Р—Р°РіРѕР»РѕРІРѕРє
+    // Заголовок
     this.leaderboardTitle = this.add.bitmapText(centerX, centerY - 180, 'ui', t('leaderboard'), 25).setOrigin(0.5);
     this.leaderboardGroup.add(this.leaderboardTitle);
     this.leaderboardTitle.setVisible(true);
-    // РџРѕР»СѓС‡Р°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ СЂРµРєРѕСЂРґС‹
+    // Получаем локальные рекорды
     const bestTime = Number(localStorage.getItem('bestTime') || 0);
     const totalScore = Number(localStorage.getItem('totalScore') || 0);
-    // РџРѕРєР°Р·С‹РІР°РµРј РґРІРµ СЃС‚СЂРѕРєРё: BestTime Рё TotalScore
+    // Показываем две строки: BestTime и TotalScore
     let y = centerY - 80;
     let bestTimeStr = '-';
     if (bestTime) {
@@ -483,7 +483,7 @@ export class Menu extends Scene {
     this.leaderboardGroup.add(totalScoreText);
     this.leaderboardRows.push(totalScoreText);
     y += 80;
-    // РћРїРёСЃР°РЅРёРµ Рё РєРЅРѕРїРєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё
+    // Описание и кнопка авторизации
     const desc = this.add.bitmapText(centerX, y, 'ui', t('leaderboardAuthDescription'), 11)
       .setOrigin(0.5)
       .setMaxWidth(400)
@@ -498,15 +498,15 @@ export class Menu extends Scene {
       .on('pointerdown', async () => {
         if (yandexGames.sdk && yandexGames.sdk.auth) {
           await yandexGames.sdk.auth.openAuthDialog();
-          // РџРѕСЃР»Рµ Р°РІС‚РѕСЂРёР·Р°С†РёРё вЂ” СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
+          // После авторизации — синхронизируем локальные данные
           await this.syncLocalStatsWithServer();
-          // РћР±РЅРѕРІР»СЏРµРј С‚Р°Р±Р»РёС†Сѓ
+          // Обновляем таблицу
           this.showLeaderboard();
         }
       });
     this.leaderboardGroup.add(authBtn);
     this.leaderboardRows.push(authBtn);
-    // РљРЅРѕРїРєР° РЅР°Р·Р°Рґ
+    // Кнопка назад
     if (!this.leaderboardBackBtn) {
       this.leaderboardBackBtn = this.add.bitmapText(centerX, centerY + 200, 'ui', t('back'), 20)
         .setOrigin(0.5)
@@ -522,11 +522,11 @@ export class Menu extends Scene {
   }
 
   async syncLocalStatsWithServer() {
-    // РџРѕР»СѓС‡Р°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ СЂРµРєРѕСЂРґС‹
+    // Получаем локальные рекорды
     const bestTime = Number(localStorage.getItem('bestTime') || 0);
     const totalScore = Number(localStorage.getItem('totalScore') || 0);
     if (!yandexGames.sdk || !yandexGames.sdk.leaderboards) return;
-    // РЎРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРј BestTime
+    // Синхронизируем BestTime
     if (bestTime) {
       try {
         const entry = await yandexGames.sdk.leaderboards.getPlayerEntry('BestTime');
@@ -539,7 +539,7 @@ export class Menu extends Scene {
         }
       }
     }
-    // РЎРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРј TotalScore
+    // Синхронизируем TotalScore
     if (totalScore) {
       try {
         const entry = await yandexGames.sdk.leaderboards.getPlayerEntry('TotalScore');
@@ -551,27 +551,27 @@ export class Menu extends Scene {
         }
       }
     }
-    // РћС‡РёС‰Р°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
+    // Очищаем локальные данные
     localStorage.removeItem('bestTime');
     localStorage.removeItem('totalScore');
   }
 
   renderLeaderboardTabs() {
-    // РЈРґР°Р»СЏРµРј СЃС‚Р°СЂС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє, РµСЃР»Рё РµСЃС‚СЊ
+    // Удаляем старый заголовок, если есть
     if (this.leaderboardTitle) {
       this.leaderboardTitle.destroy();
       this.leaderboardTitle = null;
     }
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
-    // Р—Р°РіРѕР»РѕРІРѕРє
+    // Заголовок
     const titleY = centerY - 250;
     this.leaderboardTitle = this.add.bitmapText(centerX, titleY, 'ui', t('leaderboard'), 25)
       .setOrigin(0.5)
       .setTint(0xffffff)
       .setDepth(10);
     this.leaderboardGroup.add(this.leaderboardTitle);
-    // РљРЅРѕРїРєРё РїРѕРґ Р·Р°РіРѕР»РѕРІРєРѕРј
+    // Кнопки под заголовком
     const btnY = titleY + 70;
     const btnOffset = 130;
     this.scoreBtn = this.add.bitmapText(centerX - btnOffset, btnY, 'ui', t('leaderboardByScore'), 22)
@@ -608,7 +608,7 @@ export class Menu extends Scene {
   }
 
   renderLeaderboardContent() {
-    // РЈРґР°Р»СЏРµРј СЃС‚Р°СЂС‹Рµ СЃС‚СЂРѕРєРё С‚Р°Р±Р»РёС†С‹
+    // Удаляем старые строки таблицы
     if (this.leaderboardRows && this.leaderboardRows.length) {
       this.leaderboardRows.forEach(row => row.destroy());
       this.leaderboardRows = [];
@@ -626,7 +626,7 @@ export class Menu extends Scene {
   }
 
   renderLeaderboardGeneric(tab, scoreRes, userId) {
-    // РЈРґР°Р»СЏРµРј СЃС‚Р°СЂС‹Рµ СЃС‚СЂРѕРєРё С‚Р°Р±Р»РёС†С‹
+    // Удаляем старые строки таблицы
     if (this.leaderboardRows && this.leaderboardRows.length) {
       this.leaderboardRows.forEach(row => row.destroy());
       this.leaderboardRows = [];
@@ -635,7 +635,7 @@ export class Menu extends Scene {
     const centerY = this.cameras.main.centerY;
     const width = this.cameras.main.width;
     let offsetY = -130;
-    // Р—Р°РіРѕР»РѕРІРєРё
+    // Заголовки
     const xRank = 50;
     const xName = 100;
     const xScore = width - 50;
@@ -754,7 +754,7 @@ export class Menu extends Scene {
   }
 }
 
-// Р”РѕР±Р°РІРёС‚СЊ С„СѓРЅРєС†РёСЋ С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёСЏ РІСЂРµРјРµРЅРё (РєР°Рє РІ GameOver.js)
+// Добавить функцию форматирования времени (как в GameOver.js)
 function formatTime(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -766,4 +766,3 @@ function formatTime(seconds) {
     return `${pad(m, 2, '0', 1)}:${pad(s, 2, '0', 1)}`;
   }
 }
-
